@@ -1,12 +1,17 @@
-change rwgt_dir rwgt
+import model dim6top_LO_UFO --modelname
+define p = g u c d s u~ c~ d~ s~ b b~
+define j = g u c d s u~ c~ d~ s~ b b~
+define l+ = e+ mu+ ta+
+define l- = e- mu- ta-
+generate  p p > t  l+ l- DIM6=0 FCNC=1@0
+add process p p > t~  l+ l- DIM6=0 FCNC=1@01
+output ttllFCNC -f -nojpeg
 
-launch --rwgt_name=dummy_point
-set ctZx31 0.1
-
-
-launch --rwgt_name=EFTrwgt1_ctp_3_cpQM_0_cpQ3_0_cpt_0_cptb_0_ctA_0_ctZ_0_cbW_0_ctG_0_cQl3_0_cQlM_0_cQe_0_ctl_0_cte_0_ctlS_0_ctlT_0_
-    set param_card ctpx31 3
-    set param_card ctpx13 3
+launch -n ctp
+    set pdlabel lhapdf
+    set lhaid 306000
+    set param_card ctpx31 1
+    set param_card ctpx13 1
     set param_card cpQMx31 0
     set param_card cpQ3x31 0
     set param_card cptx31 0
@@ -48,10 +53,12 @@ launch --rwgt_name=EFTrwgt1_ctp_3_cpQM_0_cpQ3_0_cpt_0_cptb_0_ctA_0_ctZ_0_cbW_0_c
     set param_card ctlTx2x31 0
     set param_card ctlTx3x31 0
 
-launch --rwgt_name=EFTrwgt2_ctp_0_cpQM_2_cpQ3_0_cpt_0_cptb_0_ctA_0_ctZ_0_cbW_0_ctG_0_cQl3_0_cQlM_0_cQe_0_ctl_0_cte_0_ctlS_0_ctlT_0_
+launch -n cpQM
+    set pdlabel lhapdf
+    set lhaid 306000
     set param_card ctpx31 0
     set param_card ctpx13 0
-    set param_card cpQMx31 2
+    set param_card cpQMx31 1
     set param_card cpQ3x31 0
     set param_card cptx31 0
     set param_card cptbx31 0
@@ -92,11 +99,13 @@ launch --rwgt_name=EFTrwgt2_ctp_0_cpQM_2_cpQ3_0_cpt_0_cptb_0_ctA_0_ctZ_0_cbW_0_c
     set param_card ctlTx2x31 0
     set param_card ctlTx3x31 0
 
-launch --rwgt_name=EFTrwgt3_ctp_0_cpQM_0_cpQ3_10_cpt_0_cptb_0_ctA_0_ctZ_0_cbW_0_ctG_0_cQl3_0_cQlM_0_cQe_0_ctl_0_cte_0_ctlS_0_ctlT_0_
+launch -n cpQ3
+    set pdlabel lhapdf
+    set lhaid 306000
     set param_card ctpx31 0
     set param_card ctpx13 0
     set param_card cpQMx31 0
-    set param_card cpQ3x31 10
+    set param_card cpQ3x31 1
     set param_card cptx31 0
     set param_card cptbx31 0
     set param_card cptbx13 0
@@ -136,12 +145,14 @@ launch --rwgt_name=EFTrwgt3_ctp_0_cpQM_0_cpQ3_10_cpt_0_cptb_0_ctA_0_ctZ_0_cbW_0_
     set param_card ctlTx2x31 0
     set param_card ctlTx3x31 0
 
-launch --rwgt_name=EFTrwgt4_ctp_0_cpQM_0_cpQ3_0_cpt_2_cptb_0_ctA_0_ctZ_0_cbW_0_ctG_0_cQl3_0_cQlM_0_cQe_0_ctl_0_cte_0_ctlS_0_ctlT_0_
+launch -n cpt
+    set pdlabel lhapdf
+    set lhaid 306000
     set param_card ctpx31 0
     set param_card ctpx13 0
     set param_card cpQMx31 0
     set param_card cpQ3x31 0
-    set param_card cptx31 2
+    set param_card cptx31 1
     set param_card cptbx31 0
     set param_card cptbx13 0
     set param_card ctAx31 0
@@ -180,14 +191,16 @@ launch --rwgt_name=EFTrwgt4_ctp_0_cpQM_0_cpQ3_0_cpt_2_cptb_0_ctA_0_ctZ_0_cbW_0_c
     set param_card ctlTx2x31 0
     set param_card ctlTx3x31 0
 
-launch --rwgt_name=EFTrwgt5_ctp_0_cpQM_0_cpQ3_0_cpt_0_cptb_10_ctA_0_ctZ_0_cbW_0_ctG_0_cQl3_0_cQlM_0_cQe_0_ctl_0_cte_0_ctlS_0_ctlT_0_
+launch -n cptb
+    set pdlabel lhapdf
+    set lhaid 306000
     set param_card ctpx31 0
     set param_card ctpx13 0
     set param_card cpQMx31 0
     set param_card cpQ3x31 0
     set param_card cptx31 0
-    set param_card cptbx31 10
-    set param_card cptbx13 10
+    set param_card cptbx31 1
+    set param_card cptbx13 1
     set param_card ctAx31 0
     set param_card ctAx13 0
     set param_card ctZx31 0
@@ -224,7 +237,9 @@ launch --rwgt_name=EFTrwgt5_ctp_0_cpQM_0_cpQ3_0_cpt_0_cptb_10_ctA_0_ctZ_0_cbW_0_
     set param_card ctlTx2x31 0
     set param_card ctlTx3x31 0
 
-launch --rwgt_name=EFTrwgt6_ctp_0_cpQM_0_cpQ3_0_cpt_0_cptb_0_ctA_1_ctZ_0_cbW_0_ctG_0_cQl3_0_cQlM_0_cQe_0_ctl_0_cte_0_ctlS_0_ctlT_0_
+launch -n ctA
+    set pdlabel lhapdf
+    set lhaid 306000
     set param_card ctpx31 0
     set param_card ctpx13 0
     set param_card cpQMx31 0
@@ -268,7 +283,9 @@ launch --rwgt_name=EFTrwgt6_ctp_0_cpQM_0_cpQ3_0_cpt_0_cptb_0_ctA_1_ctZ_0_cbW_0_c
     set param_card ctlTx2x31 0
     set param_card ctlTx3x31 0
 
-launch --rwgt_name=EFTrwgt7_ctp_0_cpQM_0_cpQ3_0_cpt_0_cptb_0_ctA_0_ctZ_0.25_cbW_0_ctG_0_cQl3_0_cQlM_0_cQe_0_ctl_0_cte_0_ctlS_0_ctlT_0_
+launch -n ctZ
+    set pdlabel lhapdf
+    set lhaid 306000
     set param_card ctpx31 0
     set param_card ctpx13 0
     set param_card cpQMx31 0
@@ -278,8 +295,8 @@ launch --rwgt_name=EFTrwgt7_ctp_0_cpQM_0_cpQ3_0_cpt_0_cptb_0_ctA_0_ctZ_0.25_cbW_
     set param_card cptbx13 0
     set param_card ctAx31 0
     set param_card ctAx13 0
-    set param_card ctZx31 0.25
-    set param_card ctZx13 0.25
+    set param_card ctZx31 1
+    set param_card ctZx13 1
     set param_card cbWx31 0
     set param_card cbWx13 0
     set param_card ctGx31 0
@@ -312,7 +329,9 @@ launch --rwgt_name=EFTrwgt7_ctp_0_cpQM_0_cpQ3_0_cpt_0_cptb_0_ctA_0_ctZ_0.25_cbW_
     set param_card ctlTx2x31 0
     set param_card ctlTx3x31 0
 
-launch --rwgt_name=EFTrwgt8_ctp_0_cpQM_0_cpQ3_0_cpt_0_cptb_0_ctA_0_ctZ_0_cbW_10_ctG_0_cQl3_0_cQlM_0_cQe_0_ctl_0_cte_0_ctlS_0_ctlT_0_
+launch -n cbW
+    set pdlabel lhapdf
+    set lhaid 306000
     set param_card ctpx31 0
     set param_card ctpx13 0
     set param_card cpQMx31 0
@@ -324,8 +343,8 @@ launch --rwgt_name=EFTrwgt8_ctp_0_cpQM_0_cpQ3_0_cpt_0_cptb_0_ctA_0_ctZ_0_cbW_10_
     set param_card ctAx13 0
     set param_card ctZx31 0
     set param_card ctZx13 0
-    set param_card cbWx31 10
-    set param_card cbWx13 10
+    set param_card cbWx31 1
+    set param_card cbWx13 1
     set param_card ctGx31 0
     set param_card ctGx13 0
     set param_card cQl3x1x31 0
@@ -356,7 +375,9 @@ launch --rwgt_name=EFTrwgt8_ctp_0_cpQM_0_cpQ3_0_cpt_0_cptb_0_ctA_0_ctZ_0_cbW_10_
     set param_card ctlTx2x31 0
     set param_card ctlTx3x31 0
 
-launch --rwgt_name=EFTrwgt9_ctp_0_cpQM_0_cpQ3_0_cpt_0_cptb_0_ctA_0_ctZ_0_cbW_0_ctG_0.04_cQl3_0_cQlM_0_cQe_0_ctl_0_cte_0_ctlS_0_ctlT_0_
+launch -n ctG
+    set pdlabel lhapdf
+    set lhaid 306000
     set param_card ctpx31 0
     set param_card ctpx13 0
     set param_card cpQMx31 0
@@ -370,8 +391,8 @@ launch --rwgt_name=EFTrwgt9_ctp_0_cpQM_0_cpQ3_0_cpt_0_cptb_0_ctA_0_ctZ_0_cbW_0_c
     set param_card ctZx13 0
     set param_card cbWx31 0
     set param_card cbWx13 0
-    set param_card ctGx31 0.04
-    set param_card ctGx13 0.04
+    set param_card ctGx31 1
+    set param_card ctGx13 1
     set param_card cQl3x1x31 0
     set param_card cQl3x2x31 0
     set param_card cQl3x3x31 0
@@ -400,7 +421,9 @@ launch --rwgt_name=EFTrwgt9_ctp_0_cpQM_0_cpQ3_0_cpt_0_cptb_0_ctA_0_ctZ_0_cbW_0_c
     set param_card ctlTx2x31 0
     set param_card ctlTx3x31 0
 
-launch --rwgt_name=EFTrwgt10_ctp_0_cpQM_0_cpQ3_0_cpt_0_cptb_0_ctA_0_ctZ_0_cbW_0_ctG_0_cQl3_10_cQlM_0_cQe_0_ctl_0_cte_0_ctlS_0_ctlT_0_
+launch -n cQl3
+    set pdlabel lhapdf
+    set lhaid 306000
     set param_card ctpx31 0
     set param_card ctpx13 0
     set param_card cpQMx31 0
@@ -416,9 +439,9 @@ launch --rwgt_name=EFTrwgt10_ctp_0_cpQM_0_cpQ3_0_cpt_0_cptb_0_ctA_0_ctZ_0_cbW_0_
     set param_card cbWx13 0
     set param_card ctGx31 0
     set param_card ctGx13 0
-    set param_card cQl3x1x31 10
-    set param_card cQl3x2x31 10
-    set param_card cQl3x3x31 10
+    set param_card cQl3x1x31 1
+    set param_card cQl3x2x31 1
+    set param_card cQl3x3x31 1
     set param_card cQlMx1x31 0
     set param_card cQlMx2x31 0
     set param_card cQlMx3x31 0
@@ -444,7 +467,9 @@ launch --rwgt_name=EFTrwgt10_ctp_0_cpQM_0_cpQ3_0_cpt_0_cptb_0_ctA_0_ctZ_0_cbW_0_
     set param_card ctlTx2x31 0
     set param_card ctlTx3x31 0
 
-launch --rwgt_name=EFTrwgt11_ctp_0_cpQM_0_cpQ3_0_cpt_0_cptb_0_ctA_0_ctZ_0_cbW_0_ctG_0_cQl3_0_cQlM_1_cQe_0_ctl_0_cte_0_ctlS_0_ctlT_0_
+launch -n cQlM
+    set pdlabel lhapdf
+    set lhaid 306000
     set param_card ctpx31 0
     set param_card ctpx13 0
     set param_card cpQMx31 0
@@ -488,7 +513,9 @@ launch --rwgt_name=EFTrwgt11_ctp_0_cpQM_0_cpQ3_0_cpt_0_cptb_0_ctA_0_ctZ_0_cbW_0_
     set param_card ctlTx2x31 0
     set param_card ctlTx3x31 0
 
-launch --rwgt_name=EFTrwgt12_ctp_0_cpQM_0_cpQ3_0_cpt_0_cptb_0_ctA_0_ctZ_0_cbW_0_ctG_0_cQl3_0_cQlM_0_cQe_1_ctl_0_cte_0_ctlS_0_ctlT_0_
+launch -n cQe
+    set pdlabel lhapdf
+    set lhaid 306000
     set param_card ctpx31 0
     set param_card ctpx13 0
     set param_card cpQMx31 0
@@ -532,7 +559,9 @@ launch --rwgt_name=EFTrwgt12_ctp_0_cpQM_0_cpQ3_0_cpt_0_cptb_0_ctA_0_ctZ_0_cbW_0_
     set param_card ctlTx2x31 0
     set param_card ctlTx3x31 0
 
-launch --rwgt_name=EFTrwgt13_ctp_0_cpQM_0_cpQ3_0_cpt_0_cptb_0_ctA_0_ctZ_0_cbW_0_ctG_0_cQl3_0_cQlM_0_cQe_0_ctl_1_cte_0_ctlS_0_ctlT_0_
+launch -n ctl
+    set pdlabel lhapdf
+    set lhaid 306000
     set param_card ctpx31 0
     set param_card ctpx13 0
     set param_card cpQMx31 0
@@ -576,7 +605,9 @@ launch --rwgt_name=EFTrwgt13_ctp_0_cpQM_0_cpQ3_0_cpt_0_cptb_0_ctA_0_ctZ_0_cbW_0_
     set param_card ctlTx2x31 0
     set param_card ctlTx3x31 0
 
-launch --rwgt_name=EFTrwgt14_ctp_0_cpQM_0_cpQ3_0_cpt_0_cptb_0_ctA_0_ctZ_0_cbW_0_ctG_0_cQl3_0_cQlM_0_cQe_0_ctl_0_cte_1_ctlS_0_ctlT_0_
+launch -n cte
+    set pdlabel lhapdf
+    set lhaid 306000
     set param_card ctpx31 0
     set param_card ctpx13 0
     set param_card cpQMx31 0
@@ -620,7 +651,9 @@ launch --rwgt_name=EFTrwgt14_ctp_0_cpQM_0_cpQ3_0_cpt_0_cptb_0_ctA_0_ctZ_0_cbW_0_
     set param_card ctlTx2x31 0
     set param_card ctlTx3x31 0
 
-launch --rwgt_name=EFTrwgt15_ctp_0_cpQM_0_cpQ3_0_cpt_0_cptb_0_ctA_0_ctZ_0_cbW_0_ctG_0_cQl3_0_cQlM_0_cQe_0_ctl_0_cte_0_ctlS_1_ctlT_0_
+launch -n ctlS
+    set pdlabel lhapdf
+    set lhaid 306000
     set param_card ctpx31 0
     set param_card ctpx13 0
     set param_card cpQMx31 0
@@ -664,7 +697,9 @@ launch --rwgt_name=EFTrwgt15_ctp_0_cpQM_0_cpQ3_0_cpt_0_cptb_0_ctA_0_ctZ_0_cbW_0_
     set param_card ctlTx2x31 0
     set param_card ctlTx3x31 0
 
-launch --rwgt_name=EFTrwgt16_ctp_0_cpQM_0_cpQ3_0_cpt_0_cptb_0_ctA_0_ctZ_0_cbW_0_ctG_0_cQl3_0_cQlM_0_cQe_0_ctl_0_cte_0_ctlS_0_ctlT_0.3_
+launch -n ctlT
+    set pdlabel lhapdf
+    set lhaid 306000
     set param_card ctpx31 0
     set param_card ctpx13 0
     set param_card cpQMx31 0
@@ -701,9 +736,9 @@ launch --rwgt_name=EFTrwgt16_ctp_0_cpQM_0_cpQ3_0_cpt_0_cptb_0_ctA_0_ctZ_0_cbW_0_
     set param_card ctlSx1x31 0
     set param_card ctlSx2x31 0
     set param_card ctlSx3x31 0
-    set param_card ctlTx1x13 0.3
-    set param_card ctlTx2x13 0.3
-    set param_card ctlTx3x13 0.3
-    set param_card ctlTx1x31 0.3
-    set param_card ctlTx2x31 0.3
-    set param_card ctlTx3x31 0.3
+    set param_card ctlTx1x13 1
+    set param_card ctlTx2x13 1
+    set param_card ctlTx3x13 1
+    set param_card ctlTx1x31 1
+    set param_card ctlTx2x31 1
+    set param_card ctlTx3x31 1
