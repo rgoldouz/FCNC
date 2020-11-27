@@ -31,6 +31,8 @@ for v in scanValues:
        rwgtCards = rwgtCards + 'launch -n ' + WC1 + '\n'
        rwgtCards = rwgtCards + '    set pdlabel lhapdf'+ '\n'
        rwgtCards = rwgtCards + '    set lhaid 306000'+ '\n'
+       rwgtCards = rwgtCards + '    set drll 0.001'+ '\n'
+       rwgtCards = rwgtCards + '    set etal 5'+ '\n'
        for WC2 in couplingsName:
            if WC1 == WC2:
                for wcIndex in couplings[couplingsName.index(WC2)]:
