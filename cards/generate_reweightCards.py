@@ -25,8 +25,7 @@ rwgtCards = ''
 rwgtCards = rwgtCards + 'change rwgt_dir rwgt'+ '\n'+ '\n'
 
 #dummy_point
-rwgtCards = rwgtCards + 'launch --rwgt_name=dummy_point'+ '\n'
-rwgtCards = rwgtCards + 'set ctZx31 0.1'+ '\n'
+rwgtCards = rwgtCards + 'launch --rwgt_name=reference_point'+ '\n'
 rwgtCards = rwgtCards +'\n'
 
 #other points

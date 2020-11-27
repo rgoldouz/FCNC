@@ -14,8 +14,8 @@ set param_card ctZx31 0.5
 set param_card ctZx13 0.5
 set param_card cbWx31 10
 set param_card cbWx13 10
-set param_card ctGx31 0.07
-set param_card ctGx13 0.07
+set param_card ctGx31 0.2
+set param_card ctGx13 0.2
 set param_card cQl3x1x31 10
 set param_card cQl3x2x31 10
 set param_card cQl3x3x31 10
