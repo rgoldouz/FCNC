@@ -6,4 +6,4 @@ define ell- = e- mu- ta-
 define FCNCj = u c u~ c~
 generate  p p > t  ell+ ell- FCNCj DIM6=0 FCNC=1 , (t  > w+ b DIM6=0 FCNC=0,  w+ > l+ vl DIM6=0 FCNC=0 ) @0
 add process  p p > t~  ell+ ell- FCNCj DIM6=0 FCNC=1 , (t~  > w- b~ DIM6=0 FCNC=0,  w- > l- vl~ DIM6=0 FCNC=0 ) @1
-output tllFcncDecaycQlM -f -nojpeg
+output tllFcncDecay -f -nojpeg
