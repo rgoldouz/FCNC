@@ -4,10 +4,10 @@ import random
 #couplings =['ctG','cQq83','cQq81','ctq8']
 #couplings =['cpQM','cpQ3','cpt','ctW','ctZ','ctG','cQq83','cQq81','cQu8','cQd8','ctq8','ctu8','ctd8','cQq13','cQq11','cQu1','cQd1','ctq1','ctu1','ctd1']
 #couplings =[['ctpx31','ctpx13'],['cpQMx31','cpQMx13'],['cpQ3x31','cpQ3x13'],['cptx31','cptx13'],['cptbx31','cptbx13'],['ctAx31','ctAx13'],['ctZx31','ctZx13'],['cbWx31','cbWx13'],['ctGx31','ctGx13'],['cQl3x1x31','cQl3x2x31','cQl3x3x31','cQl3x1x13','cQl3x2x13','cQl3x3x13'],['cQlMx1x31','cQlMx2x31','cQlMx3x31','cQlMx1x13','cQlMx2x13','cQlMx3x13'],['cQex1x31','cQex2x31','cQex3x31','cQex1x13','cQex2x13','cQex3x13'],['ctlx1x31','ctlx2x31','ctlx3x31','ctlx1x13','ctlx2x13','ctlx3x13'],['ctex1x31','ctex2x31','ctex3x31','ctex1x13','ctex2x13','ctex3x13'],['ctlSx1x13','ctlSx2x13','ctlSx3x13','ctlSx1x31','ctlSx2x31','ctlSx3x31'],['ctlTx1x13','ctlTx2x13','ctlTx3x13','ctlTx1x31','ctlTx2x31','ctlTx3x31']]
-couplings =[['ctpx31','ctpx13'],['cpQMx31'],['cpQ3x31'],['cptx31'],['cptbx31','cptbx13'],['ctAx31','ctAx13'],['ctZx31','ctZx13'],['cbWx31','cbWx13'],['ctGx31','ctGx13'],['cQl3x1x31','cQl3x2x31','cQl3x3x31'],['cQlMx1x31','cQlMx2x31','cQlMx3x31'],['cQex1x31','cQex2x31','cQex3x31'],['ctlx1x31','ctlx2x31','ctlx3x31'],['ctex1x31','ctex2x31','ctex3x31'],['ctlSx1x13','ctlSx2x13','ctlSx3x13','ctlSx1x31','ctlSx2x31','ctlSx3x31'],['ctlTx1x13','ctlTx2x13','ctlTx3x13','ctlTx1x31','ctlTx2x31','ctlTx3x31']]
-couplingsName = ['ctp','cpQM','cpQ3','cpt','cptb','ctA','ctZ','cbW','ctG','cQl3','cQlM','cQe','ctl','cte','ctlS','ctlT']
-Ivalue        = [3    ,2     ,10    ,2    ,10    ,1    ,0.5  ,10   ,0.2  ,10  ,1.5    ,1.5  ,1.5  ,2  ,2.5     ,0.7    ]
-C4F = ['ctG','cQl3','cQlM','cQe','ctl','cte','ctlS','ctlT']
+couplings =[['ctpx31','ctpx13'],['cpQMx31'],['cptx31'],['ctAx31','ctAx13'],['ctZx31','ctZx13'],['ctGx31','ctGx13'],['cQlMx1x31','cQlMx2x31','cQlMx3x31'],['cQex1x31','cQex2x31','cQex3x31'],['ctlx1x31','ctlx2x31','ctlx3x31'],['ctex1x31','ctex2x31','ctex3x31'],['ctlSx1x13','ctlSx2x13','ctlSx3x13','ctlSx1x31','ctlSx2x31','ctlSx3x31'],['ctlTx1x13','ctlTx2x13','ctlTx3x13','ctlTx1x31','ctlTx2x31','ctlTx3x31']]
+couplingsName = ['ctp','cpQM','cpt','ctA','ctZ','ctG','cQlM','cQe','ctl','cte','ctlS','ctlT']
+Ivalue        = [3    ,2     ,2    ,1    ,0.5   ,0.2  ,1.5    ,1.5  ,1.5  ,2  ,2.5     ,0.7    ]
+C4F = ['ctG','cQlM','cQe','ctl','cte','ctlS','ctlT']
 customizecards = ''
 customizecards = customizecards + 'set param_card mass   6  172.5\n'
 customizecards = customizecards + 'set param_card yukawa 6  172.5\n'
@@ -45,22 +45,23 @@ for v in range(scanValues):
         for wcIndex in couplings[couplingsName.index(WC1)]:
             rwgtCards = rwgtCards +'    set param_card ' + wcIndex + ' ' + str(randomWC[couplingsName.index(WC1)])  + '\n'
 open('tllFCNC_reweight_card.dat', 'wt').write(rwgtCards)
-os.system('mkdir tllFcncProduction')
-os.system('cp tllFCNC_proc_card.dat tllFcncProduction/tllFcncProduction_proc_card.dat')
-os.system('cp tllFCNC_reweight_card.dat tllFcncProduction/tllFcncProduction_reweight_card.dat')
-os.system('cp tllFCNC_customizecards.dat tllFcncProduction/tllFcncProduction_customizecards.dat')
-os.system('cp tllFCNC_run_card.dat tllFcncProduction/tllFcncProduction_run_card.dat')
-#os.system('cp tllFCNC_madspin_card.dat tllFCNC')
-os.system('cp tllFCNC_extramodels.dat tllFcncProduction/tllFcncProduction_extramodels.dat')
+os.system('mkdir tllFcncProductionU')
+os.system('cp tllFCNC_proc_card.dat tllFcncProductionU/tllFcncProductionU_proc_card.dat')
+os.system('cp tllFCNC_reweight_card.dat tllFcncProductionU/tllFcncProductionU_reweight_card.dat')
+os.system('cp tllFCNC_customizecards.dat tllFcncProductionU/tllFcncProductionU_customizecards.dat')
+os.system('cp tllFCNC_run_card.dat tllFcncProductionU/tllFcncProductionU_run_card.dat')
+os.system('cp tllFCNC_madspin_card.dat tllFcncProductionU/tllFcncProductionU_madspin_card.dat')
+os.system('cp tllFCNC_extramodels.dat tllFcncProductionU/tllFcncProductionU_extramodels.dat')
 
 for WC1 in couplingsName:
     os.system('rm -rf tllFCNC'+WC1)
     os.system('rm -rf tllFcncProduction'+WC1)
-    os.system('mkdir tllFcncProduction'+WC1)
-    os.system('cp tllFCNC_extramodels.dat tllFcncProduction'+WC1 + '/tllFcncProduction'+WC1 +'_extramodels.dat')
-    os.system('cp tllFCNC_run_card.dat tllFcncProduction'+WC1 + '/tllFcncProduction'+WC1 +'_run_card.dat')
-#    os.system('cp tllFCNC_madspin_card.dat tllFCNC'+WC1 + '/tllFCNC'+WC1 +'_madspin_card.dat')
-    os.system('cp tllFCNC_extramodels.dat tllFcncProduction'+WC1 + '/tllFcncProduction'+WC1 +'_extramodels.dat')
+    os.system('rm -rf tllFcncProductionU'+WC1)
+    os.system('mkdir tllFcncProductionU'+WC1)
+    os.system('cp tllFCNC_extramodels.dat tllFcncProductionU'+WC1 + '/tllFcncProductionU'+WC1 +'_extramodels.dat')
+    os.system('cp tllFCNC_run_card.dat tllFcncProductionU'+WC1 + '/tllFcncProductionU'+WC1 +'_run_card.dat')
+    os.system('cp tllFCNC_madspin_card.dat tllFcncProductionU'+WC1 + '/tllFcncProductionU'+WC1 +'_madspin_card.dat')
+    os.system('cp tllFCNC_extramodels.dat tllFcncProductionU'+WC1 + '/tllFcncProductionU'+WC1 +'_extramodels.dat')
 #    os.system('cp tllFCNC_proc_card.dat tllFCNC'+WC1 + '/tllFCNC'+WC1 +'_proc_card.dat')
     Ccards = ''
     Ccards = Ccards + '    set param_card mass   6  172.5\n'
@@ -74,8 +75,8 @@ for WC1 in couplingsName:
         else:
             for wcIndex in couplings[couplingsName.index(WC2)]:
                 Ccards = Ccards  + '    set param_card ' + wcIndex + ' 0.0001'  + '\n'
-    open('tllFcncProduction'+WC1+'_customizecards.dat', 'wt').write(Ccards)
-    os.system('mv tllFcncProduction'+WC1+'_customizecards.dat tllFcncProduction'+WC1)
+    open('tllFcncProductionU'+WC1+'_customizecards.dat', 'wt').write(Ccards)
+    os.system('mv tllFcncProductionU'+WC1+'_customizecards.dat tllFcncProductionU'+WC1)
     process = ''
 #    if WC1 in C4F:
 #        process = process + 'import model dim6top_LO_UFO-' + WC1 + ' --modelname' + '\n'
@@ -86,10 +87,9 @@ for WC1 in couplingsName:
     process = process + 'define j = g u c d s u~ c~ d~ s~' + '\n'
     process = process + 'define ell+ = e+ mu+ ta+' + '\n'
     process = process + 'define ell- = e- mu- ta-' + '\n'
-    process = process + 'define FCNCj = u c u~ c~' + '\n'
-    process = process + 'generate  p p > t  ell+ ell- DIM6=0 FCNC=1 , (t  > w+ b DIM6=0 FCNC=0,  w+ > l+ vl DIM6=0 FCNC=0 ) @0' + '\n'
-    process = process + 'add process  p p > t~  ell+ ell- DIM6=0 FCNC=1 , (t~  > w- b~ DIM6=0 FCNC=0,  w- > l- vl~ DIM6=0 FCNC=0 ) @1' + '\n'
-    process = process + 'output tllFcncProduction' + WC1 + ' -f -nojpeg'
-    open('tllFcncProduction'+WC1 +'_proc_card.dat', 'wt').write(process)
-    os.system('mv tllFcncProduction'+WC1+'_proc_card.dat tllFcncProduction'+WC1)
+    process = process + 'generate  p p > t  ell+ ell- DIM6=0 FCNC=1 @0' + '\n'
+    process = process + 'add process  p p > t~  ell+ ell- DIM6=0 FCNC=1 @1' + '\n'
+    process = process + 'output tllFcncProductionU' + WC1 + ' -f -nojpeg'
+    open('tllFcncProductionU'+WC1 +'_proc_card.dat', 'wt').write(process)
+    os.system('mv tllFcncProductionU'+WC1+'_proc_card.dat tllFcncProductionU'+WC1)
 
