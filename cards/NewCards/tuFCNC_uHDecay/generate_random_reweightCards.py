@@ -2,9 +2,9 @@ import os
 import random
 
 
-couplings =[['ctpx31','ctpx13'],['ctGx31','ctGx13']]
-couplingsName = ['ctp','ctG']
-Ivalue        = [3,0.2]
+couplings =[['ctpx31','ctpx13']]
+couplingsName = ['ctp']
+Ivalue        = [3]
 
 customizecards = ''
 customizecards = customizecards + 'set param_card mass   6  172.5\n'

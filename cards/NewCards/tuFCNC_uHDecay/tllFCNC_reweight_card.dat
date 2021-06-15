@@ -3,122 +3,82 @@ change rwgt_dir rwgt
 launch --rwgt_name=reference_point
 
 
-launch --rwgt_name=EFTrwgt0_ctp_5.523_ctG_0.302
-    set param_card ctpx31 5.523
-    set param_card ctpx13 5.523
-    set param_card ctGx31 0.302
-    set param_card ctGx13 0.302
+launch --rwgt_name=EFTrwgt0_ctp_5.531
+    set param_card ctpx31 5.531
+    set param_card ctpx13 5.531
 
-launch --rwgt_name=EFTrwgt1_ctp_2.415_ctG_-0.318
-    set param_card ctpx31 2.415
-    set param_card ctpx13 2.415
-    set param_card ctGx31 -0.318
-    set param_card ctGx13 -0.318
+launch --rwgt_name=EFTrwgt1_ctp_-2.972
+    set param_card ctpx31 -2.972
+    set param_card ctpx13 -2.972
 
-launch --rwgt_name=EFTrwgt2_ctp_-4.369_ctG_-0.073
-    set param_card ctpx31 -4.369
-    set param_card ctpx13 -4.369
-    set param_card ctGx31 -0.073
-    set param_card ctGx13 -0.073
+launch --rwgt_name=EFTrwgt2_ctp_4.605
+    set param_card ctpx31 4.605
+    set param_card ctpx13 4.605
 
-launch --rwgt_name=EFTrwgt3_ctp_1.57_ctG_0.325
-    set param_card ctpx31 1.57
-    set param_card ctpx13 1.57
-    set param_card ctGx31 0.325
-    set param_card ctGx13 0.325
+launch --rwgt_name=EFTrwgt3_ctp_-5.864
+    set param_card ctpx31 -5.864
+    set param_card ctpx13 -5.864
 
-launch --rwgt_name=EFTrwgt4_ctp_-4.668_ctG_0.036
-    set param_card ctpx31 -4.668
-    set param_card ctpx13 -4.668
-    set param_card ctGx31 0.036
-    set param_card ctGx13 0.036
+launch --rwgt_name=EFTrwgt4_ctp_0.952
+    set param_card ctpx31 0.952
+    set param_card ctpx13 0.952
 
-launch --rwgt_name=EFTrwgt5_ctp_-5.662_ctG_0.128
-    set param_card ctpx31 -5.662
-    set param_card ctpx13 -5.662
-    set param_card ctGx31 0.128
-    set param_card ctGx13 0.128
+launch --rwgt_name=EFTrwgt5_ctp_4.244
+    set param_card ctpx31 4.244
+    set param_card ctpx13 4.244
 
-launch --rwgt_name=EFTrwgt6_ctp_-4.362_ctG_0.374
-    set param_card ctpx31 -4.362
-    set param_card ctpx13 -4.362
-    set param_card ctGx31 0.374
-    set param_card ctGx13 0.374
+launch --rwgt_name=EFTrwgt6_ctp_-3.773
+    set param_card ctpx31 -3.773
+    set param_card ctpx13 -3.773
 
-launch --rwgt_name=EFTrwgt7_ctp_5.448_ctG_-0.186
-    set param_card ctpx31 5.448
-    set param_card ctpx13 5.448
-    set param_card ctGx31 -0.186
-    set param_card ctGx13 -0.186
+launch --rwgt_name=EFTrwgt7_ctp_4.531
+    set param_card ctpx31 4.531
+    set param_card ctpx13 4.531
 
-launch --rwgt_name=EFTrwgt8_ctp_-0.043_ctG_0.06
-    set param_card ctpx31 -0.043
-    set param_card ctpx13 -0.043
-    set param_card ctGx31 0.06
-    set param_card ctGx13 0.06
+launch --rwgt_name=EFTrwgt8_ctp_-1.456
+    set param_card ctpx31 -1.456
+    set param_card ctpx13 -1.456
 
-launch --rwgt_name=EFTrwgt9_ctp_2.104_ctG_0.036
-    set param_card ctpx31 2.104
-    set param_card ctpx13 2.104
-    set param_card ctGx31 0.036
-    set param_card ctGx13 0.036
+launch --rwgt_name=EFTrwgt9_ctp_3.353
+    set param_card ctpx31 3.353
+    set param_card ctpx13 3.353
 
-launch --rwgt_name=EFTrwgt10_ctp_-5.283_ctG_0.229
-    set param_card ctpx31 -5.283
-    set param_card ctpx13 -5.283
-    set param_card ctGx31 0.229
-    set param_card ctGx13 0.229
+launch --rwgt_name=EFTrwgt10_ctp_4.408
+    set param_card ctpx31 4.408
+    set param_card ctpx13 4.408
 
-launch --rwgt_name=EFTrwgt11_ctp_-4.358_ctG_0.135
-    set param_card ctpx31 -4.358
-    set param_card ctpx13 -4.358
-    set param_card ctGx31 0.135
-    set param_card ctGx13 0.135
+launch --rwgt_name=EFTrwgt11_ctp_5.222
+    set param_card ctpx31 5.222
+    set param_card ctpx13 5.222
 
-launch --rwgt_name=EFTrwgt12_ctp_4.768_ctG_0.312
-    set param_card ctpx31 4.768
-    set param_card ctpx13 4.768
-    set param_card ctGx31 0.312
-    set param_card ctGx13 0.312
+launch --rwgt_name=EFTrwgt12_ctp_3.978
+    set param_card ctpx31 3.978
+    set param_card ctpx13 3.978
 
-launch --rwgt_name=EFTrwgt13_ctp_-1.219_ctG_-0.223
-    set param_card ctpx31 -1.219
-    set param_card ctpx13 -1.219
-    set param_card ctGx31 -0.223
-    set param_card ctGx13 -0.223
+launch --rwgt_name=EFTrwgt13_ctp_3.761
+    set param_card ctpx31 3.761
+    set param_card ctpx13 3.761
 
-launch --rwgt_name=EFTrwgt14_ctp_-0.539_ctG_0.011
-    set param_card ctpx31 -0.539
-    set param_card ctpx13 -0.539
-    set param_card ctGx31 0.011
-    set param_card ctGx13 0.011
+launch --rwgt_name=EFTrwgt14_ctp_-0.338
+    set param_card ctpx31 -0.338
+    set param_card ctpx13 -0.338
 
-launch --rwgt_name=EFTrwgt15_ctp_-4.949_ctG_0.052
-    set param_card ctpx31 -4.949
-    set param_card ctpx13 -4.949
-    set param_card ctGx31 0.052
-    set param_card ctGx13 0.052
+launch --rwgt_name=EFTrwgt15_ctp_1.761
+    set param_card ctpx31 1.761
+    set param_card ctpx13 1.761
 
-launch --rwgt_name=EFTrwgt16_ctp_4.992_ctG_-0.236
-    set param_card ctpx31 4.992
-    set param_card ctpx13 4.992
-    set param_card ctGx31 -0.236
-    set param_card ctGx13 -0.236
+launch --rwgt_name=EFTrwgt16_ctp_2.575
+    set param_card ctpx31 2.575
+    set param_card ctpx13 2.575
 
-launch --rwgt_name=EFTrwgt17_ctp_-4.746_ctG_-0.251
-    set param_card ctpx31 -4.746
-    set param_card ctpx13 -4.746
-    set param_card ctGx31 -0.251
-    set param_card ctGx13 -0.251
+launch --rwgt_name=EFTrwgt17_ctp_-1.274
+    set param_card ctpx31 -1.274
+    set param_card ctpx13 -1.274
 
-launch --rwgt_name=EFTrwgt18_ctp_4.326_ctG_0.381
-    set param_card ctpx31 4.326
-    set param_card ctpx13 4.326
-    set param_card ctGx31 0.381
-    set param_card ctGx13 0.381
+launch --rwgt_name=EFTrwgt18_ctp_-2.534
+    set param_card ctpx31 -2.534
+    set param_card ctpx13 -2.534
 
-launch --rwgt_name=EFTrwgt19_ctp_2.159_ctG_-0.07
-    set param_card ctpx31 2.159
-    set param_card ctpx13 2.159
-    set param_card ctGx31 -0.07
-    set param_card ctGx13 -0.07
+launch --rwgt_name=EFTrwgt19_ctp_-2.651
+    set param_card ctpx31 -2.651
+    set param_card ctpx13 -2.651

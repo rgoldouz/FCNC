@@ -45,12 +45,13 @@ for v in range(scanValues):
         for wcIndex in couplings[couplingsName.index(WC1)]:
             rwgtCards = rwgtCards +'    set param_card ' + wcIndex + ' ' + str(randomWC[couplingsName.index(WC1)])  + '\n'
 open('tllFCNC_reweight_card.dat', 'wt').write(rwgtCards)
+os.system('rm -rf tllFcncProductionU')
 os.system('mkdir tllFcncProductionU')
 os.system('cp tllFCNC_proc_card.dat tllFcncProductionU/tllFcncProductionU_proc_card.dat')
 os.system('cp tllFCNC_reweight_card.dat tllFcncProductionU/tllFcncProductionU_reweight_card.dat')
 os.system('cp tllFCNC_customizecards.dat tllFcncProductionU/tllFcncProductionU_customizecards.dat')
 os.system('cp tllFCNC_run_card.dat tllFcncProductionU/tllFcncProductionU_run_card.dat')
-os.system('cp tllFCNC_madspin_card.dat tllFcncProductionU/tllFcncProductionU_madspin_card.dat')
+#os.system('cp tllFCNC_madspin_card.dat tllFcncProductionU/tllFcncProductionU_madspin_card.dat')
 os.system('cp tllFCNC_extramodels.dat tllFcncProductionU/tllFcncProductionU_extramodels.dat')
 
 for WC1 in couplingsName:
@@ -60,7 +61,7 @@ for WC1 in couplingsName:
     os.system('mkdir tllFcncProductionU'+WC1)
     os.system('cp tllFCNC_extramodels.dat tllFcncProductionU'+WC1 + '/tllFcncProductionU'+WC1 +'_extramodels.dat')
     os.system('cp tllFCNC_run_card.dat tllFcncProductionU'+WC1 + '/tllFcncProductionU'+WC1 +'_run_card.dat')
-    os.system('cp tllFCNC_madspin_card.dat tllFcncProductionU'+WC1 + '/tllFcncProductionU'+WC1 +'_madspin_card.dat')
+#    os.system('cp tllFCNC_madspin_card.dat tllFcncProductionU'+WC1 + '/tllFcncProductionU'+WC1 +'_madspin_card.dat')
     os.system('cp tllFCNC_extramodels.dat tllFcncProductionU'+WC1 + '/tllFcncProductionU'+WC1 +'_extramodels.dat')
 #    os.system('cp tllFCNC_proc_card.dat tllFCNC'+WC1 + '/tllFCNC'+WC1 +'_proc_card.dat')
     Ccards = ''
@@ -85,10 +86,10 @@ for WC1 in couplingsName:
     process = process + 'import model dim6top_LO_UFO-full --modelname' + '\n'
     process = process + 'define p = g u c d s u~ c~ d~ s~' + '\n'
     process = process + 'define j = g u c d s u~ c~ d~ s~' + '\n'
-    process = process + 'define ell+ = e+ mu+ ta+' + '\n'
-    process = process + 'define ell- = e- mu- ta-' + '\n'
-    process = process + 'generate  p p > t  ell+ ell- DIM6=0 FCNC=1 @0' + '\n'
-    process = process + 'add process  p p > t~  ell+ ell- DIM6=0 FCNC=1 @1' + '\n'
+    process = process + 'define l+ = e+ mu+ ta+' + '\n'
+    process = process + 'define l- = e- mu- ta-' + '\n'
+    process = process + 'generate  p p > t  l+ l- DIM6=0 FCNC=1 , (t > w+ b DIM6=0 FCNC=0, w+ > l+ vl DIM6=0 FCNC=0)@0' + '\n'
+    process = process + 'add process  p p > t~  l+ l- DIM6=0 FCNC=1 , (t~ > w- b~ DIM6=0 FCNC=0, w- > l- vl~ DIM6=0 FCNC=0) @1' + '\n'
     process = process + 'output tllFcncProductionU' + WC1 + ' -f -nojpeg'
     open('tllFcncProductionU'+WC1 +'_proc_card.dat', 'wt').write(process)
     os.system('mv tllFcncProductionU'+WC1+'_proc_card.dat tllFcncProductionU'+WC1)
