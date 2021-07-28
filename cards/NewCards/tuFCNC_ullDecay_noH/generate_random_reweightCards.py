@@ -5,10 +5,6 @@ couplings =[['cpQMx31'],['cptx31'],['ctAx31','ctAx13'],['ctZx31','ctZx13'],['ctG
 couplingsName = ['cpQM','cpt','ctA','ctZ','ctG','cQlM','cQe','ctl','cte','ctlS','ctlT']
 Ivalue        = [2     ,2    ,1    ,0.5   ,0.2  ,1.5    ,1.5  ,1.5  ,2  ,2.5     ,0.7    ]
 C4F = ['ctG','cQlM','cQe','ctl','cte','ctlS','ctlT']
-customizecards = ''
-customizecards = customizecards + 'set param_card mass   6  172.5\n'
-customizecards = customizecards + 'set param_card yukawa 6  172.5\n'
-customizecards = customizecards + 'set param_card mass   25 125.0\n'
 
 customizecards = ''
 customizecards = customizecards + 'set param_card mass   6  172.5\n'
@@ -55,8 +51,10 @@ process = process + 'define p = g u c d s u~ c~ d~ s~' + '\n'
 process = process + 'define j = g u c d s u~ c~ d~ s~' + '\n'
 process = process + 'define ell+ = e+ mu+ ta+' + '\n'
 process = process + 'define ell- = e- mu- ta-' + '\n'
-process = process + 'generate  p p > t  t~ DIM6=0 FCNC=0 , (t~ > ell+ ell- u~ /h DIM6=0 FCNC=1) , (t  > w+ b DIM6=0 FCNC=0,  w+ > l+ vl DIM6=0 FCNC=0 ) @0' + '\n'
-process = process + 'add process  p p > t t~  DIM6=0 FCNC=0 , (t~  > w- b~ DIM6=0 FCNC=0,  w- > l- vl~ DIM6=0 FCNC=0 ), (t > ell+ ell- u /h DIM6=0 FCNC=1) @1' + '\n'
+process = process + 'define vell = ve vm vt' + '\n'
+process = process + 'define vell~ = ve~ vm~ vt~' + '\n'
+process = process + 'generate  p p > t  t~ DIM6=0 FCNC=0 , (t~ > ell+ ell- u~ /h DIM6=0 FCNC=1) , (t  > w+ b DIM6=0 FCNC=0,  w+ > ell+ vell DIM6=0 FCNC=0 ) @0' + '\n'
+process = process + 'add process  p p > t t~  DIM6=0 FCNC=0 , (t~  > w- b~ DIM6=0 FCNC=0,  w- > ell- vell~ DIM6=0 FCNC=0 ), (t > ell+ ell- u /h DIM6=0 FCNC=1) @1' + '\n'
 process = process + 'output tuFCNC_ullDecay_noH -f -nojpeg'
 open('tuFCNC_ullDecay_noH_proc_card.dat', 'wt').write(process)
 os.system('mv tuFCNC_ullDecay_noH_proc_card.dat tuFCNC_ullDecay_noH')
