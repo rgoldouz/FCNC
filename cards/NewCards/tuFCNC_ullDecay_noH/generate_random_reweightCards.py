@@ -1,8 +1,8 @@
 import os
 import random
 
-couplings =[['cpQMx31'],['cptx31'],['ctAx31','ctAx13'],['ctZx31','ctZx13'],['ctGx31','ctGx13'],['cQlMx1x31','cQlMx2x31','cQlMx3x31'],['cQex1x31','cQex2x31','cQex3x31'],['ctlx1x31','ctlx2x31','ctlx3x31'],['ctex1x31','ctex2x31','ctex3x31'],['ctlSx1x13','ctlSx2x13','ctlSx3x13','ctlSx1x31','ctlSx2x31','ctlSx3x31'],['ctlTx1x13','ctlTx2x13','ctlTx3x13','ctlTx1x31','ctlTx2x31','ctlTx3x31']]
-couplingsName = ['cpQM','cpt','ctA','ctZ','ctG','cQlM','cQe','ctl','cte','ctlS','ctlT']
+couplings =[['cpQMx31'],['cptx31'],['ctAx31','ctAx13'],['ctZx31','ctZx13'],['cQlMx1x31','cQlMx2x31','cQlMx3x31'],['cQex1x31','cQex2x31','cQex3x31'],['ctlx1x31','ctlx2x31','ctlx3x31'],['ctex1x31','ctex2x31','ctex3x31'],['ctlSx1x13','ctlSx2x13','ctlSx3x13','ctlSx1x31','ctlSx2x31','ctlSx3x31'],['ctlTx1x13','ctlTx2x13','ctlTx3x13','ctlTx1x31','ctlTx2x31','ctlTx3x31']]
+couplingsName = ['cpQM','cpt','ctA','ctZ','cQlM','cQe','ctl','cte','ctlS','ctlT']
 Ivalue        = [2     ,2    ,1    ,0.5   ,0.2  ,1.5    ,1.5  ,1.5  ,2  ,2.5     ,0.7    ]
 C4F = ['ctG','cQlM','cQe','ctl','cte','ctlS','ctlT']
 
@@ -71,7 +71,7 @@ for WC1 in couplingsName:
     os.system('cp tllFCNC_extramodels.dat tuFCNC_ullDecay_noH'+WC1 + '/tuFCNC_ullDecay_noH'+WC1 +'_extramodels.dat')
     os.system('cp tllFCNC_run_card.dat tuFCNC_ullDecay_noH'+WC1 + '/tuFCNC_ullDecay_noH'+WC1 +'_run_card.dat')
 #    os.system('cp tllFCNC_madspin_card.dat tllFCNC'+WC1 + '/tllFCNC'+WC1 +'_madspin_card.dat')
-    os.system('cp tllFCNC_extramodels.dat tuFCNC_ullDecay_noH'+WC1 + '/tuFCNC_ullDecay_noH'+WC1 +'_extramodels.dat')
+#    os.system('cp tllFCNC_extramodels.dat tuFCNC_ullDecay_noH'+WC1 + '/tuFCNC_ullDecay_noH'+WC1 +'_extramodels.dat')
 #    os.system('cp tllFCNC_proc_card.dat tllFCNC'+WC1 + '/tllFCNC'+WC1 +'_proc_card.dat')
     Ccards = ''
     Ccards = Ccards + '    set param_card mass   6  172.5\n'
@@ -97,8 +97,10 @@ for WC1 in couplingsName:
     process = process + 'define j = g u c d s u~ c~ d~ s~' + '\n'
     process = process + 'define ell+ = e+ mu+ ta+' + '\n'
     process = process + 'define ell- = e- mu- ta-' + '\n'
-    process = process + 'generate  p p > t  t~ DIM6=0 FCNC=0 , (t~ > ell+ ell- u~ /h DIM6=0 FCNC=1) , (t  > w+ b DIM6=0 FCNC=0,  w+ > l+ vl DIM6=0 FCNC=0 ) @0' + '\n'
-    process = process + 'add process  p p > t t~  DIM6=0 FCNC=0 , (t~  > w- b~ DIM6=0 FCNC=0,  w- > l- vl~ DIM6=0 FCNC=0 ), (t > ell+ ell- u /h DIM6=0 FCNC=1) @1' + '\n'
+    process = process + 'define vell = ve vm vt' + '\n'
+    process = process + 'define vell~ = ve~ vm~ vt~' + '\n'
+    process = process + 'generate  p p > t  t~ DIM6=0 FCNC=0 , (t~ > ell+ ell- u~ /h DIM6=0 FCNC=1) , (t  > w+ b DIM6=0 FCNC=0,  w+ > ell+ vell DIM6=0 FCNC=0 ) @0' + '\n'
+    process = process + 'add process  p p > t t~  DIM6=0 FCNC=0 , (t~  > w- b~ DIM6=0 FCNC=0,  w- > ell- vell~ DIM6=0 FCNC=0 ), (t > ell+ ell- u /h DIM6=0 FCNC=1) @1' + '\n'
     process = process + 'output tuFCNC_ullDecay_noH' + WC1 + ' -f -nojpeg'
     open('tuFCNC_ullDecay_noH'+WC1 +'_proc_card.dat', 'wt').write(process)
     os.system('mv tuFCNC_ullDecay_noH'+WC1+'_proc_card.dat tuFCNC_ullDecay_noH'+WC1)

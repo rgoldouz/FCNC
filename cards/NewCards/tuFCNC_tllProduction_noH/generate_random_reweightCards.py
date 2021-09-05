@@ -95,10 +95,12 @@ for WC1 in couplingsName:
     process = process + 'import model dim6top_LO_UFO-full --modelname' + '\n'
     process = process + 'define p = g u c d s u~ c~ d~ s~' + '\n'
     process = process + 'define j = g u c d s u~ c~ d~ s~' + '\n'
-    process = process + 'define l+ = e+ mu+ ta+' + '\n'
-    process = process + 'define l- = e- mu- ta-' + '\n'
-    process = process + 'generate  p p > t  l+ l- /h DIM6=0 FCNC=1 , (t > w+ b DIM6=0 FCNC=0, w+ > l+ vl DIM6=0 FCNC=0)@0' + '\n'
-    process = process + 'add process  p p > t~  l+ l- /h DIM6=0 FCNC=1 , (t~ > w- b~ DIM6=0 FCNC=0, w- > l- vl~ DIM6=0 FCNC=0) @1' + '\n'
+    process = process + 'define ell+ = e+ mu+ ta+' + '\n'
+    process = process + 'define ell- = e- mu- ta-' + '\n'
+    process = process + 'define vell = ve vm vt' + '\n'
+    process = process + 'define vell~ = ve~ vm~ vt~' + '\n'
+    process = process + 'generate  p p > t  ell+ ell- /h DIM6=0 FCNC=1 , (t > w+ b DIM6=0 FCNC=0, w+ > ell+ vell DIM6=0 FCNC=0)@0' + '\n'
+    process = process + 'add process  p p > t~  ell+ ell- /h DIM6=0 FCNC=1 , (t~ > w- b~ DIM6=0 FCNC=0, w- > ell- vell~ DIM6=0 FCNC=0) @1' + '\n'
     process = process + 'output tuFCNC_tllProduction_noH' + WC1 + ' -f -nojpeg'
     open('tuFCNC_tllProduction_noH'+WC1 +'_proc_card.dat', 'wt').write(process)
     os.system('mv tuFCNC_tllProduction_noH'+WC1+'_proc_card.dat tuFCNC_tllProduction_noH'+WC1)
