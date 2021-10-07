@@ -1,0 +1,12 @@
+import model bnv_mediator_ufo
+define p = g u c d s u~ c~ d~ s~
+define j = g u c d s u~ c~ d~ s~
+define UU = u c
+define UU~ = u~ c~
+define DD = d s b
+define DD~ = d~ s~ b~
+define l+ = e+ mu+ ta+
+define l- = e- mu- ta-
+generate  p p > t t~ /h a z ,  (t > UU~ DD~ mu+ ) @0
+add process  p p > t t~ /h a z , (t~ > UU DD mu-)@1
+output BNV_ttUDmuDecay  -f -nojpeg

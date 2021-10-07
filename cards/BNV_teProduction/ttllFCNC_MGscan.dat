@@ -1,0 +1,441 @@
+import model dim6top_LO_UFO --modelname
+define p = g u c d s u~ c~ d~ s~ b b~
+define j = g u c d s u~ c~ d~ s~ b b~
+define l+ = e+ mu+ ta+
+define l- = e- mu- ta-
+generate  p p > t  l+ l- DIM6=0 FCNC=1@0
+add process p p > t~  l+ l- DIM6=0 FCNC=1@01
+output ttllFCNC -f -nojpeg
+
+launch -n ctp
+    set pdlabel lhapdf
+    set lhaid 306000
+    set drll 0.001
+    set etal 5
+    set param_card ctpx31 1
+    set param_card ctpx13 1
+    set param_card cpQMx31 0
+    set param_card cpQ3x31 0
+    set param_card cptx31 0
+    set param_card cptbx31 0
+    set param_card cptbx13 0
+    set param_card ctAx31 0
+    set param_card ctAx13 0
+    set param_card ctZx31 0
+    set param_card ctZx13 0
+    set param_card cbWx31 0
+    set param_card cbWx13 0
+    set param_card ctGx31 0
+    set param_card ctGx13 0
+    set param_card cQl3x1x31 0
+    set param_card cQl3x2x31 0
+    set param_card cQl3x3x31 0
+    set param_card cQlMx1x31 0
+    set param_card cQlMx2x31 0
+    set param_card cQlMx3x31 0
+    set param_card cQex1x31 0
+    set param_card cQex2x31 0
+    set param_card cQex3x31 0
+    set param_card ctlx1x31 0
+    set param_card ctlx2x31 0
+    set param_card ctlx3x31 0
+    set param_card ctex1x31 0
+    set param_card ctex2x31 0
+    set param_card ctex3x31 0
+    set param_card ctlSx1x13 0
+    set param_card ctlSx2x13 0
+    set param_card ctlSx3x13 0
+    set param_card ctlSx1x31 0
+    set param_card ctlSx2x31 0
+    set param_card ctlSx3x31 0
+    set param_card ctlTx1x13 0
+    set param_card ctlTx2x13 0
+    set param_card ctlTx3x13 0
+    set param_card ctlTx1x31 0
+    set param_card ctlTx2x31 0
+    set param_card ctlTx3x31 0
+
+launch -n cpQM
+    set pdlabel lhapdf
+    set lhaid 306000
+    set drll 0.001
+    set etal 5
+    set param_card ctpx31 0
+    set param_card ctpx13 0
+    set param_card cpQMx31 1
+    set param_card cpQ3x31 0
+    set param_card cptx31 0
+    set param_card cptbx31 0
+    set param_card cptbx13 0
+    set param_card ctAx31 0
+    set param_card ctAx13 0
+    set param_card ctZx31 0
+    set param_card ctZx13 0
+    set param_card cbWx31 0
+    set param_card cbWx13 0
+    set param_card ctGx31 0
+    set param_card ctGx13 0
+    set param_card cQl3x1x31 0
+    set param_card cQl3x2x31 0
+    set param_card cQl3x3x31 0
+    set param_card cQlMx1x31 0
+    set param_card cQlMx2x31 0
+    set param_card cQlMx3x31 0
+    set param_card cQex1x31 0
+    set param_card cQex2x31 0
+    set param_card cQex3x31 0
+    set param_card ctlx1x31 0
+    set param_card ctlx2x31 0
+    set param_card ctlx3x31 0
+    set param_card ctex1x31 0
+    set param_card ctex2x31 0
+    set param_card ctex3x31 0
+    set param_card ctlSx1x13 0
+    set param_card ctlSx2x13 0
+    set param_card ctlSx3x13 0
+    set param_card ctlSx1x31 0
+    set param_card ctlSx2x31 0
+    set param_card ctlSx3x31 0
+    set param_card ctlTx1x13 0
+    set param_card ctlTx2x13 0
+    set param_card ctlTx3x13 0
+    set param_card ctlTx1x31 0
+    set param_card ctlTx2x31 0
+    set param_card ctlTx3x31 0
+
+launch -n cpQ3
+    set pdlabel lhapdf
+    set lhaid 306000
+    set drll 0.001
+    set etal 5
+    set param_card ctpx31 0
+    set param_card ctpx13 0
+    set param_card cpQMx31 0
+    set param_card cpQ3x31 1
+    set param_card cptx31 0
+    set param_card cptbx31 0
+    set param_card cptbx13 0
+    set param_card ctAx31 0
+    set param_card ctAx13 0
+    set param_card ctZx31 0
+    set param_card ctZx13 0
+    set param_card cbWx31 0
+    set param_card cbWx13 0
+    set param_card ctGx31 0
+    set param_card ctGx13 0
+    set param_card cQl3x1x31 0
+    set param_card cQl3x2x31 0
+    set param_card cQl3x3x31 0
+    set param_card cQlMx1x31 0
+    set param_card cQlMx2x31 0
+    set param_card cQlMx3x31 0
+    set param_card cQex1x31 0
+    set param_card cQex2x31 0
+    set param_card cQex3x31 0
+    set param_card ctlx1x31 0
+    set param_card ctlx2x31 0
+    set param_card ctlx3x31 0
+    set param_card ctex1x31 0
+    set param_card ctex2x31 0
+    set param_card ctex3x31 0
+    set param_card ctlSx1x13 0
+    set param_card ctlSx2x13 0
+    set param_card ctlSx3x13 0
+    set param_card ctlSx1x31 0
+    set param_card ctlSx2x31 0
+    set param_card ctlSx3x31 0
+    set param_card ctlTx1x13 0
+    set param_card ctlTx2x13 0
+    set param_card ctlTx3x13 0
+    set param_card ctlTx1x31 0
+    set param_card ctlTx2x31 0
+    set param_card ctlTx3x31 0
+
+launch -n cpt
+    set pdlabel lhapdf
+    set lhaid 306000
+    set drll 0.001
+    set etal 5
+    set param_card ctpx31 0
+    set param_card ctpx13 0
+    set param_card cpQMx31 0
+    set param_card cpQ3x31 0
+    set param_card cptx31 1
+    set param_card cptbx31 0
+    set param_card cptbx13 0
+    set param_card ctAx31 0
+    set param_card ctAx13 0
+    set param_card ctZx31 0
+    set param_card ctZx13 0
+    set param_card cbWx31 0
+    set param_card cbWx13 0
+    set param_card ctGx31 0
+    set param_card ctGx13 0
+    set param_card cQl3x1x31 0
+    set param_card cQl3x2x31 0
+    set param_card cQl3x3x31 0
+    set param_card cQlMx1x31 0
+    set param_card cQlMx2x31 0
+    set param_card cQlMx3x31 0
+    set param_card cQex1x31 0
+    set param_card cQex2x31 0
+    set param_card cQex3x31 0
+    set param_card ctlx1x31 0
+    set param_card ctlx2x31 0
+    set param_card ctlx3x31 0
+    set param_card ctex1x31 0
+    set param_card ctex2x31 0
+    set param_card ctex3x31 0
+    set param_card ctlSx1x13 0
+    set param_card ctlSx2x13 0
+    set param_card ctlSx3x13 0
+    set param_card ctlSx1x31 0
+    set param_card ctlSx2x31 0
+    set param_card ctlSx3x31 0
+    set param_card ctlTx1x13 0
+    set param_card ctlTx2x13 0
+    set param_card ctlTx3x13 0
+    set param_card ctlTx1x31 0
+    set param_card ctlTx2x31 0
+    set param_card ctlTx3x31 0
+
+launch -n cptb
+    set pdlabel lhapdf
+    set lhaid 306000
+    set drll 0.001
+    set etal 5
+    set param_card ctpx31 0
+    set param_card ctpx13 0
+    set param_card cpQMx31 0
+    set param_card cpQ3x31 0
+    set param_card cptx31 0
+    set param_card cptbx31 1
+    set param_card cptbx13 1
+    set param_card ctAx31 0
+    set param_card ctAx13 0
+    set param_card ctZx31 0
+    set param_card ctZx13 0
+    set param_card cbWx31 0
+    set param_card cbWx13 0
+    set param_card ctGx31 0
+    set param_card ctGx13 0
+    set param_card cQl3x1x31 0
+    set param_card cQl3x2x31 0
+    set param_card cQl3x3x31 0
+    set param_card cQlMx1x31 0
+    set param_card cQlMx2x31 0
+    set param_card cQlMx3x31 0
+    set param_card cQex1x31 0
+    set param_card cQex2x31 0
+    set param_card cQex3x31 0
+    set param_card ctlx1x31 0
+    set param_card ctlx2x31 0
+    set param_card ctlx3x31 0
+    set param_card ctex1x31 0
+    set param_card ctex2x31 0
+    set param_card ctex3x31 0
+    set param_card ctlSx1x13 0
+    set param_card ctlSx2x13 0
+    set param_card ctlSx3x13 0
+    set param_card ctlSx1x31 0
+    set param_card ctlSx2x31 0
+    set param_card ctlSx3x31 0
+    set param_card ctlTx1x13 0
+    set param_card ctlTx2x13 0
+    set param_card ctlTx3x13 0
+    set param_card ctlTx1x31 0
+    set param_card ctlTx2x31 0
+    set param_card ctlTx3x31 0
+
+launch -n ctA
+    set pdlabel lhapdf
+    set lhaid 306000
+    set drll 0.001
+    set etal 5
+    set param_card ctpx31 0
+    set param_card ctpx13 0
+    set param_card cpQMx31 0
+    set param_card cpQ3x31 0
+    set param_card cptx31 0
+    set param_card cptbx31 0
+    set param_card cptbx13 0
+    set param_card ctAx31 1
+    set param_card ctAx13 1
+    set param_card ctZx31 0
+    set param_card ctZx13 0
+    set param_card cbWx31 0
+    set param_card cbWx13 0
+    set param_card ctGx31 0
+    set param_card ctGx13 0
+    set param_card cQl3x1x31 0
+    set param_card cQl3x2x31 0
+    set param_card cQl3x3x31 0
+    set param_card cQlMx1x31 0
+    set param_card cQlMx2x31 0
+    set param_card cQlMx3x31 0
+    set param_card cQex1x31 0
+    set param_card cQex2x31 0
+    set param_card cQex3x31 0
+    set param_card ctlx1x31 0
+    set param_card ctlx2x31 0
+    set param_card ctlx3x31 0
+    set param_card ctex1x31 0
+    set param_card ctex2x31 0
+    set param_card ctex3x31 0
+    set param_card ctlSx1x13 0
+    set param_card ctlSx2x13 0
+    set param_card ctlSx3x13 0
+    set param_card ctlSx1x31 0
+    set param_card ctlSx2x31 0
+    set param_card ctlSx3x31 0
+    set param_card ctlTx1x13 0
+    set param_card ctlTx2x13 0
+    set param_card ctlTx3x13 0
+    set param_card ctlTx1x31 0
+    set param_card ctlTx2x31 0
+    set param_card ctlTx3x31 0
+
+launch -n ctZ
+    set pdlabel lhapdf
+    set lhaid 306000
+    set drll 0.001
+    set etal 5
+    set param_card ctpx31 0
+    set param_card ctpx13 0
+    set param_card cpQMx31 0
+    set param_card cpQ3x31 0
+    set param_card cptx31 0
+    set param_card cptbx31 0
+    set param_card cptbx13 0
+    set param_card ctAx31 0
+    set param_card ctAx13 0
+    set param_card ctZx31 1
+    set param_card ctZx13 1
+    set param_card cbWx31 0
+    set param_card cbWx13 0
+    set param_card ctGx31 0
+    set param_card ctGx13 0
+    set param_card cQl3x1x31 0
+    set param_card cQl3x2x31 0
+    set param_card cQl3x3x31 0
+    set param_card cQlMx1x31 0
+    set param_card cQlMx2x31 0
+    set param_card cQlMx3x31 0
+    set param_card cQex1x31 0
+    set param_card cQex2x31 0
+    set param_card cQex3x31 0
+    set param_card ctlx1x31 0
+    set param_card ctlx2x31 0
+    set param_card ctlx3x31 0
+    set param_card ctex1x31 0
+    set param_card ctex2x31 0
+    set param_card ctex3x31 0
+    set param_card ctlSx1x13 0
+    set param_card ctlSx2x13 0
+    set param_card ctlSx3x13 0
+    set param_card ctlSx1x31 0
+    set param_card ctlSx2x31 0
+    set param_card ctlSx3x31 0
+    set param_card ctlTx1x13 0
+    set param_card ctlTx2x13 0
+    set param_card ctlTx3x13 0
+    set param_card ctlTx1x31 0
+    set param_card ctlTx2x31 0
+    set param_card ctlTx3x31 0
+
+launch -n cbW
+    set pdlabel lhapdf
+    set lhaid 306000
+    set drll 0.001
+    set etal 5
+    set param_card ctpx31 0
+    set param_card ctpx13 0
+    set param_card cpQMx31 0
+    set param_card cpQ3x31 0
+    set param_card cptx31 0
+    set param_card cptbx31 0
+    set param_card cptbx13 0
+    set param_card ctAx31 0
+    set param_card ctAx13 0
+    set param_card ctZx31 0
+    set param_card ctZx13 0
+    set param_card cbWx31 1
+    set param_card cbWx13 1
+    set param_card ctGx31 0
+    set param_card ctGx13 0
+    set param_card cQl3x1x31 0
+    set param_card cQl3x2x31 0
+    set param_card cQl3x3x31 0
+    set param_card cQlMx1x31 0
+    set param_card cQlMx2x31 0
+    set param_card cQlMx3x31 0
+    set param_card cQex1x31 0
+    set param_card cQex2x31 0
+    set param_card cQex3x31 0
+    set param_card ctlx1x31 0
+    set param_card ctlx2x31 0
+    set param_card ctlx3x31 0
+    set param_card ctex1x31 0
+    set param_card ctex2x31 0
+    set param_card ctex3x31 0
+    set param_card ctlSx1x13 0
+    set param_card ctlSx2x13 0
+    set param_card ctlSx3x13 0
+    set param_card ctlSx1x31 0
+    set param_card ctlSx2x31 0
+    set param_card ctlSx3x31 0
+    set param_card ctlTx1x13 0
+    set param_card ctlTx2x13 0
+    set param_card ctlTx3x13 0
+    set param_card ctlTx1x31 0
+    set param_card ctlTx2x31 0
+    set param_card ctlTx3x31 0
+
+launch -n ctG
+    set pdlabel lhapdf
+    set lhaid 306000
+    set drll 0.001
+    set etal 5
+    set param_card ctpx31 0
+    set param_card ctpx13 0
+    set param_card cpQMx31 0
+    set param_card cpQ3x31 0
+    set param_card cptx31 0
+    set param_card cptbx31 0
+    set param_card cptbx13 0
+    set param_card ctAx31 0
+    set param_card ctAx13 0
+    set param_card ctZx31 0
+    set param_card ctZx13 0
+    set param_card cbWx31 0
+    set param_card cbWx13 0
+    set param_card ctGx31 1
+    set param_card ctGx13 1
+    set param_card cQl3x1x31 0
+    set param_card cQl3x2x31 0
+    set param_card cQl3x3x31 0
+    set param_card cQlMx1x31 0
+    set param_card cQlMx2x31 0
+    set param_card cQlMx3x31 0
+    set param_card cQex1x31 0
+    set param_card cQex2x31 0
+    set param_card cQex3x31 0
+    set param_card ctlx1x31 0
+    set param_card ctlx2x31 0
+    set param_card ctlx3x31 0
+    set param_card ctex1x31 0
+    set param_card ctex2x31 0
+    set param_card ctex3x31 0
+    set param_card ctlSx1x13 0
+    set param_card ctlSx2x13 0
+    set param_card ctlSx3x13 0
+    set param_card ctlSx1x31 0
+    set param_card ctlSx2x31 0
+    set param_card ctlSx3x31 0
+    set param_card ctlTx1x13 0
+    set param_card ctlTx2x13 0
+    set param_card ctlTx3x13 0
+    set param_card ctlTx1x31 0
+    set param_card ctlTx2x31 0
+    set param_card ctlTx3x31 0
+
