@@ -837,6 +837,8 @@ void MyAnalysis::Loop(TString fname, TString data, TString dataset ,string year,
     nb = fChain->GetEntry(jentry);   nbytes += nb;
     displayProgress(jentry, ntr) ;
     topMass_=-999;    HZMass_=-999;    WtopMass_=-999;    W1HMass_=-999;    W2HMass_=-999;    HZPt_=-999;    HZEta_=-999;    topPt_=-999;    topEta_=-999;    drWtopB_=-999;    drW1HW2H_=-999;
+
+//write out the WCs at the begining of the code to make sure what you have set is used in the sample
     if(jentry==0 && fname.Contains("FCNC")){
       listWC="";
       for (UInt_t i=0;i<nWCnames;++i){
@@ -854,6 +856,8 @@ void MyAnalysis::Loop(TString fname, TString data, TString dataset ,string year,
       for (auto i: wc_names_lst) {
         std::cout << i << ',';} cout<<"}"<<endl;
       }
+
+//put the Lumi mask
     if(data == "data"){
       if(!myLumiMask.accept(run, luminosityBlock)) continue;
     }
@@ -1187,7 +1191,7 @@ if(checkEvent == event) cout<<"electron "<<l<<": if loose:"<<obj.looseElectron(l
       }
       if(obj.looseMuon(l) && obj.tightMuon(l) && muPtSFRochester * Muon_pt[l] >10){
         selectedPLeptons->push_back(new lepton_candidate(muPtSFRochester*Muon_pt[l],Muon_eta[l],Muon_phi[l],Muon_charge[l],l,10, Muon_pdgId[l]));
-        if (data == "mc" && Muon_pt[l] > 15){
+        if (data == "mc" && muPtSFRochester *Muon_pt[l] > 15){
         nominalWeights[1] = nominalWeights[1] * csetMuReco->evaluate({year + "_UL", abs(Muon_eta[l]),  muPtSFRochester *Muon_pt[l], "sf"});
         nominalWeights[1] = nominalWeights[1] * csetMuLoose->evaluate({year + "_UL", abs(Muon_eta[l]),  muPtSFRochester *Muon_pt[l], "sf"}); 
         nominalWeights[1] = nominalWeights[1] * scale_factor(&sf_muonIsoIp_H, abs(Muon_eta[l]),muPtSFRochester *Muon_pt[l],"central",false, true);

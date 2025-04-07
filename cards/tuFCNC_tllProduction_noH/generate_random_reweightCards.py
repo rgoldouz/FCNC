@@ -4,10 +4,11 @@ import random
 #couplings =['ctG','cQq83','cQq81','ctq8']
 #couplings =['cpQM','cpQ3','cpt','ctW','ctZ','ctG','cQq83','cQq81','cQu8','cQd8','ctq8','ctu8','ctd8','cQq13','cQq11','cQu1','cQd1','ctq1','ctu1','ctd1']
 #couplings =[['ctpx31','ctpx13'],['cpQMx31','cpQMx13'],['cpQ3x31','cpQ3x13'],['cptx31','cptx13'],['cptbx31','cptbx13'],['ctAx31','ctAx13'],['ctZx31','ctZx13'],['cbWx31','cbWx13'],['ctGx31','ctGx13'],['cQl3x1x31','cQl3x2x31','cQl3x3x31','cQl3x1x13','cQl3x2x13','cQl3x3x13'],['cQlMx1x31','cQlMx2x31','cQlMx3x31','cQlMx1x13','cQlMx2x13','cQlMx3x13'],['cQex1x31','cQex2x31','cQex3x31','cQex1x13','cQex2x13','cQex3x13'],['ctlx1x31','ctlx2x31','ctlx3x31','ctlx1x13','ctlx2x13','ctlx3x13'],['ctex1x31','ctex2x31','ctex3x31','ctex1x13','ctex2x13','ctex3x13'],['ctlSx1x13','ctlSx2x13','ctlSx3x13','ctlSx1x31','ctlSx2x31','ctlSx3x31'],['ctlTx1x13','ctlTx2x13','ctlTx3x13','ctlTx1x31','ctlTx2x31','ctlTx3x31']]
-couplings =[['cpQMx31'],['cptx31'],['ctAx31','ctAx13'],['ctZx31','ctZx13'],['ctGx31','ctGx13'],['cQlMx1x31','cQlMx2x31','cQlMx3x31'],['cQex1x31','cQex2x31','cQex3x31'],['ctlx1x31','ctlx2x31','ctlx3x31'],['ctex1x31','ctex2x31','ctex3x31'],['ctlSx1x13','ctlSx2x13','ctlSx3x13','ctlSx1x31','ctlSx2x31','ctlSx3x31'],['ctlTx1x13','ctlTx2x13','ctlTx3x13','ctlTx1x31','ctlTx2x31','ctlTx3x31']]
-couplingsName = ['cpQM','cpt','ctA','ctZ','ctG','cQlM','cQe','ctl','cte','ctlS','ctlT']
+couplings =[['cpQMx31'],['cptx31'],['ctAx31','ctAx13'],['ctZx31','ctZx13'],['ctGx31','ctGx13'],['cQlMx1x31','cQlMx2x31','cQlMx3x31'],['cQex1x31','cQex2x31','cQex3x31'],['ctlx1x31','ctlx2x31','ctlx3x31'],['ctex1x31','ctex2x31','ctex3x31'],['ctlSx1x13','ctlSx2x13','ctlSx3x13','ctlSx1x31','ctlSx2x31','ctlSx3x31'],['ctlTx1x13','ctlTx2x13','ctlTx3x13','ctlTx1x31','ctlTx2x31','ctlTx3x31'],['ctpx31','ctpx13']]
+couplingsName = ['cpQM','cpt','ctA','ctZ','ctG','cQlM','cQe','ctl','cte','ctlS','ctlT', 'ctp']
 #Ivalue        = [2     ,2    ,1    ,0.5   ,0.2  ,1.5    ,1.5  ,1.5  ,2  ,2.5     ,0.7    ]
-Ivalue        = [2     ,2    ,2    ,1   ,0.3  ,1.5    ,0.5  ,0.5  ,1  ,1     ,0.3    ]
+#Ivalue        = [0.285     ,0.285    ,0.264    ,0.075   ,0.0158  ,0.14    ,0.14  ,0.14  ,0.14  ,0.14     ,0.03, 3]
+Ivalue        = [0.22     ,0.22    ,0.22    ,0.07   ,0.0158  ,0.14    ,0.14  ,0.14  ,0.2  ,0.2     ,0.03, 3]
 C4F = ['ctG','cQlM','cQe','ctl','cte','ctlS','ctlT']
 customizecards = ''
 customizecards = customizecards + 'set param_card mass   6  172.5\n'
@@ -15,7 +16,7 @@ customizecards = customizecards + 'set param_card yukawa 6  172.5\n'
 customizecards = customizecards + 'set param_card mass   25 125.0\n'
 #customizecards = customizecards + 'set dynamical_scale_choice 3\n'
 
-scanValues = 180
+scanValues = 100
 
 for gWC in couplings:
     for WC in gWC:
@@ -37,12 +38,36 @@ for v in range(scanValues):
     rwgtCards = rwgtCards + '\n'
     rwgtCards = rwgtCards + 'launch --rwgt_name=EFTrwgt' + str(n) + '_'
     for WC1 in couplingsName:
-        rwgtCards = rwgtCards + WC1 + '_' + str(randomWC[couplingsName.index(WC1)]) + '_'
+        idWgt = str(randomWC[couplingsName.index(WC1)])
+        idWgt= idWgt.replace(".", "p" )
+        idWgt =idWgt.replace("-", "m" )
+        rwgtCards = rwgtCards + WC1 + '_' + idWgt + '_'
     rwgtCards = rwgtCards[:-1]
     rwgtCards = rwgtCards + '\n'
     for WC1 in couplingsName:
         for wcIndex in couplings[couplingsName.index(WC1)]:
             rwgtCards = rwgtCards +'    set param_card ' + wcIndex + ' ' + str(randomWC[couplingsName.index(WC1)])  + '\n'
+
+for WC1 in couplingsName:
+    n  = n+1
+    rwgtCards = rwgtCards + '\n'
+    rwgtCards = rwgtCards + 'launch --rwgt_name=EFTrwgt' + str(n) + '_'
+    for WC2 in couplingsName:
+        if WC1 == WC2:
+            rwgtCards = rwgtCards + WC1 + '_' + str(1) + '_'
+        else:
+            rwgtCards = rwgtCards + WC2 + '_' + str('0p001') + '_'
+    rwgtCards = rwgtCards[:-1]
+    rwgtCards = rwgtCards + '\n'
+    for WC2 in couplingsName:
+        for wcIndex in couplings[couplingsName.index(WC2)]:
+            if WC1 == WC2:
+                rwgtCards = rwgtCards +'    set param_card ' + wcIndex + ' ' + str(1)  + '\n'
+            else:
+                rwgtCards = rwgtCards +'    set param_card ' + wcIndex + ' ' + str(0.001)  + '\n'
+
+
+
 open('tllFCNC_reweight_card.dat', 'wt').write(rwgtCards)
 os.system('rm -rf tuFCNC_tllProduction_noH')
 os.system('mkdir tuFCNC_tllProduction_noH')

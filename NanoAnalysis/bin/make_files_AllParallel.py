@@ -120,21 +120,22 @@ if __name__ == '__main__':
     text += '\n'
    
     dirSamples = {
-    'dataSamples2':'/hadoop/store/user/awightma/skims/data/NAOD_ULv9_new-lepMVA-v2/2016APV/v1',
-    'dataSamples1':'/hadoop/store/user/awightma/skims/data/NAOD_ULv9_new-lepMVA-v2/FullRun2/v3',
-    'mcSamples9':'/hadoop/store/user/awightma/skims/mc/new-lepMVA-v2/central_bkgd_p7/TWZToLL/v1',
-    'mcSamples8':'/hadoop/store/user/awightma/skims/mc/new-lepMVA-v2/central_bkgd_p6/jsons_for_lo_ttgamma/v1',
-    'mcSamples7':'/hadoop/store/user/awightma/skims/mc/new-lepMVA-v2/central_bkgd_p5/fix_ext_stats_jsons/v1',
-    'mcSamples6':'/hadoop/store/user/awightma/skims/mc/new-lepMVA-v2/central_bkgd_p5/add_ext_bkg/v1',
-    'mcSamples5':'/hadoop/store/user/awightma/skims/mc/new-lepMVA-v2/central_bkgd_p4/WZTo3LNuPowheg/v2',
-    'mcSamples4':'/hadoop/store/user/awightma/skims/mc/new-lepMVA-v2/central_bkgd_p3/TTbarPowheg_ZG/v1',
-    'mcSamples3':'/hadoop/store/user/awightma/skims/mc/new-lepMVA-v2/central_bkgd_p2/ZZTo4l_TTJets/v1',
-    'mcSamples2':'/hadoop/store/user/awightma/skims/mc/new-lepMVA-v2/central_bkgd_p1/2016APV/v1',
-    'mcSamples1':'/hadoop/store/user/awightma/skims/mc/new-lepMVA-v2/central_bkgd_p1/FullRun2/v2',
-    'signalSamples2':'/hadoop/store/user/awightma/skims/mc/new-lepMVA-v2/central_sgnl/tZqPowheg/v1',
-    'signalSamples1':'/hadoop/store/user/awightma/skims/mc/new-lepMVA-v2/central_sgnl/FullRun2/v1',
-#    'FcncGenSamples2':'/hadoop/store/user/rgoldouz/FullProduction/nanoGen',
-    'FcncGenSamples1':'/hadoop/store/user/rgoldouz/FullProduction/FullR2/UL17/FullSimFCNC/postLHE_step/v1',
+    'dataSamples2':'/cms/cephfs/data/store/user/awightma/skims/data/NAOD_ULv9_new-lepMVA-v2/2016APV/v1',
+    'dataSamples1':'/cms/cephfs/data/store/user/awightma/skims/data/NAOD_ULv9_new-lepMVA-v2/FullRun2/v3',
+    'mcSamples9':'/cms/cephfs/data/store/user/awightma/skims/mc/new-lepMVA-v2/central_bkgd_p7/TWZToLL/v1',
+    'mcSamples8':'/cms/cephfs/data/store/user/awightma/skims/mc/new-lepMVA-v2/central_bkgd_p6/jsons_for_lo_ttgamma/v1',
+    'mcSamples7':'/cms/cephfs/data/store/user/awightma/skims/mc/new-lepMVA-v2/central_bkgd_p5/fix_ext_stats_jsons/v1',
+    'mcSamples6':'/cms/cephfs/data/store/user/awightma/skims/mc/new-lepMVA-v2/central_bkgd_p5/add_ext_bkg/v1',
+    'mcSamples5':'/cms/cephfs/data/store/user/awightma/skims/mc/new-lepMVA-v2/central_bkgd_p4/WZTo3LNuPowheg/v2',
+    'mcSamples4':'/cms/cephfs/data/store/user/awightma/skims/mc/new-lepMVA-v2/central_bkgd_p3/TTbarPowheg_ZG/v1',
+    'mcSamples3':'/cms/cephfs/data/store/user/awightma/skims/mc/new-lepMVA-v2/central_bkgd_p2/ZZTo4l_TTJets/v1',
+    'mcSamples2':'/cms/cephfs/data/store/user/awightma/skims/mc/new-lepMVA-v2/central_bkgd_p1/2016APV/v1',
+    'mcSamples1':'/cms/cephfs/data/store/user/awightma/skims/mc/new-lepMVA-v2/central_bkgd_p1/FullRun2/v2',
+    'signalSamples2':'/cms/cephfs/data/store/user/awightma/skims/mc/new-lepMVA-v2/central_sgnl/tZqPowheg/v1',
+    'signalSamples1':'/cms/cephfs/data/store/user/awightma/skims/mc/new-lepMVA-v2/central_sgnl/FullRun2/v1',
+    'FcncSample':'/cms/cephfs/data/store/user/rgoldouz/FullProduction/FCNC_DAS/Skim_v1'
+#    'FcncGenSamples2':'/cms/cephfs/data/store/user/rgoldouz/FullProduction/nanoGen',
+#    'FcncGenSamples1':'/cms/cephfs/data/store/user/rgoldouz/FullProduction/FullR2/UL17/FullSimFCNC/postLHE_step/v1',
     }
  
     years = {
@@ -183,7 +184,7 @@ if __name__ == '__main__':
                     if valueS[-1] in root.split('/') and valueS[-1] not in Sclean2:
                         Sclean2.append(valueS[-1])
                         if 'data' in root:
-                            valueS[0].append(root[19:])
+                            valueS[0].append(root[28:])
                         else:
                             Slist.append(root)
     res = Parallel(n_jobs=40)(delayed(f)(i) for i in Slist)
@@ -216,12 +217,12 @@ if __name__ == '__main__':
         print key
         print value
         if len(value[0])==0:
-            print 'sample ' + MCSAMPLES[key] + ' is deleted'
+            print '-----------------------------------!!!!!!>>>>sample ' + key + ' is deleted'
             del MCSAMPLES[key]
             continue
-        files = os.listdir('/hadoop/store/user/'+value[0][0])
+        files = os.listdir('/cms/cephfs/data/store/user/'+value[0][0])
         for fname in files:
-            filename = '/hadoop/store/user/'+value[0][0] + '/' + fname
+            filename = '/cms/cephfs/data/store/user/'+value[0][0] + '/' + fname
             f = ROOT.TFile.Open(filename)
             tree_meta = f.Get('Events')
             if tree_meta.GetNbranches()>200:
@@ -239,32 +240,32 @@ if __name__ == '__main__':
     #text += str(MCSAMPLES)
     text += '\n'
     
-    for key, value in MCSAMPLES.items():
-        if 'data' in key:
-            continue
-        if 'UL16preVFP_' not in key:
-            continue
-        del value[-1]
-        text += '"'
-        text += key
-        text += '":'
-        text += str(value)
-        text += ','
-        text += '\n'
-    text += '\n \n'
-    for key, value in MCSAMPLES.items():
-        if 'data' in key:
-            continue
-        if 'UL16_' not in key:
-            continue
-        del value[-1]
-        text += '"'
-        text += key
-        text += '":'
-        text += str(value)
-        text += ','
-        text += '\n'
-    text += '\n \n'
+#    for key, value in MCSAMPLES.items():
+#        if 'data' in key:
+#            continue
+#        if 'UL16preVFP_' not in key:
+#            continue
+#        del value[-1]
+#        text += '"'
+#        text += key
+#        text += '":'
+#        text += str(value)
+#        text += ','
+#        text += '\n'
+#    text += '\n \n'
+#    for key, value in MCSAMPLES.items():
+#        if 'data' in key:
+#            continue
+#        if 'UL16_' not in key:
+#            continue
+#        del value[-1]
+#        text += '"'
+#        text += key
+#        text += '":'
+#        text += str(value)
+#        text += ','
+#        text += '\n'
+#    text += '\n \n'
     for key, value in MCSAMPLES.items():
         if 'data' in key:
             continue
@@ -278,47 +279,47 @@ if __name__ == '__main__':
         text += ','
         text += '\n'
     text += '\n \n'
-    for key, value in MCSAMPLES.items():
-        if 'data' in key:
-            continue
-        if 'UL18_' not in key:
-            continue
-        del value[-1]
-        text += '"'
-        text += key
-        text += '":'
-        text += str(value)
-        text += ','
-        text += '\n'
-    text += '\n \n'
-    
-    text += '\n \n'
-    for key, value in MCSAMPLES.items():
-        if 'data' not in key:
-            continue
-        if 'UL16preVFP_' not in key:
-            continue
-        del value[-1]
-        text += '"'
-        text += key
-        text += '":'
-        text += str(value)
-        text += ','
-        text += '\n'
-    text += '\n \n'
-    for key, value in MCSAMPLES.items():
-        if 'data' not in key:
-            continue
-        if 'UL16_' not in key:
-            continue
-        del value[-1]
-        text += '"'
-        text += key
-        text += '":'
-        text += str(value)
-        text += ','
-        text += '\n'
-    text += '\n \n'
+#    for key, value in MCSAMPLES.items():
+#        if 'data' in key:
+#            continue
+#        if 'UL18_' not in key:
+#            continue
+#        del value[-1]
+#        text += '"'
+#        text += key
+#        text += '":'
+#        text += str(value)
+#        text += ','
+#        text += '\n'
+#    text += '\n \n'
+#    
+#    text += '\n \n'
+#    for key, value in MCSAMPLES.items():
+#        if 'data' not in key:
+#            continue
+#        if 'UL16preVFP_' not in key:
+#            continue
+#        del value[-1]
+#        text += '"'
+#        text += key
+#        text += '":'
+#        text += str(value)
+#        text += ','
+#        text += '\n'
+#    text += '\n \n'
+#    for key, value in MCSAMPLES.items():
+#        if 'data' not in key:
+#            continue
+#        if 'UL16_' not in key:
+#            continue
+#        del value[-1]
+#        text += '"'
+#        text += key
+#        text += '":'
+#        text += str(value)
+#        text += ','
+#        text += '\n'
+#    text += '\n \n'
     for key, value in MCSAMPLES.items():
         if 'data' not in key:
             continue
@@ -331,20 +332,20 @@ if __name__ == '__main__':
         text += str(value)
         text += ','
         text += '\n'
-    text += '\n \n'
-    for key, value in MCSAMPLES.items():
-        if 'data' not in key:
-            continue
-        if 'UL18_' not in key:
-            continue
-        del value[-1]
-        text += '"'
-        text += key
-        text += '":'
-        text += str(value)
-        text += ','
-        text += '\n'
-        print(key, ' : ', value)
+#    text += '\n \n'
+#    for key, value in MCSAMPLES.items():
+#        if 'data' not in key:
+#            continue
+#        if 'UL18_' not in key:
+#            continue
+#        del value[-1]
+#        text += '"'
+#        text += key
+#        text += '":'
+#        text += str(value)
+#        text += ','
+#        text += '\n'
+#        print(key, ' : ', value)
     text += '}'
     #
     print text

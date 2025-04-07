@@ -33,3 +33,5 @@
     set param_card ctlTx1x31 1
     set param_card ctlTx2x31 1
     set param_card ctlTx3x31 1
+    set param_card ctpx31 0.0001
+    set param_card ctpx13 0.0001
