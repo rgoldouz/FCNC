@@ -1,5 +1,29 @@
 #include "Utils.h"
 
+int getIndex(std::vector<TString> words, std::string target) {
+    auto it = std::find(words.begin(), words.end(), target);
+    int index=0;
+    if (it != words.end()) {
+        index = std::distance(words.begin(), it);
+    } else {
+        std::cout << "Not found" << std::endl;
+    }
+    return index;
+}
+
+int getVecPos(std::vector<TString> vec, string element){
+    int i;
+    for(i = 0; i < vec.size(); i++){
+      if(vec[i] == element) break;
+    }
+    if(i == vec.size()){
+        std::cout<<"No such element as "<<element<<" found. Please enter again: ";
+        std::cin>>element;
+        i = getVecPos(vec, element);
+    }
+    return i;
+}
+
 double dR(double eta1, double phi1, double eta2, double phi2){
     double dphi = phi2 - phi1;
     double deta = eta2 - eta1;
@@ -118,34 +142,35 @@ float topPt(float pt){
   return (0.973 - (0.000134 * pt) + (0.103 * exp(pt * (-0.0118))));
 }
 
-  TLorentzVector Wneutrino(double MET, double METphi, double leptonPT, double leptonEta, double leptonPhi) {
-    double mW=80.4;
-    double neutrinoPX=0;
-    double neutrinoPY=0;
-    double neutrinoPZ=0;
-    TLorentzVector lepton;
-    lepton.SetPtEtaPhiM(leptonPT, leptonEta, leptonPhi, 0);
-    double leptonPZ=lepton.Pz();
-    double mu=(std::pow(mW,2)/2)+std::cos(deltaPhi(METphi,leptonPhi))*MET*leptonPT;
-    double determinant = (std::pow(mu,2)*std::pow(leptonPZ,2)/std::pow(leptonPT,4))-(std::pow(MET,2)*(std::pow(leptonPT,2)+std::pow(leptonPZ,2))-std::pow(mu,2))/std::pow(leptonPT,2);
-    if (determinant<0){
-      MET=(1.+std::cos(deltaPhi(METphi,leptonPhi)))*std::pow(mW,2)/(2*leptonPT*std::pow(std::sin(deltaPhi(METphi,leptonPhi)),2));
-      mu=(std::pow(mW,2)/2)+std::cos(deltaPhi(METphi,leptonPhi))*MET*leptonPT;
-      determinant=0.;
-    }
-    double neutrinoPZplus=(mu*leptonPZ/std::pow(leptonPT,2))+std::sqrt(determinant);
-    double neutrinoPZminus=(mu*leptonPZ/std::pow(leptonPT,2))-std::sqrt(determinant);
-    neutrinoPZ=neutrinoPZminus;
-    if(std::fabs(neutrinoPZplus)<std::fabs(neutrinoPZminus)){
-      neutrinoPZ=neutrinoPZplus;
-    }
-    neutrinoPX=MET*std::cos(METphi);
-    neutrinoPY=MET*std::sin(METphi);
-    TLorentzVector neutrino;
-    neutrino.SetPxPyPzE(neutrinoPX,neutrinoPY,neutrinoPZ,std::sqrt(std::pow(neutrinoPX,2)+std::pow(neutrinoPY,2)+std::pow(neutrinoPZ,2)));
-    return  neutrino;
+TLorentzVector Wneutrino(double MET, double METphi, double leptonPT, double leptonEta, double leptonPhi) {
+  double mW=80.4;
+  double neutrinoPX=0;
+  double neutrinoPY=0;
+  double neutrinoPZ=0;
+  TLorentzVector lepton;
+  lepton.SetPtEtaPhiM(leptonPT, leptonEta, leptonPhi, 0);
+  double leptonPZ=lepton.Pz();
+  double mu=(std::pow(mW,2)/2)+std::cos(deltaPhi(METphi,leptonPhi))*MET*leptonPT;
+  double determinant = (std::pow(mu,2)*std::pow(leptonPZ,2)/std::pow(leptonPT,4))-(std::pow(MET,2)*(std::pow(leptonPT,2)+std::pow(leptonPZ,2))-std::pow(mu,2))/std::pow(leptonPT,2);
+  if (determinant<0){
+    MET=(1.+std::cos(deltaPhi(METphi,leptonPhi)))*std::pow(mW,2)/(2*leptonPT*std::pow(std::sin(deltaPhi(METphi,leptonPhi)),2));
+    mu=(std::pow(mW,2)/2)+std::cos(deltaPhi(METphi,leptonPhi))*MET*leptonPT;
+    determinant=0.;
   }
+  double neutrinoPZplus=(mu*leptonPZ/std::pow(leptonPT,2))+std::sqrt(determinant);
+  double neutrinoPZminus=(mu*leptonPZ/std::pow(leptonPT,2))-std::sqrt(determinant);
+  neutrinoPZ=neutrinoPZminus;
+  if(std::fabs(neutrinoPZplus)<std::fabs(neutrinoPZminus)){
+    neutrinoPZ=neutrinoPZplus;
+  }
+  neutrinoPX=MET*std::cos(METphi);
+  neutrinoPY=MET*std::sin(METphi);
+  TLorentzVector neutrino;
+  neutrino.SetPxPyPzE(neutrinoPX,neutrinoPY,neutrinoPZ,std::sqrt(std::pow(neutrinoPX,2)+std::pow(neutrinoPY,2)+std::pow(neutrinoPZ,2)));
+  return  neutrino;
+}
 
 int vInd(std::map<TString, std::vector<float>> V, TString name){
   return V.find(name)->second.at(0);
 }
+

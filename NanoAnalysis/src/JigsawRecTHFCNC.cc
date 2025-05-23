@@ -86,6 +86,84 @@ JigsawRecTHFCNC::~JigsawRecTHFCNC(){
   delete NuNuR_2W;
   delete MinMW_2W;
 }
+/*
+#include "RestFrames/RestFrames.hh"
 
+using namespace RestFrames;
 
+int main() {
+    // Set verbosity
+    RestFrames::SetVerbosity(Verbosity::Silent);
+
+    // Create frames
+    LabRecoFrame LAB("LAB");
+    DecayRecoFrame T1("T1");
+    DecayRecoFrame T2("T2");
+
+    DecayRecoFrame W1("W1");
+    VisibleRecoFrame l1("l1");
+    InvisibleRecoFrame nu1("nu1");
+    VisibleRecoFrame b("b");
+
+    VisibleRecoFrame u("u");
+    DecayRecoFrame WH("WH");
+    VisibleRecoFrame j1("j1");
+    VisibleRecoFrame j2("j2");
+
+    DecayRecoFrame W2("W2");
+    VisibleRecoFrame l2("l2");
+    InvisibleRecoFrame nu2("nu2");
+
+    // Build frame tree
+    LAB.SetChildFrames({T1, T2});
+
+    T1.SetChildFrames({W1, b});
+    W1.SetChildFrames({l1, nu1});
+
+    T2.SetChildFrames({u, WH, W2});
+    WH.SetChildFrames({j1, j2});
+    W2.SetChildFrames({l2, nu2});
+
+    // Construct the topology
+    RecoFrameTree eventTree(LAB);
+    eventTree.Initialize();
+
+    // Define visible and invisible groups
+    CombinatoricGroup visGroup("VisGroup", {l1, l2, b, u, j1, j2});
+    InvisibleGroup invGroup("InvGroup", {nu1, nu2});
+
+    // Create the jigsaw analysis
+    JigsawAnalysis jigsaw("ttbar_uh_analysis", eventTree, visGroup, invGroup);
+
+    // Add jigsaw rules if needed
+    jigsaw.Initialize();
+
+    // Input example 4-vectors (replace with real event data)
+    TLorentzVector lv_l1(30, 0, 40, 50);
+    TLorentzVector lv_l2(-20, -10, 25, 35);
+    TLorentzVector lv_b(25, 15, -10, 35);
+    TLorentzVector lv_u(40, 0, -20, 45);
+    TLorentzVector lv_j1(30, 20, 0, 36);
+    TLorentzVector lv_j2(-10, 15, 10, 22);
+    TLorentzVector met(15, -10, 0, 0); // px, py, pz=0, E=0 for MET input
+
+    // Set the visible 4-vectors
+    visGroup.SetLabFrameFourVectors({lv_l1, lv_l2, lv_b, lv_u, lv_j1, lv_j2});
+
+    // Set MET
+    invGroup.SetLabFrameThreeVector((lv_nu1 + lv_nu2).Vect()); // Here use your MET vector
+
+    // Analyze event
+    if (!jigsaw.AnalyzeEvent()) {
+        std::cerr << "Failed to analyze event." << std::endl;
+        return 1;
+    }
+
+    // Example: access reconstructed top mass from T1
+    double mT1 = T1.GetMass();
+    std::cout << "Reconstructed top mass (T1): " << mT1 << " GeV" << std::endl;
+
+    return 0;
+}
+*/
 

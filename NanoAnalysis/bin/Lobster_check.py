@@ -1,6 +1,14 @@
 import subprocess
 import sys
 import os
+# Fix missing $HOME to avoid ROOT crash
+if not os.environ.get("HOME"):
+    tmp_home = "/tmp/" + os.environ.get("USER", "default_user")
+    os.environ["HOME"] = tmp_home
+    if not os.path.exists(tmp_home):
+        os.makedirs(tmp_home)
+os.environ["ROOTIGNOREMIMES"] = "1"
+
 
 infiles = sys.argv[12:]
 print infiles
@@ -34,7 +42,17 @@ with open("MyAnalysis.h", "r") as input:
                 output.write(line)
 
 # replace file with original name
-os.system('mv temp.txt MyAnalysis.h')
-os.system('source /afs/crc.nd.edu/user/r/rgoldouz/FCNC/NanoAnalysis/RestFrames/setup_RestFrames.sh') 
-os.environ["CPATH"] = "/afs/crc.nd.edu/user/r/rgoldouz/FCNC/NanoAnalysis/RestFrames/include"
-os.system('root -b -q -l libRestFrames.so.1.0.0 libCondFormatsJetMETObjects.so libcorrectionlib.so libEFTGenReaderEFTHelperUtilities.so libmain.so main.C')
+os.system('cp temp.txt MyAnalysis.h')
+os.system('ls /afs/crc.nd.edu/user/r/rgoldouz/FCNC/NanoAnalysis')
+os.system('ls /users')
+os.system('ls /users/rgoldouz')
+os.system('ls /users/rgoldouz/FCNC')
+os.system('ls /users/rgoldouz/FCNC/NanoAnalysis')
+os.system('ls /users/rgoldouz/FCNC/NanoAnalysis/RestFrames')
+os.system('ls /users/rgoldouz/FCNC/NanoAnalysis/RestFrames/setup_RestFrames.sh')
+os.system('source /users/rgoldouz/FCNC/NanoAnalysis/RestFrames/setup_RestFrames.sh') 
+os.environ["CPATH"] = "/users/rgoldouz/FCNC/NanoAnalysis/RestFrames/include:/users/rgoldouz/FCNC/NanoAnalysis/include"
+os.system('root -b -q -l libRestFrames.so.1.0.0 libJetMETCorrectionsModules.so libcorrectionlib.so libEFTGenReaderEFTHelperUtilities.so libboost_serialization.so libmain.so main.C')
+#os.system('source /afs/crc.nd.edu/user/r/rgoldouz/FCNC/NanoAnalysis/RestFrames/setup_RestFrames.sh')
+#os.environ["CPATH"] = "/afs/crc.nd.edu/user/r/rgoldouz/FCNC/NanoAnalysis/RestFrames/include:/afs/crc.nd.edu/user/r/rgoldouz/FCNC/NanoAnalysis/include"
+#os.system('root -b -q -l libRestFrames.so.1.0.0 libJetMETCorrectionsModules.so libcorrectionlib.so libEFTGenReaderEFTHelperUtilities.so libboost_serialization.so libmain.so main.C')

@@ -42,11 +42,11 @@ def f(name):
         evtTree.SetBranchStatus("*", 0)
         evtTree.SetBranchStatus("genWeight", 1)
         evtTree.SetBranchStatus("LHEWeight_originalXWGTUP", 1)
-        if 'FCNC' in name:  
-            for i in range( evtTree.GetEntries() ):
-                evtTree.GetEntry(i)
-                if abs(evtTree.LHEWeight_originalXWGTUP) not in nWeight:
-                    nWeight.append(abs(evtTree.LHEWeight_originalXWGTUP))
+#        if 'FCNC' in name:  
+#            for i in range( evtTree.GetEntries() ):
+#                evtTree.GetEntry(i)
+#                if abs(evtTree.LHEWeight_originalXWGTUP) not in nWeight:
+#                    nWeight.append(abs(evtTree.LHEWeight_originalXWGTUP))
         evtTree.GetEntry(0)
         for i in range( tree_meta.GetEntries() ):
             tree_meta.GetEntry(i)
@@ -64,8 +64,8 @@ def f(name):
         fi.Close()
     if len(nWeight)>1:
         print filename + ' ***!!!!!!!!!!!!!!!*** Warning number of original weights is '+str(len(nWeight)) 
-#    return name[19:],str(neventsweightSumw), str(len(nWeight))
-    return name[19:],str(neventsweightSumw), str(nRuns) 
+    print  name[28:],str(nRuns), str(len(nWeight))
+    return name[28:],str(neventsweightSumw), str(nRuns) 
 #    for key, value in MCSAMPLES.items():
 #        if key == name.split('/')[8]:
 #            value[0].append(name[19:])
@@ -106,7 +106,15 @@ if __name__ == '__main__':
     '_WWTo2L2Nu': '12.178',
     '_TWZToLL_tlept_Whad':'0.003004',
     '_TWZToLL_tlept_Wlept':'0.0015',
-    '_TWZToLL_thad_Wlept':'0.003004'
+    '_TWZToLL_thad_Wlept':'0.003004',
+    'TUToFCNCToTLLProduction':'0.0269939', #cross section for ref point in the gridpack in /afs/crc.nd.edu/user/r/rgoldouz/FCNC/NanoAnalysis/gridpack
+    'TUToFCNCToTHProduction':'2.50985',
+    'TUToFCNCToULLDecay':'0.449545',
+    'TUToFCNCToUHDecay':'2.04573',
+    'TCToFCNCToTLLProduction':'0.00369492',
+    'TCToFCNCToTHProduction':'0.333206',
+    'TCToFCNCToCHDecay':'2.04573',
+    'TCToFCNCToCLLDecay':'0.398107',
     }
     
     blackList = ['TTJets','TTGJets','SMEFT','gen','sim','digi','hlt','reco','mAOD','nano']
@@ -133,7 +141,7 @@ if __name__ == '__main__':
     'mcSamples1':'/cms/cephfs/data/store/user/awightma/skims/mc/new-lepMVA-v2/central_bkgd_p1/FullRun2/v2',
     'signalSamples2':'/cms/cephfs/data/store/user/awightma/skims/mc/new-lepMVA-v2/central_sgnl/tZqPowheg/v1',
     'signalSamples1':'/cms/cephfs/data/store/user/awightma/skims/mc/new-lepMVA-v2/central_sgnl/FullRun2/v1',
-    'FcncSample':'/cms/cephfs/data/store/user/rgoldouz/FullProduction/FCNC_DAS/Skim_v1'
+    'FcncSample':'/cms/cephfs/data/store/user/rgoldouz/FullProduction/FCNC_DAS/Skim_v2/mc'
 #    'FcncGenSamples2':'/cms/cephfs/data/store/user/rgoldouz/FullProduction/nanoGen',
 #    'FcncGenSamples1':'/cms/cephfs/data/store/user/rgoldouz/FullProduction/FullR2/UL17/FullSimFCNC/postLHE_step/v1',
     }
@@ -180,13 +188,16 @@ if __name__ == '__main__':
     
         for root, dirs, files in os.walk(value):
             if len(files) > 0:
-                for keyS, valueS in MCSAMPLES.items():
+                print root
+                for keyS, valueS in MCSAMPLES.items():                   
                     if valueS[-1] in root.split('/') and valueS[-1] not in Sclean2:
                         Sclean2.append(valueS[-1])
-                        if 'data' in root:
+                        if 'mc' not in root:
                             valueS[0].append(root[28:])
                         else:
                             Slist.append(root)
+    print 'RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRrr'
+    print Slist
     res = Parallel(n_jobs=40)(delayed(f)(i) for i in Slist)
     Address = [item[0] for item in res]
     Sumw = [item[1] for item in res]

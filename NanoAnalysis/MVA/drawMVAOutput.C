@@ -1,0 +1,12 @@
+{
+gSystem->Load("libTMVAGui");
+TMVA::mvas("dataset","ctZ_TMVA.root",TMVA::kCompareType);
+canvas1->SaveAs("ctZ_MVA.pdf");  
+TMVA::variables("dataset","ctZ_TMVA.root");
+canvas1->SaveAs("ctZ_InputVar.pdf");
+TMVA::correlations("dataset","ctZ_TMVA.root");
+CorrelationMatrixS->SaveAs("CorrelationMatrixS.pdf");
+CorrelationMatrixB->SaveAs("CorrelationMatrixB.pdf");
+TMVA::efficiencies("dataset","ctZ_TMVA.root",2);
+c->SaveAs("ROC.pdf");
+}

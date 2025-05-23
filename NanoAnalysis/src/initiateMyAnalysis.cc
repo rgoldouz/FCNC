@@ -1,0 +1,651 @@
+#include "MyAnalysis.h"
+#include "TH1EFT.h"
+
+void MyAnalysis::initiateHists(TString data,string year, bool ifSys){
+  cout<<"Start initiating"<<endl;
+
+  Hists.resize(channels.size());
+  for (int i=0;i<channels.size();++i){
+    Hists[i].resize(regions.size());
+    for (int k=0;k<regions.size();++k){
+      Hists[i][k].resize(vars.size());
+    }
+  }
+  std::stringstream name;
+  for (int i=0;i<channels.size();++i){
+    for (int k=0;k<regions.size();++k){
+      for( auto it = vars.cbegin() ; it != vars.cend() ; ++it ){
+        name<<channels[i]<<"_"<<regions[k]<<"_"<<it->first;
+        h_test = new TH1EFT((name.str()).c_str(),(name.str()).c_str(),it->second.at(1), it->second.at(2), it->second.at(3));
+        h_test->StatOverflows(kTRUE);
+        h_test->Sumw2(kTRUE);
+        Hists[i][k][it->second.at(0)] = h_test;
+        name.str("");
+      }
+    }
+  }
+
+  HistsFA.resize(channelsFA.size());
+  for (int i=0;i<channelsFA.size();++i){
+    HistsFA[i].resize(regions.size());
+    for (int k=0;k<regions.size();++k){
+      HistsFA[i][k].resize(varsFA.size());
+    }
+  }
+  for (int i=0;i<channelsFA.size();++i){
+    for (int k=0;k<regions.size();++k){
+      for( auto it = varsFA.cbegin() ; it != varsFA.cend() ; ++it ){
+        name<<channelsFA[i]<<"_"<<regions[k]<<"_"<<it->first;
+        h_test = new TH1EFT((name.str()).c_str(),(name.str()).c_str(),it->second.at(1), it->second.at(2), it->second.at(3));
+        h_test->StatOverflows(kTRUE);
+        h_test->Sumw2(kTRUE);
+        HistsFA[i][k][it->second.at(0)] = h_test;
+        name.str("");
+      }
+    }
+  }
+
+  if(data == "mc" && ifSys){
+    HistsSysUp.resize(channelsSys.size());
+    for (int i=0;i<channelsSys.size();++i){
+      HistsSysUp[i].resize(regions.size());
+      for (int k=0;k<regions.size();++k){
+        HistsSysUp[i][k].resize(varsSys.size());
+        for (int n=0;n<varsSys.size();++n){
+          HistsSysUp[i][k][n].resize(sys.size());
+        }
+      }
+    }
+    HistsSysDown.resize(channelsSys.size());
+    for (int i=0;i<channelsSys.size();++i){
+      HistsSysDown[i].resize(regions.size());
+      for (int k=0;k<regions.size();++k){
+        HistsSysDown[i][k].resize(varsSys.size());
+        for (int n=0;n<varsSys.size();++n){
+          HistsSysDown[i][k][n].resize(sys.size());
+        }
+      }
+    }
+    for (int i=0;i<channelsSys.size();++i){
+      for (int k=0;k<regions.size();++k){
+        for( auto it = varsSys.cbegin() ; it != varsSys.cend() ; ++it ){
+          for (int n=0;n<sys.size();++n){
+            name<<channelsSys[i]<<"_"<<regions[k]<<"_"<<it->first<<"_"<<sys[n]<<"_Up";
+            h_test = new TH1EFT((name.str()).c_str(),(name.str()).c_str(),it->second.at(1), it->second.at(2), it->second.at(3));
+            h_test->StatOverflows(kTRUE);
+            h_test->Sumw2(kTRUE);
+            HistsSysUp[i][k][it->second.at(0)][n] = h_test;
+            name.str("");
+            name<<channelsSys[i]<<"_"<<regions[k]<<"_"<<it->first<<"_"<<sys[n]<<"_Down";
+            h_test = new TH1EFT((name.str()).c_str(),(name.str()).c_str(),it->second.at(1), it->second.at(2), it->second.at(3));
+            h_test->StatOverflows(kTRUE);
+            h_test->Sumw2(kTRUE);
+            HistsSysDown[i][k][it->second.at(0)][n] = h_test;
+            name.str("");
+          }
+        }
+      }
+    }
+
+    HistsThUp.resize(channelsSys.size());
+    for (int i=0;i<channelsSys.size();++i){
+      HistsThUp[i].resize(regions.size());
+      for (int k=0;k<regions.size();++k){
+        HistsThUp[i][k].resize(varsTh.size());
+        for (int n=0;n<varsTh.size();++n){
+          HistsThUp[i][k][n].resize(sys.size());
+        }
+      }
+    }
+    HistsThDown.resize(channelsSys.size());
+    for (int i=0;i<channelsSys.size();++i){
+      HistsThDown[i].resize(regions.size());
+      for (int k=0;k<regions.size();++k){
+        HistsThDown[i][k].resize(varsTh.size());
+        for (int n=0;n<varsTh.size();++n){
+          HistsThDown[i][k][n].resize(sys.size());
+        }
+      }
+    }
+    for (int i=0;i<channelsSys.size();++i){
+      for (int k=0;k<regions.size();++k){
+        for( auto it = varsTh.cbegin() ; it != varsTh.cend() ; ++it ){
+          for (int n=0;n<sysTh.size();++n){
+            name<<channelsSys[i]<<"_"<<regions[k]<<"_"<<it->first<<"_"<<sysTh[n]<<"_Up";
+            h_test = new TH1EFT((name.str()).c_str(),(name.str()).c_str(),it->second.at(1), it->second.at(2), it->second.at(3));
+            h_test->StatOverflows(kTRUE);
+            h_test->Sumw2(kTRUE);
+            HistsThUp[i][k][it->second.at(0)][n] = h_test;
+            name.str("");
+            name<<channelsSys[i]<<"_"<<regions[k]<<"_"<<it->first<<"_"<<sysTh[n]<<"_Down";
+            h_test = new TH1EFT((name.str()).c_str(),(name.str()).c_str(),it->second.at(1), it->second.at(2), it->second.at(3));
+            h_test->StatOverflows(kTRUE);
+            h_test->Sumw2(kTRUE);
+            HistsThDown[i][k][it->second.at(0)][n] = h_test;
+            name.str("");
+          }
+        }
+      }
+    }
+  }
+  cout<<"All histograms are initiated"<<endl;
+  const char* srcnames[nsrc] = {"FlavorQCD", "BBEC1", "Absolute", "RelativeBal", "RelativeSample_2016","Total"};
+  string yearName;
+  string yearNameS;
+  yearName=year;
+  if(year == "2016preVFP") yearName="2016APV";
+  if(year == "2016postVFP") yearName="2016";
+  yearNameS=year;
+  if(year == "2016preVFP") yearNameS="2016apv";
+  if(year == "2016postVFP") yearNameS="2016";
+  if(data == "mc"){
+    TFile *f_btagEff_Map = new TFile("/users/rgoldouz/FCNC/NanoAnalysis/input/btagEffs_TopEFT_2022_05_16.root");
+    TH2F* htemp = (TH2F*)f_btagEff_Map->Get(("BtagSFB_DeepFlavM_" + yearNameS).c_str());
+    btagEff_b_H = (TH2F*)htemp->Clone("btagEff_b_H_clone");  // Clone decouples from file
+    btagEff_b_H->SetDirectory(0);  // Important: unbind from the file, especially in ROOT < 6.22
+    htemp = (TH2F*)f_btagEff_Map->Get(("BtagSFC_DeepFlavM_" + yearNameS).c_str());
+    btagEff_c_H = (TH2F*)htemp->Clone("btagEff_c_H_clone");  
+    btagEff_c_H->SetDirectory(0);  
+    htemp = (TH2F*)f_btagEff_Map->Get(("BtagSFL_DeepFlavM_" + yearNameS).c_str());
+    btagEff_udsg_H = (TH2F*)htemp->Clone("btagEff_udsg_H_clone");  
+    btagEff_udsg_H->SetDirectory(0);  
+    f_btagEff_Map->Close();
+    delete f_btagEff_Map;
+
+    TFile *f_trigger = new TFile(("/users/rgoldouz/FCNC/NanoAnalysis/input/triggerScaleFactors_" + yearName + ".root").c_str());
+    htemp = (TH2F*)f_trigger->Get("sf_2l_ee");
+    sf_triggeree_H = (TH2F*)htemp->Clone("sf_triggeree_H_clone");
+    sf_triggeree_H->SetDirectory(0);
+    htemp = (TH2F*)f_trigger->Get("sf_2l_em");
+    sf_triggeremu_H = (TH2F*)htemp->Clone("sf_triggeremu_H_clone");
+    sf_triggeremu_H->SetDirectory(0);
+    htemp = (TH2F*)f_trigger->Get("sf_2l_mm");
+    sf_triggermumu_H = (TH2F*)htemp->Clone("sf_triggermumu_H_clone");
+    sf_triggermumu_H->SetDirectory(0);
+    f_trigger->Close();
+    delete f_trigger;
+
+    TFile *f_HighPtMuRecoSF = new TFile(("/users/rgoldouz/FCNC/NanoAnalysis/input/HighPtMuRecoSF_" + year + ".root").c_str());
+    htemp = (TH2F*)f_HighPtMuRecoSF->Get("h2_HighPtMuRecoSF_pVsAbsEta");
+    highPtMuRecoSF_pVsAbsEta_H = (TH2F*)htemp->Clone("highPtMuRecoSF_pVsAbsEta_H_clone");
+    highPtMuRecoSF_pVsAbsEta_H->SetDirectory(0);
+    f_HighPtMuRecoSF->Close();
+    delete f_HighPtMuRecoSF;
+
+    TFile *f_muonIsoIp = new TFile(("/users/rgoldouz/FCNC/NanoAnalysis/data/topCoffeaData/leptonSF/muon/egammaEffi" + yearName + "_iso_EGM2D.root").c_str());
+    htemp = (TH2F*)f_muonIsoIp->Get("EGamma_SF2D");
+    sf_muonIsoIp_H= (TH2F*)htemp->Clone("sf_muonIsoIp_H_clone");
+    sf_muonIsoIp_H->SetDirectory(0);
+    f_muonIsoIp->Close();
+    delete f_muonIsoIp;
+
+    TFile *f_muonLooseMVATight = new TFile(("/users/rgoldouz/FCNC/NanoAnalysis/data/topCoffeaData/leptonSF/muon/egammaEffi" + yearName + "_EGM2D.root").c_str());
+    htemp = (TH2F*)f_muonLooseMVATight->Get("EGamma_SF2D");
+    sf_muonLooseMVATight_H = (TH2F*)htemp->Clone("sf_muonLooseMVATight_H_clone");
+    sf_muonLooseMVATight_H->SetDirectory(0);
+    f_muonLooseMVATight->Close();
+    delete f_muonLooseMVATight;
+
+    TFile *f_eleLoose = new TFile(("/users/rgoldouz/FCNC/NanoAnalysis/data/topCoffeaData/leptonSF/elec/egammaEffi" + yearName + "_recoToloose_EGM2D.root").c_str());
+    htemp = (TH2F*)f_eleLoose->Get("EGamma_SF2D");
+    sf_eleLoose_H = (TH2F*)htemp->Clone("sf_eleLoose_H_clone");
+    sf_eleLoose_H->SetDirectory(0);
+    f_eleLoose->Close();
+    delete f_eleLoose;
+
+    TFile *f_eleIsoIp = new TFile(("/users/rgoldouz/FCNC/NanoAnalysis/data/topCoffeaData/leptonSF/elec/egammaEffi" + yearName + "_iso_EGM2D.root").c_str());
+    htemp = (TH2F*)f_eleIsoIp->Get("EGamma_SF2D");
+    sf_eleIsoIp_H = (TH2F*)htemp->Clone("sf_eleIsoIp_H_clone");
+    sf_eleIsoIp_H->SetDirectory(0);
+    f_eleIsoIp->Close();
+    delete f_eleIsoIp;
+
+    TFile *f_eleLooseMVATight = new TFile(("/users/rgoldouz/FCNC/NanoAnalysis/data/topCoffeaData/leptonSF/elecNEWmva/egammaEffi" + yearName + "_3l_EGM2D.root").c_str());
+    htemp = (TH2F*)f_eleLooseMVATight->Get("EGamma_SF2D");
+    sf_eleLooseMVATight_H = (TH2F*)htemp->Clone("sf_eleLooseMVATight_H_clone");
+    sf_eleLooseMVATight_H->SetDirectory(0);
+    f_eleLooseMVATight->Close();
+    delete f_eleLooseMVATight;
+
+    TFile *f_eleLooseMVATight2lss = new TFile(("/users/rgoldouz/FCNC/NanoAnalysis/data/topCoffeaData/leptonSF/elecNEWmva/egammaEffi" + yearName + "_2lss_EGM2D.root").c_str());
+    htemp = (TH2F*)f_eleLooseMVATight2lss->Get("EGamma_SF2D");
+    sf_eleLooseMVATight2lss_H =  (TH2F*)htemp->Clone("sf_eleLooseMVATight2lss_H_clone");
+    sf_eleLooseMVATight2lss_H->SetDirectory(0);
+    f_eleLooseMVATight2lss->Close();
+    delete f_eleLooseMVATight2lss;
+  }
+  if(year == "2016preVFP"){
+    JERFile1="/users/rgoldouz/FCNC/NanoAnalysis/input/JER/Summer20UL16APV_JRV3_MC/Summer20UL16APV_JRV3_MC_SF_AK4PFchs.txt";
+    JERFile2="/users/rgoldouz/FCNC/NanoAnalysis/input/JER/Summer20UL16APV_JRV3_MC/Summer20UL16APV_JRV3_MC_PtResolution_AK4PFchs.txt";
+    JECFile = "/users/rgoldouz/FCNC/NanoAnalysis/input/Summer19UL16APV_V7_MC/Regrouped_Summer19UL16APV_V7_MC_UncertaintySources_AK4PFchs.txt";
+    rochesterFile = "/users/rgoldouz/FCNC/NanoAnalysis/input/RoccoR2016aUL.txt";
+    eleSF="/users/rgoldouz/FCNC/NanoAnalysis/data/POG/EGM/2016preVFP_UL/electron.json.gz";
+    muSF= "/users/rgoldouz/FCNC/NanoAnalysis/data/POG/MUO/2016preVFP_UL/muon_Z.json.gz";
+    bSF="/users/rgoldouz/FCNC/NanoAnalysis/data/POG/BTV/2016preVFP_UL/btagging.json.gz";
+    jetSF="/users/rgoldouz/FCNC/NanoAnalysis/data/POG/JME/2016preVFP_UL/UL16preVFP_jmar.json.gz";
+    TFile *Map2016preVFP = new TFile("/users/rgoldouz/FCNC/NanoAnalysis/input/hotjets-UL16.root");
+    TH2F* htemp = (TH2F*)Map2016preVFP->Get("h2hot_ul16_plus_hbm2_hbp12_qie11");
+    jetVetoMaps_H = (TH2F*)htemp->Clone("jetVetoMaps_H_clone");
+    jetVetoMaps_H->SetDirectory(0);
+    Map2016preVFP->Close();
+    delete Map2016preVFP;
+
+    TFile *lepFR = new TFile("/users/rgoldouz/FCNC/NanoAnalysis/data/topCoffeaData/fromTTH/fakerate/fr_2016APV_2016_recorrected.root");
+    htemp = (TH2F*)lepFR->Get("FR_mva085_mu_data_comb_recorrected");
+    fr_mu_H = (TH2F*)htemp->Clone("fr_mu_H_clone");
+    fr_mu_H->SetDirectory(0);
+    htemp = (TH2F*)lepFR->Get("FR_mva090_el_data_comb_NC_recorrected");
+    fr_ele_H = (TH2F*)htemp->Clone("fr_ele_H_clone");
+    fr_ele_H->SetDirectory(0);
+    lepFR->Close();
+    delete lepFR;
+
+    TFile *lepCF = new TFile("/users/rgoldouz/FCNC/NanoAnalysis/input/fliprates_frommc_UL16APV_recorrected.root");
+    htemp = (TH2F*)lepCF->Get("chargeMisId");
+    cf_ele_H = (TH2F*)htemp->Clone("cf_ele_H_clone");
+    cf_ele_H->SetDirectory(0);
+    lepCF->Close();
+    delete lepCF;
+
+    chargeFlipNorm=0.79;
+    gLumiMask="/users/rgoldouz/FCNC/NanoAnalysis/input/Cert_271036-284044_13TeV_Legacy2016_Collisions16_JSON.txt";
+    fRun=271036;
+    lRun=284044;
+  }
+
+  if(year == "2016postVFP"){
+    JERFile1="/users/rgoldouz/FCNC/NanoAnalysis/input/JER/Summer20UL16_JRV3_MC/Summer20UL16_JRV3_MC_SF_AK4PFchs.txt";
+    JERFile2="/users/rgoldouz/FCNC/NanoAnalysis/input/JER/Summer20UL16_JRV3_MC/Summer20UL16_JRV3_MC_PtResolution_AK4PFchs.txt";
+    JECFile = "/users/rgoldouz/FCNC/NanoAnalysis/input/Summer19UL16_V7_MC/Regrouped_Summer19UL16_V7_MC_UncertaintySources_AK4PFchs.txt";
+    rochesterFile = "/users/rgoldouz/FCNC/NanoAnalysis/input/RoccoR2016bUL.txt";
+    eleSF="/users/rgoldouz/FCNC/NanoAnalysis/data/POG/EGM/2016postVFP_UL/electron.json.gz";
+    muSF= "/users/rgoldouz/FCNC/NanoAnalysis/data/POG/MUO/2016postVFP_UL/muon_Z.json.gz";
+    bSF="/users/rgoldouz/FCNC/NanoAnalysis/data/POG/BTV/2016postVFP_UL/btagging.json.gz";
+    jetSF="/users/rgoldouz/FCNC/NanoAnalysis/data/POG/JME/2016postVFP_UL/UL16postVFP_jmar.json.gz";
+    TFile *Map2016postVFP = new TFile("/users/rgoldouz/FCNC/NanoAnalysis/input/hotjets-UL16.root");
+    TH2F* htemp = (TH2F*)Map2016postVFP->Get("h2hot_ul16_plus_hbm2_hbp12_qie11");
+    jetVetoMaps_H =  (TH2F*)htemp->Clone("jetVetoMaps_H_clone");
+    jetVetoMaps_H->SetDirectory(0);
+    Map2016postVFP->Close();
+    delete Map2016postVFP;
+
+    TFile *lepFR = new TFile("/users/rgoldouz/FCNC/NanoAnalysis/data/topCoffeaData/fromTTH/fakerate/fr_2016APV_2016_recorrected.root");
+    htemp = (TH2F*)lepFR->Get("FR_mva085_mu_data_comb_recorrected");
+    fr_mu_H = (TH2F*)htemp->Clone("fr_mu_H_clone");
+    fr_mu_H->SetDirectory(0);
+    htemp = (TH2F*)lepFR->Get("FR_mva090_el_data_comb_NC_recorrected");
+    fr_ele_H = (TH2F*)htemp->Clone("fr_ele_H_clone");
+    fr_ele_H->SetDirectory(0);
+    lepFR->Close();
+    delete lepFR;
+
+    TFile *lepCF = new TFile("/users/rgoldouz/FCNC/NanoAnalysis/input/fliprates_frommc_UL16_recorrected.root");
+    htemp = (TH2F*)lepCF->Get("chargeMisId");
+    cf_ele_H = (TH2F*)htemp->Clone("cf_ele_H_clone");
+    cf_ele_H->SetDirectory(0);
+    lepCF->Close();
+    delete lepCF;
+
+    chargeFlipNorm=0.81;
+    gLumiMask="/users/rgoldouz/FCNC/NanoAnalysis/input/Cert_271036-284044_13TeV_Legacy2016_Collisions16_JSON.txt";
+    fRun=271036;
+    lRun=284044;
+  }
+
+  if(year == "2017"){
+    JERFile1="/users/rgoldouz/FCNC/NanoAnalysis/input/JER/Summer19UL17_JRV3_MC/Summer19UL17_JRV3_MC_SF_AK4PFchs.txt";
+    JERFile2="/users/rgoldouz/FCNC/NanoAnalysis/input/JER/Summer19UL17_JRV3_MC/Summer19UL17_JRV3_MC_PtResolution_AK4PFchs.txt";
+    srcnames[4] ="RelativeSample_2017"; 
+    JECFile = "/users/rgoldouz/FCNC/NanoAnalysis/input/Summer19UL17_V5_MC/Regrouped_Summer19UL17_V5_MC_UncertaintySources_AK4PFchs.txt";
+    rochesterFile = "/users/rgoldouz/FCNC/NanoAnalysis/input/RoccoR2017UL.txt";
+    eleSF="/users/rgoldouz/FCNC/NanoAnalysis/data/POG/EGM/2017_UL/electron.json.gz";
+    muSF= "/users/rgoldouz/FCNC/NanoAnalysis/data/POG/MUO/2017_UL/muon_Z.json.gz";
+    bSF="/users/rgoldouz/FCNC/NanoAnalysis/data/POG/BTV/2017_UL/btagging.json.gz";
+    jetSF="/users/rgoldouz/FCNC/NanoAnalysis/data/POG/JME/2017_UL/UL17_jmar.json.gz";
+    TFile *Map2017 = new TFile("/users/rgoldouz/FCNC/NanoAnalysis/input/hotjets-UL17_v2.root");
+    TH2F* htemp = (TH2F*)Map2017->Get("h2hot_ul17_plus_hep17_plus_hbpw89");    
+    jetVetoMaps_H = (TH2F*)htemp->Clone("jetVetoMaps_H_clone");
+    jetVetoMaps_H->SetDirectory(0);
+    Map2017->Close();
+    delete Map2017;
+
+    TFile *lepFR = new TFile("/users/rgoldouz/FCNC/NanoAnalysis/data/topCoffeaData/fromTTH/fakerate/fr_2017_recorrected.root");
+    htemp = (TH2F*)lepFR->Get("FR_mva085_mu_data_comb_recorrected");
+    fr_mu_H = (TH2F*)htemp->Clone("fr_mu_H_clone");
+    fr_mu_H->SetDirectory(0);
+    htemp = (TH2F*)lepFR->Get("FR_mva090_el_data_comb_NC_recorrected");
+    fr_ele_H = (TH2F*)htemp->Clone("fr_ele_H_clone");
+    fr_ele_H->SetDirectory(0);
+    lepFR->Close();
+    delete lepFR;
+
+    TFile *lepCF = new TFile("/users/rgoldouz/FCNC/NanoAnalysis/input/fliprates_frommc_UL17_recorrected.root");
+    htemp = (TH2F*)lepCF->Get("chargeMisId");
+    cf_ele_H = (TH2F*)htemp->Clone("cf_ele_H_clone");
+    cf_ele_H->SetDirectory(0);
+    lepCF->Close();
+    delete lepCF;
+
+    gLumiMask="/users/rgoldouz/FCNC/NanoAnalysis/input/Cert_294927-306462_13TeV_UL2017_Collisions17_GoldenJSON.txt";
+    chargeFlipNorm=1.22;
+    fRun=294927;
+    lRun=306462;
+  }
+
+  if(year == "2018"){
+    JERFile1="/users/rgoldouz/FCNC/NanoAnalysis/input/JER/Summer19UL18_JRV2_MC/Summer19UL18_JRV2_MC_SF_AK4PFchs.txt";
+    JERFile2="/users/rgoldouz/FCNC/NanoAnalysis/input/JER/Summer19UL18_JRV2_MC/Summer19UL18_JRV2_MC_PtResolution_AK4PFchs.txt";
+    srcnames[4] ="RelativeSample_2018";
+    JECFile = "/users/rgoldouz/FCNC/NanoAnalysis/input/Summer19UL18_V5_MC/Regrouped_Summer19UL18_V5_MC_UncertaintySources_AK4PFchs.txt";
+    rochesterFile = "/users/rgoldouz/FCNC/NanoAnalysis/input/RoccoR2018UL.txt";
+    eleSF="/users/rgoldouz/FCNC/NanoAnalysis/data/POG/EGM/2018_UL/electron.json.gz";
+    muSF= "/users/rgoldouz/FCNC/NanoAnalysis/data/POG/MUO/2018_UL/muon_Z.json.gz";
+    bSF="/users/rgoldouz/FCNC/NanoAnalysis/data/POG/BTV/2018_UL/btagging.json.gz";
+    jetSF="/users/rgoldouz/FCNC/NanoAnalysis/data/POG/JME/2018_UL/UL18_jmar.json.gz";
+    TFile *Map2018 = new TFile("/users/rgoldouz/FCNC/NanoAnalysis/input/hotjets-UL18.root");
+    TH2F* htemp = (TH2F*)Map2018->Get("h2hot_ul18_plus_hem1516_and_hbp2m1");
+    jetVetoMaps_H = (TH2F*)htemp->Clone("jetVetoMaps_H_clone");
+    jetVetoMaps_H->SetDirectory(0);
+    Map2018->Close();
+    delete Map2018;
+
+    TFile *lepFR = new TFile("/users/rgoldouz/FCNC/NanoAnalysis/data/topCoffeaData/fromTTH/fakerate/fr_2018_recorrected.root");
+    htemp = (TH2F*)lepFR->Get("FR_mva085_mu_data_comb_recorrected");
+    fr_mu_H = (TH2F*)htemp->Clone("fr_mu_H_clone");
+    fr_mu_H->SetDirectory(0);
+    htemp = (TH2F*)lepFR->Get("FR_mva090_el_data_comb_NC_recorrected");
+    fr_ele_H = (TH2F*)htemp->Clone("fr_ele_H_clone");
+    fr_ele_H->SetDirectory(0);
+    lepFR->Close();
+    delete lepFR;
+
+    TFile *lepCF = new TFile("/users/rgoldouz/FCNC/NanoAnalysis/input/fliprates_frommc_UL18_recorrected.root");
+    htemp = (TH2F*)lepCF->Get("chargeMisId");
+    cf_ele_H =  (TH2F*)htemp->Clone("cf_ele_H_clone");
+    cf_ele_H->SetDirectory(0);
+    delete lepCF;
+
+    lepCF->Close();
+    gLumiMask="/users/rgoldouz/FCNC/NanoAnalysis/input/Cert_314472-325175_13TeV_Legacy2018_Collisions18_JSON.txt";
+    chargeFlipNorm=1.12;
+    fRun=314472;
+    lRun=325175;
+  }
+  cout<<"Scale factor histograms are ready to be used"<<endl;
+  tree_out = new TTree("FCNC","Top FCNC analysis") ;
+  tree_out->Branch("HT"      , &HT_ , "HT/F" ) ;
+  tree_out->Branch("lep1Pt"      , &lep1Pt_ , "lep1Pt/F" ) ;
+  tree_out->Branch("lep1Eta"      , &lep1Eta_ , "lep1Eta/F" ) ;
+  tree_out->Branch("lep2Pt"      , &lep2Pt_ , "lep2Pt/F" ) ;
+  tree_out->Branch("lep2Eta"      , &lep2Eta_ , "lep2Eta/F" ) ;
+  tree_out->Branch("lep3Pt"      , &lep3Pt_ , "lep3Pt/F" ) ;
+  tree_out->Branch("lep3Eta"      , &lep3Eta_ , "lep3Eta/F" ) ;
+  tree_out->Branch("llM"      , &llM_ , "llM/F" ) ;
+  tree_out->Branch("llPt"      , &llPt_ , "llPt/F" ) ;
+  tree_out->Branch("llDr"      , &llDr_ , "llDr/F" ) ;
+  tree_out->Branch("llDphi"      , &llDphi_ , "llDphi/F" ) ;
+  tree_out->Branch("jet1Pt"      , &jet1Pt_ , "jet1Pt/F" ) ;
+  tree_out->Branch("jet1Eta"      , &jet1Eta_ , "jet1Eta/F"  ) ;
+  tree_out->Branch("bJetPt"      , &bJetPt_ , "bJetPt/F" ) ;
+  tree_out->Branch("bJetEta"      , &bJetEta_ , "bJetEta/F"  ) ;
+  tree_out->Branch("nJets"      , &nJets_ , "nJets/I"  ) ;
+  tree_out->Branch("tH_topMass"      , &tH_topMass_ , "tH_topMass/F"  ) ;
+  tree_out->Branch("tH_HMass"      , &tH_HMass_ , "tH_HMass/F"  ) ;
+  tree_out->Branch("tH_WtopMass"      , &tH_WtopMass_ , "tH_WtopMass/F"  ) ;
+  tree_out->Branch("tH_W1HMass"      , &tH_W1HMass_ , "tH_W1HMass/F"  ) ;
+  tree_out->Branch("tH_W2HMass"      , &tH_W2HMass_ , "tH_W2HMass/F"  ) ;
+  tree_out->Branch("tH_HPt"      , &tH_HPt_ , "tH_HPt/F"  ) ;
+  tree_out->Branch("tH_HEta"      , &tH_HEta_ , "tH_HEta/F"  ) ;
+  tree_out->Branch("tH_topPt"      , &tH_topPt_ , "tH_topPt/F"  ) ;
+  tree_out->Branch("tH_topEta"      , &tH_topEta_ , "tH_topEta/F"  ) ;
+  tree_out->Branch("tH_drWtopB"      , &tH_drWtopB_ , "tH_drWtopB/F"  ) ;
+  tree_out->Branch("tH_drW1HW2H"      , &tH_drW1HW2H_ , "tH_drW1HW2H/F"  ) ;
+  tree_out->Branch("tZ_topMass"      , &tZ_topMass_ , "tZ_topMass/F"  ) ;
+  tree_out->Branch("tZ_ZMass"      , &tZ_ZMass_ , "tZ_ZMass/F"  ) ;
+  tree_out->Branch("tZ_WtopMass"      , &tZ_WtopMass_ , "tZ_WtopMass/F"  ) ;
+  tree_out->Branch("tZ_ZPt"      , &tZ_ZPt_ , "tZ_ZPt/F"  ) ;
+  tree_out->Branch("tZ_ZEta"      , &tZ_ZEta_ , "tZ_ZEta/F"  ) ;
+  tree_out->Branch("tZ_topPt"      , &tZ_topPt_ , "tZ_topPt/F"  ) ;
+  tree_out->Branch("tZ_topEta"      , &tZ_topEta_ , "tZ_topEta/F"  ) ;
+
+  tree_out->Branch("weightSM"      , &weightSM_ , "weightSM/F" ) ;
+  tree_out->Branch("weightSMfake"      , &weightSMfake_ , "weightSMfake/F" ) ;
+  tree_out->Branch("weightctp"      , &weightctp_ , "weightctp/F" ) ;
+  tree_out->Branch("weightctlS"      , &weightctlS_ , "weightctlS/F" ) ;
+  tree_out->Branch("weightcte"      , &weightcte_ , "weightcte/F" ) ;
+  tree_out->Branch("weightctl"      , &weightctl_ , "weightctl/F" ) ;
+  tree_out->Branch("weightctlT"      , &weightctlT_ , "weightctlT/F" ) ;
+  tree_out->Branch("weightctZ"      , &weightctZ_ , "weightctZ/F" ) ;
+  tree_out->Branch("weightcpt"      , &weightcpt_ , "weightcpt/F" ) ;
+  tree_out->Branch("weightcpQM"      , &weightcpQM_ , "weightcpQM/F" ) ;
+  tree_out->Branch("weightctA"      , &weightctA_ , "weightctA/F" ) ;
+  tree_out->Branch("weightcQe"      , &weightcQe_ , "weightcQe/F" ) ;
+  tree_out->Branch("weightctG"      , &weightctG_ , "weightctG/F" ) ;
+  tree_out->Branch("weightcQlM"      , &weightcQlM_ , "weightcQlM/F" ) ;
+  tree_out->Branch("ch"      , &ch_, "ch/I" ) ;
+  tree_out->Branch("chFA"      , &chFA_, "chFA/I" ) ;
+  tree_out->Branch("reg"      , &reg_, "reg/I" ) ;
+  tree_out->Branch("MVATU"      , &MVATU_ , "MVATU/F" ) ;
+
+  cout<<"Output tree is ready to be used"<<endl;
+
+  csetFileEleSF = CorrectionSet::from_file(eleSF);
+  csetEleIdReco = csetFileEleSF->at("UL-Electron-ID-SF");
+
+  csetFileMuSF = CorrectionSet::from_file(muSF);
+  csetMuReco = csetFileMuSF->at("NUM_TrackerMuons_DEN_genTracks");
+  csetMuLoose = csetFileMuSF->at("NUM_LooseID_DEN_TrackerMuons");
+
+  csetFilebSF = CorrectionSet::from_file(bSF);
+  csetLightJetSF = csetFilebSF->at("deepJet_incl");
+//  auto csetBcJetSF = csetFilebSF->at("deepCSV_mujets");
+  csetBcJetSF = csetFilebSF->at("deepJet_comb");
+
+  csetFileJetSF = CorrectionSet::from_file(jetSF);
+  csetJetPuID = csetFileJetSF->at("PUJetID_eff");
+  nominalWeights.assign(sys.size(), 1);
+  sysUpWeights.assign(sys.size(), 1);
+  sysDownWeights.assign(sys.size(), 1);
+  rc.init(rochesterFile);
+
+  cout<<"Setting MVA"<<endl;
+  TMVA::Tools::Instance();
+  readerMVA3loffZ_TU = new TMVA::Reader( "!Color:!Silent" );
+  readerMVA3loffZ_TU->AddVariable( "lep1Pt",       &MVA_lep1Pt    );
+  readerMVA3loffZ_TU->AddVariable( "lep2Pt",       &MVA_lep2Pt    );
+  readerMVA3loffZ_TU->AddVariable( "lep3Pt",       &MVA_lep3Pt    );
+  readerMVA3loffZ_TU->AddVariable( "jet1Pt",       &MVA_jet1Pt    );
+  readerMVA3loffZ_TU->AddVariable( "bJetPt",       &MVA_bJetPt    );
+  readerMVA3loffZ_TU->AddVariable( "llDr",         &MVA_llDr    );
+  readerMVA3loffZ_TU->AddVariable( "llDphi",       &MVA_llDphi    );
+  readerMVA3loffZ_TU->AddVariable( "tZ_topMass",   &MVA_tZ_topMass    );
+  readerMVA3loffZ_TU->AddVariable( "tZ_ZMass",     &MVA_tZ_ZMass    );
+  readerMVA3loffZ_TU->AddVariable( "tZ_WtopMass",  &MVA_tZ_WtopMass    );
+  readerMVA3loffZ_TU->AddVariable( "tZ_ZPt",       &MVA_tZ_ZPt    );
+  readerMVA3loffZ_TU->AddVariable( "tZ_ZEta",      &MVA_tZ_ZEta    );
+  readerMVA3loffZ_TU->AddVariable( "tZ_topPt",     &MVA_tZ_topPt    );
+  readerMVA3loffZ_TU->AddVariable( "tZ_topEta",    &MVA_tZ_topEta    );
+  readerMVA3loffZ_TU->AddVariable( "nJets",        &MVA_nJets    );
+  readerMVA3loffZ_TU->BookMVA( "BDT::BDT", "/users/rgoldouz/FCNC/NanoAnalysis/MVA/tmp_TMVAClassification_TU_3loffZ/dataset/weights/TMVAMulticlass_TU_3loffZ_BDT.weights.xml");
+  readerMVA3loffZ_TC = new TMVA::Reader( "!Color:!Silent" );
+  readerMVA3loffZ_TC->AddVariable( "lep1Pt",       &MVA_lep1Pt    );
+  readerMVA3loffZ_TC->AddVariable( "lep2Pt",       &MVA_lep2Pt    );
+  readerMVA3loffZ_TC->AddVariable( "lep3Pt",       &MVA_lep3Pt    );
+  readerMVA3loffZ_TC->AddVariable( "jet1Pt",       &MVA_jet1Pt    );
+  readerMVA3loffZ_TC->AddVariable( "bJetPt",       &MVA_bJetPt    );
+  readerMVA3loffZ_TC->AddVariable( "llDr",         &MVA_llDr    );
+  readerMVA3loffZ_TC->AddVariable( "llDphi",       &MVA_llDphi    );
+  readerMVA3loffZ_TC->AddVariable( "tZ_topMass",   &MVA_tZ_topMass    );
+  readerMVA3loffZ_TC->AddVariable( "tZ_ZMass",     &MVA_tZ_ZMass    );
+  readerMVA3loffZ_TC->AddVariable( "tZ_WtopMass",  &MVA_tZ_WtopMass    );
+  readerMVA3loffZ_TC->AddVariable( "tZ_ZPt",       &MVA_tZ_ZPt    );
+  readerMVA3loffZ_TC->AddVariable( "tZ_ZEta",      &MVA_tZ_ZEta    );
+  readerMVA3loffZ_TC->AddVariable( "tZ_topPt",     &MVA_tZ_topPt    );
+  readerMVA3loffZ_TC->AddVariable( "tZ_topEta",    &MVA_tZ_topEta    );
+  readerMVA3loffZ_TC->AddVariable( "nJets",        &MVA_nJets    );
+  readerMVA3loffZ_TC->BookMVA( "BDT::BDT", "/users/rgoldouz/FCNC/NanoAnalysis/MVA/tmp_TMVAClassification_TC_3loffZ/dataset/weights/TMVAMulticlass_TC_3loffZ_BDT.weights.xml");
+
+  readerMVA3lonZ_TU = new TMVA::Reader( "!Color:!Silent" );
+  readerMVA3lonZ_TU->AddVariable( "lep1Pt",       &MVA_lep1Pt    );
+  readerMVA3lonZ_TU->AddVariable( "lep2Pt",       &MVA_lep2Pt    );
+  readerMVA3lonZ_TU->AddVariable( "lep3Pt",       &MVA_lep3Pt    );
+  readerMVA3lonZ_TU->AddVariable( "jet1Pt",       &MVA_jet1Pt    );
+  readerMVA3lonZ_TU->AddVariable( "bJetPt",       &MVA_bJetPt    );
+  readerMVA3lonZ_TU->AddVariable( "llDr",         &MVA_llDr    );
+  readerMVA3lonZ_TU->AddVariable( "llDphi",       &MVA_llDphi    );
+  readerMVA3lonZ_TU->AddVariable( "tZ_topMass",   &MVA_tZ_topMass    );
+  readerMVA3lonZ_TU->AddVariable( "tZ_WtopMass",  &MVA_tZ_WtopMass    );
+  readerMVA3lonZ_TU->AddVariable( "tZ_ZPt",       &MVA_tZ_ZPt    );
+  readerMVA3lonZ_TU->AddVariable( "tZ_ZEta",      &MVA_tZ_ZEta    );
+  readerMVA3lonZ_TU->AddVariable( "tZ_topPt",     &MVA_tZ_topPt    );
+  readerMVA3lonZ_TU->AddVariable( "tZ_topEta",    &MVA_tZ_topEta    );
+  readerMVA3lonZ_TU->AddVariable( "nJets",        &MVA_nJets    );
+  readerMVA3lonZ_TU->BookMVA( "BDT::BDT", "/users/rgoldouz/FCNC/NanoAnalysis/MVA/tmp_TMVAClassification_TU_3lonZ/dataset/weights/TMVAMulticlass_TU_3lonZ_BDT.weights.xml");  
+  readerMVA3lonZ_TC = new TMVA::Reader( "!Color:!Silent" );
+  readerMVA3lonZ_TC->AddVariable( "lep1Pt",       &MVA_lep1Pt    );
+  readerMVA3lonZ_TC->AddVariable( "lep2Pt",       &MVA_lep2Pt    );
+  readerMVA3lonZ_TC->AddVariable( "lep3Pt",       &MVA_lep3Pt    );
+  readerMVA3lonZ_TC->AddVariable( "jet1Pt",       &MVA_jet1Pt    );
+  readerMVA3lonZ_TC->AddVariable( "bJetPt",       &MVA_bJetPt    );
+  readerMVA3lonZ_TC->AddVariable( "llDr",         &MVA_llDr    );
+  readerMVA3lonZ_TC->AddVariable( "llDphi",       &MVA_llDphi    );
+  readerMVA3lonZ_TC->AddVariable( "tZ_topMass",   &MVA_tZ_topMass    );
+  readerMVA3lonZ_TC->AddVariable( "tZ_WtopMass",  &MVA_tZ_WtopMass    );
+  readerMVA3lonZ_TC->AddVariable( "tZ_ZPt",       &MVA_tZ_ZPt    );
+  readerMVA3lonZ_TC->AddVariable( "tZ_ZEta",      &MVA_tZ_ZEta    );
+  readerMVA3lonZ_TC->AddVariable( "tZ_topPt",     &MVA_tZ_topPt    );
+  readerMVA3lonZ_TC->AddVariable( "tZ_topEta",    &MVA_tZ_topEta    );
+  readerMVA3lonZ_TC->AddVariable( "nJets",        &MVA_nJets    );
+  readerMVA3lonZ_TC->BookMVA( "BDT::BDT", "/users/rgoldouz/FCNC/NanoAnalysis/MVA/tmp_TMVAClassification_TC_3lonZ/dataset/weights/TMVAMulticlass_TC_3lonZ_BDT.weights.xml");
+
+  readerMVA2lss_TU = new TMVA::Reader( "!Color:!Silent" );
+  readerMVA2lss_TU->AddVariable( "lep1Pt",         &MVA_lep1Pt );
+  readerMVA2lss_TU->AddVariable( "lep2Pt",         &MVA_lep2Pt );
+  readerMVA2lss_TU->AddVariable( "jet1Pt",         &MVA_jet1Pt );
+  readerMVA2lss_TU->AddVariable( "bJetPt",         &MVA_bJetPt );
+  readerMVA2lss_TU->AddVariable( "llM",            &MVA_llM ); 
+  readerMVA2lss_TU->AddVariable( "llPt",           &MVA_llPt );
+  readerMVA2lss_TU->AddVariable( "llDr",           &MVA_llDr );
+  readerMVA2lss_TU->AddVariable( "llDphi",         &MVA_llDphi );
+  readerMVA2lss_TU->AddVariable( "tH_topMass",     &MVA_tH_topMass );
+  readerMVA2lss_TU->AddVariable( "tH_HMass",       &MVA_tH_HMass );
+  readerMVA2lss_TU->AddVariable( "tH_WtopMass",    &MVA_tH_WtopMass );
+  readerMVA2lss_TU->AddVariable( "tH_W1HMass",     &MVA_tH_W1HMass );
+  readerMVA2lss_TU->AddVariable( "tH_W2HMass",     &MVA_tH_W2HMass );
+  readerMVA2lss_TU->AddVariable( "tH_HPt",         &MVA_tH_HPt );
+  readerMVA2lss_TU->AddVariable( "tH_HEta",        &MVA_tH_HEta );
+  readerMVA2lss_TU->AddVariable( "tH_topPt",       &MVA_tH_topPt );
+  readerMVA2lss_TU->AddVariable( "tH_topEta",      &MVA_tH_topEta );
+  readerMVA2lss_TU->AddVariable( "tH_drWtopB",     &MVA_tH_drWtopB );
+  readerMVA2lss_TU->AddVariable( "tH_drW1HW2H",    &MVA_tH_drW1HW2H );
+  readerMVA2lss_TU->AddVariable( "nJets",          &MVA_nJets );
+  readerMVA2lss_TU->BookMVA( "BDT::BDT", "/users/rgoldouz/FCNC/NanoAnalysis/MVA/tmp_TMVAClassification_TU_2lss/dataset/weights/TMVAClassification_TU_2lss_BDT.weights.xml");
+
+  readerMVA2lss_TC = new TMVA::Reader( "!Color:!Silent" );
+  readerMVA2lss_TC->AddVariable( "lep1Pt",         &MVA_lep1Pt );
+  readerMVA2lss_TC->AddVariable( "lep2Pt",         &MVA_lep2Pt );
+  readerMVA2lss_TC->AddVariable( "jet1Pt",         &MVA_jet1Pt );
+  readerMVA2lss_TC->AddVariable( "bJetPt",         &MVA_bJetPt );
+  readerMVA2lss_TC->AddVariable( "llM",            &MVA_llM );
+  readerMVA2lss_TC->AddVariable( "llPt",           &MVA_llPt );
+  readerMVA2lss_TC->AddVariable( "llDr",           &MVA_llDr );
+  readerMVA2lss_TC->AddVariable( "llDphi",         &MVA_llDphi );
+  readerMVA2lss_TC->AddVariable( "tH_topMass",     &MVA_tH_topMass );
+  readerMVA2lss_TC->AddVariable( "tH_HMass",       &MVA_tH_HMass );
+  readerMVA2lss_TC->AddVariable( "tH_WtopMass",    &MVA_tH_WtopMass );
+  readerMVA2lss_TC->AddVariable( "tH_W1HMass",     &MVA_tH_W1HMass );
+  readerMVA2lss_TC->AddVariable( "tH_W2HMass",     &MVA_tH_W2HMass );
+  readerMVA2lss_TC->AddVariable( "tH_HPt",         &MVA_tH_HPt );
+  readerMVA2lss_TC->AddVariable( "tH_HEta",        &MVA_tH_HEta );
+  readerMVA2lss_TC->AddVariable( "tH_topPt",       &MVA_tH_topPt );
+  readerMVA2lss_TC->AddVariable( "tH_topEta",      &MVA_tH_topEta );
+  readerMVA2lss_TC->AddVariable( "tH_drWtopB",     &MVA_tH_drWtopB );
+  readerMVA2lss_TC->AddVariable( "tH_drW1HW2H",    &MVA_tH_drW1HW2H );
+  readerMVA2lss_TC->AddVariable( "nJets",          &MVA_nJets );
+  readerMVA2lss_TC->BookMVA( "BDT::BDT", "/users/rgoldouz/FCNC/NanoAnalysis/MVA/tmp_TMVAClassification_TC_2lss/dataset/weights/TMVAClassification_TC_2lss_BDT.weights.xml");
+
+vsrc.resize(nsrc);
+
+  for (int isrc = 0; isrc < nsrc; isrc++) {
+    JetCorrectorParameters *p = new JetCorrectorParameters(JECFile, srcnames[isrc]);
+    JetCorrectionUncertainty *unc = new JetCorrectionUncertainty(*p);
+    vsrc[isrc] = unc;
+  }
+
+  uncRes = JME::JetResolutionScaleFactor(JERFile1);
+  resolution=JME::JetResolution(JERFile2);
+
+}
+
+
+void MyAnalysis::endHists(TString data,string year, bool ifSys){
+  for (int i=0;i<channels.size();++i){
+    for (int k=0;k<regions.size();++k){
+      for (int l=0;l<vars.size();++l){
+        Hists[i][k][l]  ->Write("",TObject::kOverwrite);
+        delete Hists[i][k][l];
+      }
+    }
+  }
+
+  for (int i=0;i<channelsFA.size();++i){
+    for (int k=0;k<regions.size();++k){
+      for (int l=0;l<varsFA.size();++l){
+        HistsFA[i][k][l]  ->Write("",TObject::kOverwrite);
+        delete HistsFA[i][k][l];
+      }
+    }
+  }
+
+  if (data == "mc" && ifSys){
+    for (int i=0;i<channelsSys.size();++i){
+      for (int k=0;k<regions.size();++k){
+        for (int l=0;l<varsSys.size();++l){
+          for (int n=0;n<sys.size();++n){
+            HistsSysUp[i][k][l][n]->Write("",TObject::kOverwrite);
+            HistsSysDown[i][k][l][n]->Write("",TObject::kOverwrite);
+            delete HistsSysUp[i][k][l][n];
+            delete HistsSysDown[i][k][l][n];
+          }
+        }
+        for (int l=0;l<varsTh.size();++l){ 
+          for (int n=0;n<sysTh.size();++n){
+            HistsThUp[i][k][l][n]->Write("",TObject::kOverwrite);
+            HistsThDown[i][k][l][n]->Write("",TObject::kOverwrite);
+            delete HistsThUp[i][k][l][n];
+            delete HistsThDown[i][k][l][n];
+          }
+        }
+      }
+    }
+  }
+  tree_out->Write();
+  delete tree_out;
+
+  Hists.clear();
+  cout<<"Hists cleaned"<<endl;
+  if(ifSys){
+    HistsSysUp.clear();
+    HistsSysUp.shrink_to_fit();
+    cout<<"HistsSysUp cleaned"<<endl;
+    HistsSysDown.clear();
+    HistsSysDown.shrink_to_fit();
+    cout<<"HistsSysDown cleaned"<<endl;
+    HistsThUp.clear();
+    HistsThUp.shrink_to_fit();
+    cout<<"HistsSysUp cleaned"<<endl;
+    HistsThDown.clear();
+    HistsThDown.shrink_to_fit();
+    cout<<"HistsSysDown cleaned"<<endl;
+  }
+}
+
+
+
+
+
+
+
+
+
+

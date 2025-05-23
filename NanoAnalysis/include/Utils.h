@@ -18,7 +18,7 @@
 #include <cmath>
 #include <vector>
 #include "RoccoR.h"
-#include "BTagCalibrationStandalone.h"
+//#include "BTagCalibrationStandalone.h"
 #include <memory>
 #include <TLorentzVector.h>
 #include "TMVA/Tools.h"
@@ -28,6 +28,8 @@
 #include <map>
 #include <string>
 #include <bitset>
+#include <random>
+#include <typeinfo>
 
 double dR(double eta1, double phi1, double eta2, double phi2);
 void displayProgress(long current, long max);
@@ -43,5 +45,14 @@ float scale_factor( TH2F* h, float X, float Y , TString uncert,bool, bool);
 float topPt(float pt);
 TLorentzVector Wneutrino(double MET, double METphi, double leptonPT, double leptonEta, double leptonPhi);
 int vInd(std::map<TString, std::vector<float>> V, TString name);
+int getVecPos(std::vector<TString> vec, string element);
+template <class T>
+void cleanVec( std::vector<T*> *vec ){
+  for( typename std::vector<T*>::iterator iter = vec->begin();  iter != vec->end(); ++iter ) delete *iter;
+  vec->clear();
+  vec->shrink_to_fit();
+  delete vec;
+}
 
+int getIndex(std::vector<TString> words, std::string target);
 #endif

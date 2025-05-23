@@ -5,16 +5,11 @@ import sys
 from lobster import cmssw
 from lobster.core import AdvancedOptions, Category, Config, MultiProductionDataset, StorageConfiguration, Workflow, Dataset,ParentDataset
 sys.path.append(os.path.abspath("."))
-import Files_2017_nano
 import Files_ULall_nano
 
 SAMPLES = {}
 SAMPLES.update(Files_ULall_nano.UL17)
-
 timestamp_tag = datetime.datetime.now().strftime('%Y%m%d_%H%M')
-
-username = "rgoldouz"
-
 production_tag = "AnalysisTOPFCNC"            # For 'full_production' setup
 
 # Only run over lhe steps from specific processes/coeffs/runs
@@ -48,35 +43,23 @@ storage = StorageConfiguration(
 #   Memory: 16000 | 8000
 #   Disk:   13000 | 6500
 #################################################################
+
 gs_resources = Category(
     name='gs',
     cores=1,
-    memory=1900,
-    disk=3800,
-)
-
-gsLL_resources = Category(
-    name='gsLL',
-    cores=1,
-    memory=3900,
-    disk=3900,
+    memory=15900,
+    disk=15900,
     mode='fixed'
 )
 
-gs_resources = Category(
-    name='gs',
-    cores=1,
-    memory=8000,
-    disk=10000
-)
 
-
-tt_resources = Category(
-    name='tt',
-    cores=1,
-    memory=12000,
-    disk=15000
-)
+#tt_resources = Category(
+#    name='tt',
+#    cores=2,
+#    memory=15900,
+#    disk=15900,
+#    mode='fixed'
+#)
 #################################################################
 wf = []
 for key, value in SAMPLES.items():
@@ -95,7 +78,7 @@ for key, value in SAMPLES.items():
 #        continue
     Analysis = Workflow(
         label='Analysis_%s' % (key),
-        sandbox=cmssw.Sandbox(release='/afs/crc.nd.edu/user/r/rgoldouz/CMSSW_10_4_0'),
+        sandbox=cmssw.Sandbox(release='/users/rgoldouz/CMSSW_10_4_0'),
         globaltag=False,
         command='python Lobster_check.py ' + key + ' ' + value[1] +' ' + value[2] +' ' +value[3] +' ' +value[4] +' ' +value[5] +' ' +value[6] +' ' +value[7] +' ' +value[8] +' ' +value[9] +' ' +value[10] +' @inputfiles',
         extra_inputs=[
@@ -105,8 +88,12 @@ for key, value in SAMPLES.items():
             '../lib/libEFTGenReaderEFTHelperUtilities.so',
             '../lib/libCondFormatsJetMETObjects.so',
             '../lib/libCondFormatsSerialization.so',
+            '../lib/libboost_serialization.so',
+            '../lib/libJetMETCorrectionsModules.so',
             '../include/MyAnalysis.h',
             '../RestFrames/lib/libRestFrames.so.1.0.0',
+            '../RestFrames/lib/libRestFrames.rootmap',
+            '../RestFrames/lib/libRestFrames_rdict.pcm',
         ],
         outputs=['ANoutput.root'],
         dataset=Dataset(

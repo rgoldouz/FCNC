@@ -35,8 +35,27 @@
 #include <TH1F.h>
 #include <chrono>
 #include <TH1EFT.h>
+#include "TTree.h"
+#include "lepton_candidate.h"
+#include "Z_candidate.h"
+#include "jet_candidate.h"
+#include "Utils.h"
+#include "correction.h"
+#include "RoccoR.h"
+#include "PU_reWeighting.h"
+//#include "BTagCalibrationStandalone.h"
+#include<complex>
+#include "CondFormats/Serialization/interface/Archive.h"
+#include "CondFormats/JetMETObjects/interface/JetCorrectorParameters.h"
+#include "CondFormats/JetMETObjects/interface/JetCorrectionUncertainty.h"
+#include "CondFormats/JetMETObjects/interface/JetResolutionObject.h"
+#include "JetMETCorrections/Modules/interface/JetResolution.h"
+#include "TMVA/Reader.h"
+#include "TMVA/Tools.h"
+
 // Header file for the classes stored in the TTree if any.
 using namespace std;
+using namespace correction;
 class MyAnalysis {
 public :
    TTree          *fChain;   //!pointer to the analyzed TTree or TChain
@@ -3434,18 +3453,279 @@ public :
    typedef vector< vector < vector < vector< TH1EFT* > > > > D4HistsContainer;
    typedef vector< vector < vector < TH1EFT* > > > D3HistsContainer;
    D3HistsContainer Hists;
+   D3HistsContainer HistsFA;
    D4HistsContainer HistsSysUp;
    D4HistsContainer HistsSysDown;
    D4HistsContainer HistsJecUp;
    D4HistsContainer HistsJecDown;
-   D4HistsContainer HistsSysReweightsQscale;
-   D4HistsContainer HistsSysReweightsPDF;
-   D4HistsContainer HistsSysReweightsPS;
+   D4HistsContainer HistsThUp;
+   D4HistsContainer HistsThDown;
+   TH1EFT *h_test;
+   void initiateHists(TString data,string year, bool ifSys);
+   void endHists(TString data,string year, bool ifSys);
+   bool trigger(TString data,TString dataset, string year);
+////////////////////////////////////////////////////////////////////////////////////
+   void objectSelection(TString data,string year);
+   void objectSelectionEnd();
+   int findRegion(std::vector<jet_candidate*> *j,int ch, int chFA);
+   void evaluateMVA(std::vector<jet_candidate*> *J, std::vector<lepton_candidate*> *L, std::vector<Z_candidate*> *Z, TString C, float &MVAS_TU, float &MVAB_TU, float &MVAS_TC, float &MVAB_TC);
+   float bTagCutWpL;
+   float bTagCutWpM;
+   float jetBTagDeepFlav(int l);
+   bool looseMuon(int l);
+   bool looseElectron(int l);
+   bool fakeMuon(int l);
+   bool fakeElectron(int l);
+   float smoothBFlav(float jetpt, float ptmin, float ptmax);
+   bool ttH_idEmu_cuts_E3(int l);
+   bool tightMuon(int l);
+   bool tightElectron(int l);
+   bool tightCharge(int l, int pdgid);
+   bool isMatched(int l, int pdgid, TString MC, bool ifChargedMatched);
+   float conept_TTH(int l, int pdgid);
+   double dxy =0.05;
+   double dz =0.1;
+   double miniRelIso=0.4 ;
+   double sip3d=8;
+   std::unique_ptr<correction::CorrectionSet> csetFileEleSF;
+   std::shared_ptr<const correction::Correction> csetEleIdReco;
+ 
+   std::unique_ptr<correction::CorrectionSet> csetFileMuSF;
+   std::shared_ptr<const correction::Correction> csetMuReco;
+   std::shared_ptr<const correction::Correction> csetMuLoose;
+ 
+   std::unique_ptr<correction::CorrectionSet> csetFilebSF;
+   std::shared_ptr<const correction::Correction> csetLightJetSF;
+   std::shared_ptr<const correction::Correction> csetBcJetSF;
+ 
+   std::unique_ptr<correction::CorrectionSet> csetFileJetSF;
+   std::shared_ptr<const correction::Correction> csetJetPuID;
+   RoccoR  rc;
+////////////////////////////////////////////////////////////////////////////////////
+//
+   TMVA::Reader* readerMVA2lss_TU;
+   TMVA::Reader* readerMVA3lonZ_TU;
+   TMVA::Reader* readerMVA3loffZ_TU;
+   TMVA::Reader* readerMVA2lss_TC;
+   TMVA::Reader* readerMVA3lonZ_TC;
+   TMVA::Reader* readerMVA3loffZ_TC;
+
+   Float_t MVA_lep1Pt;
+   Float_t MVA_lep1Eta;
+   Float_t MVA_lep2Pt;
+   Float_t MVA_lep2Eta;
+   Float_t MVA_lep3Pt;
+   Float_t MVA_lep3Eta;
+   Float_t MVA_llM;
+   Float_t MVA_llPt;
+   Float_t MVA_llDr;
+   Float_t MVA_llDphi;
+   Float_t MVA_jet1Pt;
+   Float_t MVA_jet1Eta;
+   Float_t MVA_bJetPt;
+   Float_t MVA_bJetEta;
+   Float_t   MVA_nJets;
+
+   Float_t MVA_tH_topMass;
+   Float_t MVA_tH_HMass;
+   Float_t MVA_tH_WtopMass;
+   Float_t MVA_tH_W1HMass;
+   Float_t MVA_tH_W2HMass;
+   Float_t MVA_tH_HPt;
+   Float_t MVA_tH_HEta;
+   Float_t MVA_tH_topPt;
+   Float_t MVA_tH_topEta;
+   Float_t MVA_tH_drWtopB;
+   Float_t MVA_tH_drW1HW2H;
+
+   Float_t MVA_tZ_topMass;
+   Float_t MVA_tZ_ZMass;
+   Float_t MVA_tZ_WtopMass;
+   Float_t MVA_tZ_ZPt;
+   Float_t MVA_tZ_ZEta;
+   Float_t MVA_tZ_topPt;
+   Float_t MVA_tZ_topEta;
+////////////////////////////////////////////////////////////////////////////////////
    void FillD3Hists(D3HistsContainer H3, std::vector<int> v1, std::vector<int> v2, int v3, float value, std::vector<std::vector<float>> weight, std::vector<std::vector<WCFit>> wcfit);
 //   void FillD3Hists(D3HistsContainer H3, int v1, std::vector<int> v2, int v3, float value, std::vector<float> weight, std::vector<WCFit>);
-   void FillD4Hists(D4HistsContainer H4, int v1, std::vector<int> v2, int v3, int v4, float value, std::vector<float> weight, std::vector<WCFit>);
+   void FillD4Hists(D4HistsContainer H4, std::vector<int> v1, std::vector<int> v2, int v3, float value, std::vector<std::vector<float>> weight, std::vector<std::vector<WCFit>> wcfit, int n);
    virtual Bool_t   Notify();
    virtual void     Show(Long64_t entry = -1);
+   std::vector<TString> channels{"2lss", "2los_Weighted", "2los_EpEm_CR", "2los_MUpMUm_CR", "2los_EpmMUmp_CR", "3lonZ", "3loffZhigh", "3loffZlow","4l_CR"};
+   std::vector<TString> channelsFA{"2lss_LF", "2lss_FF", "3lonZ_LLF", "3lonZ_LFF","3lonZ_FFF","3loffZhigh_LLF", "3loffZhigh_LFF","3loffZhigh_FFF", "3loffZlow_LLF", "3loffZlow_LFF","3loffZlow_FFF"};
+   std::vector<TString> channelsSys{"2lss", "3lonZ", "3loffZhigh"};
+   std::vector<TString> regions{"0b","1bLj", "1bHj","G1b"};
+   std::vector<TString> sys{"eleRecoIdIso","muRecoIdIso","triggerSF","pu","prefiring","bcTagSfCorr","LTagSfCorr","bcTagSfUnCorr","LTagSfUnCorr","JetPuID", "JesFlavorQCD", "JesBBEC1", "JesAbsolute", "JesRelativeBal", "JesRelativeSample","Jes","Jer"};
+   std::vector<TString> sysJec{"JesFlavorQCD", "JesBBEC1", "JesAbsolute", "JesRelativeBal", "JesRelativeSample","Jes","Jer"};
+   std::vector<TString> sysNotWeight{"JesFlavorQCD", "JesBBEC1", "JesAbsolute", "JesRelativeBal", "JesRelativeSample","Jes","Jer"};
+   std::vector<TString> sysTh{"PDF","Renormalization","Factorization", "ISR", "FSR"};
+   const int nsrc = 6;
+   std::vector<float> nominalWeights;
+   std::vector<float> sysDownWeights;
+   std::vector<float> sysUpWeights;
+
+   PU wPU;
+   const std::map<TString, std::vector<float>> vars =
+   {
+    {"lep1Pt",                         {0,      60,   0,  1500}},
+    {"lep1Eta",                        {1,      20,   -3, 3   }},
+    {"lep1Phi",                        {2,      25,   -4, 4   }},
+    {"lep2Pt",                         {3,      25,   0,  1000}},
+    {"lep2Eta",                        {4,      20,   -3, 3   }},
+    {"lep2Phi",                        {5,      25,   -4, 4   }},
+    {"llM",                            {6,      30,    0, 500 }},
+    {"llPt",                           {7,      20,    0, 200 }},
+    {"llDr",                           {8,      25,    0, 7   }},
+    {"llDphi",                         {9,      15,    0, 4   }},
+    {"jet1Pt",                         {10,     20,    0, 300 }},
+    {"jet1Eta",                        {11,     20,    -3, 3  }},
+    {"jet1Phi",                        {12,     25,    -4, 4  }},
+    {"njet",                           {13,     10,    0, 10  }},
+    {"nbjet",                          {14,     6,     0, 6   }},
+    {"Met",                            {15,     30,    0, 210 }},
+    {"MetPhi",                         {16,     20,    -4, 4  }},
+    {"nVtx",                           {17,     70,    0, 70  }},
+    {"llMZw",                          {18,     80,    70, 110}},
+    {"MVATU",                          {19,   500,    0, 50}},
+    {"MVATC",                          {20,   500,    0, 50}},
+   };
+   const std::map<TString, std::vector<float>> varsFA =
+   {
+    {"lep1Pt",                         {0,      60,   0,  1500}},
+    {"lep1Eta",                        {1,      20,   -3, 3   }},
+    {"lep1Phi",                        {2,      25,   -4, 4   }},
+    {"lep2Pt",                         {3,      25,   0,  1000}},
+    {"lep2Eta",                        {4,      20,   -3, 3   }},
+    {"lep2Phi",                        {5,      25,   -4, 4   }},
+    {"jet1Pt",                         {6,     20,    0, 300 }},
+    {"jet1Eta",                        {7,     20,    -3, 3  }},
+    {"jet1Phi",                        {8,     25,    -4, 4  }},
+    {"njet",                           {9,     10,    0, 10  }},
+    {"MVATU",                          {10,   500,    0, 50}},
+    {"MVATC",                          {11,   500,    0, 50}},
+   };
+
+   const std::map<TString, std::vector<float>> varsSys =
+   {
+    {"lep1Pt",                         {0,      60,   0,  1500}},
+    {"lep1Eta",                        {1,      20,   -3, 3   }},
+    {"jet1Pt",                         {2,     20,    0, 300 }},
+    {"jet1Eta",                        {3,     20,    -3, 3  }},
+    {"njet",                           {4,     10,    0, 10  }},
+    {"Met",                            {5,     30,    0, 210 }},
+    {"nVtx",                           {6,     70,    0, 70  }},
+    {"MVATU",                          {7,   500,    0, 50}},
+    {"MVATC",                          {8,   500,    0, 50}},
+   };
+
+   const std::map<TString, std::vector<float>> varsTh =
+   {
+    {"MVATU",                          {0,   500,    0, 50}},
+    {"MVATC",                          {1,   500,    0, 50}},
+   };
+
+   TH2F*  btagEff_b_H;
+   TH2F*  btagEff_c_H;
+   TH2F*  btagEff_udsg_H;
+   TH2F*  sf_triggeree_H;
+   TH2F*  sf_triggeremu_H;
+   TH2F*  sf_triggermumu_H;
+   TH2F*  jetVetoMaps_H;
+   TH2F*  highPtMuRecoSF_pVsAbsEta_H;
+   TH2F*  sf_muonIsoIp_H;
+   TH2F*  sf_muonLooseMVATight_H;
+   TH2F*  sf_eleLoose_H;
+   TH2F*  sf_eleIsoIp_H;
+   TH2F*  sf_eleLooseMVATight_H;
+   TH2F*  sf_eleLooseMVATight2lss_H;
+   TH2F*  fr_mu_H;
+   TH2F*  fr_ele_H;
+   TH2F*  cf_ele_H;
+   string rochesterFile;
+   string btagFile;
+   string eleSF;
+   string muSF;
+   string bSF;
+   string JECFile;
+   string JERFile1;
+   string JERFile2;
+   string jetSF;
+   string lepFR;
+   string gLumiMask;
+   unsigned int fRun;
+   unsigned int lRun;
+   float chargeFlipNorm;
+   std::vector<JetCorrectionUncertainty*> vsrc;
+   JME::JetResolutionScaleFactor uncRes;
+   JME::JetResolution resolution;
+
+  float HT_;
+  float lep1Pt_;
+  float lep1Eta_;
+  float lep2Pt_;
+  float lep2Eta_;
+  float lep3Pt_;
+  float lep3Eta_;
+  float llM_;
+  float llPt_;
+  float llDr_;
+  float llDphi_;
+  float jet1Pt_;
+  float jet1Eta_;
+  float bJetPt_;
+  float bJetEta_;
+  int nJets_;
+  float weightSM_;
+  float weightSMfake_;
+
+  float tH_topMass_;
+  float tH_HMass_;
+  float tH_WtopMass_;
+  float tH_W1HMass_;
+  float tH_W2HMass_;
+  float tH_HPt_;
+  float tH_HEta_;
+  float tH_topPt_;
+  float tH_topEta_;
+  float tH_drWtopB_;
+  float tH_drW1HW2H_;
+
+
+  float tZ_topMass_;
+  float tZ_ZMass_;
+  float tZ_WtopMass_;
+  float tZ_ZPt_;
+  float tZ_ZEta_;
+  float tZ_topPt_;
+  float tZ_topEta_;
+  float MVATU_;
+
+  int ch_;
+  int chFA_;
+  int reg_;
+  float weightctp_;
+  float weightctlS_;
+  float weightcte_;
+  float weightctl_;
+  float weightctlT_;
+  float weightctZ_;
+  float weightcpt_;
+  float weightcpQM_;
+  float weightctA_;
+  float weightcQe_;
+  float weightctG_;
+  float weightcQlM_;
+
+  TTree *tree_out;
+  std::vector<lepton_candidate*> *selectedLeptons;
+  std::vector<lepton_candidate*> *selectedPLeptons;
+  std::vector<lepton_candidate*> *selectedFLeptons;
+  std::vector<lepton_candidate*> *selectedLooseLeptons;
+  std::vector<Z_candidate*> *Z_P;
+  std::vector<Z_candidate*> *Z_FP;
+  std::vector<jet_candidate*> *selectedJets;
+  std::vector<std::vector<jet_candidate*>> *JECsysUp;
+  std::vector<std::vector<jet_candidate*>> *JECsysDown;
 };
 
 #endif
