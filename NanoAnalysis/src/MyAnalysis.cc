@@ -44,6 +44,10 @@
 #include "stdio.h"
 #include "string.h"
 #include <regex>
+#include <TFileMerger.h>
+#include <malloc.h>
+#include <thread>
+
 #endif
 
 
@@ -54,10 +58,8 @@
 RestFrames::RFKey ensure_autoload(1);
 #endif
 using namespace RestFrames;
-
 using namespace correction;
 using namespace std;
-
 /*
 void example_Zll(const std::string& output_name = "output_Zll.root"){
 
@@ -234,6 +236,7 @@ int parseLine(char* line){
 int getValue(){ //Note: this value is in KB!
     FILE* file = fopen("/proc/self/status", "r");
     int result = -1;
+    int resultVmm = -1;
     char line[128];
 
     while (fgets(line, 128, file) != NULL){
@@ -264,8 +267,22 @@ bool ifSysNeeded(std::vector<lepton_candidate*> *lep, float cut){
 }     
 
 
-void MyAnalysis::Loop(TString fname, TString data, TString dataset ,string year, TString Run, float xs, float lumi, float Nevent, int iseft, int nRuns, int onlyGen, MyAnalysis *Evt){
+void MyAnalysis::Analyze(TString fname, TString data, TString dataset ,string year, TString Run, float xs, float lumi, float Nevent, int iseft, int nRuns, int onlyGen, MyAnalysis *Evt){
+  if (fChain == 0) return;
+  inputs(data, year);
+  Long64_t nentries = fChain->GetEntriesFast();
+  Long64_t nbytes = 0, nb = 0;
+  Long64_t ntr = fChain->GetEntries ();
+  Long64_t CHUNK_SIZE = 3000;
+  if (data == "data") CHUNK_SIZE = 20000;
+  for (Long64_t chunkStart = 0; chunkStart < ntr; chunkStart += CHUNK_SIZE) {
+    Long64_t chunkEnd = std::min(chunkStart + CHUNK_SIZE, ntr);
+    std::cout << "Processing events from " << chunkStart << " to " << chunkEnd - 1 << std::endl;
+    Loop(fname, data, dataset , year, Run, xs, lumi, Nevent, iseft, nRuns, onlyGen, Evt, chunkStart, chunkEnd);
+  }
+}
 
+void MyAnalysis::Loop(TString fname, TString data, TString dataset ,string year, TString Run, float xs, float lumi, float Nevent, int iseft, int nRuns, int onlyGen, MyAnalysis *Evt, Long64_t start, Long64_t end){
 //*** decide if you want to run with or without saving systematic uncertainty histograms
   bool ifSys=true;
 //*** make the histograms and all needed information ready to start the analysis 
@@ -322,7 +339,6 @@ void MyAnalysis::Loop(TString fname, TString data, TString dataset ,string year,
   if (fname.Contains("FCNC") && iseft) wc_names_lst = wc_names_lst_FCNC;
   if (fname.Contains("SMEFT") && iseft) wc_names_lst = wc_names_lst_SMEFT;
   string listWC="";
-//  TFile file_out ("ANoutput.root","RECREATE");
 
   WCFit *eft_fit;
 
@@ -383,6 +399,10 @@ void MyAnalysis::Loop(TString fname, TString data, TString dataset ,string year,
   wcfitFA[0].resize(regions.size());
   int nLHEl;
   float fakeRate;
+  std::vector<float> sysDownWeightsFA;
+  std::vector<float> sysUpWeightsFA;
+  sysUpWeightsFA.assign(sysFA.size(), 1);
+  sysDownWeightsFA.assign(sysFA.size(), 1);
   float fi;
   float probChOS;
   int lZp;
@@ -398,11 +418,14 @@ void MyAnalysis::Loop(TString fname, TString data, TString dataset ,string year,
   Long64_t ntr = fChain->GetEntries ();
 
 //Loop over events
-  for (Long64_t jentry=0; jentry<nentries;jentry++) {
+cout<<"starting loop with  Virtual Memory: "<<getValue()/1048576.0<<" GB"<<endl;
+//  for (Long64_t jentry=0; jentry<nentries;jentry++) {
+  for (Long64_t jentry=start; jentry<end;jentry++) {
     Long64_t ientry = LoadTree(jentry);
     if (ientry < 0) break;
     nb = fChain->GetEntry(jentry);   nbytes += nb;
     displayProgress(jentry, ntr) ;
+    if (jentry % 1000 == 0) cout<<"Virtual Memory: "<<getValue()/1048576.0<<" GB"<<endl;
     tH_topMass_=-999;    tH_HMass_=-999;    tH_WtopMass_=-999;    tH_W1HMass_=-999;    tH_W2HMass_=-999;    tH_HPt_=-999;    tH_HEta_=-999;    tH_topPt_=-999;    tH_topEta_=-999;    tH_drWtopB_=-999;    tH_drW1HW2H_=-999;
     tZ_topMass_=-999; tZ_ZMass_=-999; tZ_WtopMass_=-999; tZ_ZPt_=-999; tZ_ZEta_=-999; tZ_topPt_=-999; tZ_topEta_=-999;
 //write out the WCs at the begining of the code to make sure what you have set is used in the sample
@@ -541,19 +564,22 @@ void MyAnalysis::Loop(TString fname, TString data, TString dataset ,string year,
     weight_EFT =1;
     nbjet=0;
     MVAS_TU=0;
-    MVAB_TU=0;
+    MVAB_TU=1;
     MVAS_TC=0;
-    MVAB_TC=0;
+    MVAB_TC=1;
     MVAS_TUFA=0;
-    MVAB_TUFA=0;
+    MVAB_TUFA=1;
     MVAS_TCFA=0;
-    MVAB_TCFA=0;
+    MVAB_TCFA=1;
     HTjets=0;
 
     fakeRate=1;
     fi=1;
     probChOS=1;
-
+    for (int n=0;n<sysFA.size();++n){
+      sysUpWeightsFA[n] =1;
+      sysDownWeightsFA[n] =1;
+    }
     if (iseft) {
       eft_fit = new WCFit(nWCnames, wc_names_lst, nEFTfitCoefficients, EFTfitCoefficients, (xs/Nevent)*(1.0/LHEWeight_originalXWGTUP));
 //      eft_fit = new WCFit(nWCnames, wc_names_lst, nEFTfitCoefficients, EFTfitCoefficients, 1.0/nRuns);
@@ -610,10 +636,10 @@ void MyAnalysis::Loop(TString fname, TString data, TString dataset ,string year,
       if (leptonPass && sumFlavour== 11 && sumCharge==0 && tightCharge((*selectedPLeptons)[0]->indice_ , (*selectedPLeptons)[0]->pdgid_) && tightCharge((*selectedPLeptons)[1]->indice_ , (*selectedPLeptons)[1]->pdgid_)) ch=getVecPos(channels,"2los_EpmMUmp_CR");
       if (leptonPass && sumFlavour== 20 && sumCharge==0 && tightCharge((*selectedPLeptons)[0]->indice_ , (*selectedPLeptons)[0]->pdgid_) && tightCharge((*selectedPLeptons)[1]->indice_ , (*selectedPLeptons)[1]->pdgid_)) ch=getVecPos(channels,"2los_MUpMUm_CR");
 //same-sign dilepton channels
-      if (leptonPass &&  (sumCharge>0 || sumCharge<0) && tightCharge((*selectedPLeptons)[0]->indice_ , (*selectedPLeptons)[0]->pdgid_) && tightCharge((*selectedPLeptons)[1]->indice_ , (*selectedPLeptons)[1]->pdgid_) && isMatched((*selectedPLeptons)[0]->indice_ , (*selectedPLeptons)[0]->pdgid_,data, true) && isMatched((*selectedPLeptons)[1]->indice_ , (*selectedPLeptons)[1]->pdgid_,data,true) ) ch=getVecPos(channels,"2lss");
+      if (leptonPass &&  (sumCharge>0 || sumCharge<0) && tightCharge((*selectedPLeptons)[0]->indice_ , (*selectedPLeptons)[0]->pdgid_) && tightCharge((*selectedPLeptons)[1]->indice_ , (*selectedPLeptons)[1]->pdgid_) && isMatched((*selectedPLeptons)[0]->indice_ , (*selectedPLeptons)[0]->pdgid_,data, false) && isMatched((*selectedPLeptons)[1]->indice_ , (*selectedPLeptons)[1]->pdgid_,data,false) ) ch=getVecPos(channels,"2lss");
 //charged flip application regions
       if(sumFlavour== 2 && sumCharge==0){
-        if (leptonPass && tightCharge((*selectedPLeptons)[0]->indice_ , (*selectedPLeptons)[0]->pdgid_) && tightCharge((*selectedPLeptons)[1]->indice_ , (*selectedPLeptons)[1]->pdgid_) && isMatched((*selectedPLeptons)[0]->indice_ , (*selectedPLeptons)[0]->pdgid_,data,true) && isMatched((*selectedPLeptons)[1]->indice_ , (*selectedPLeptons)[1]->pdgid_,data,true)) {
+        if (leptonPass && tightCharge((*selectedPLeptons)[0]->indice_ , (*selectedPLeptons)[0]->pdgid_) && tightCharge((*selectedPLeptons)[1]->indice_ , (*selectedPLeptons)[1]->pdgid_) && isMatched((*selectedPLeptons)[0]->indice_ , (*selectedPLeptons)[0]->pdgid_,data,false) && isMatched((*selectedPLeptons)[1]->indice_ , (*selectedPLeptons)[1]->pdgid_,data,false)) {
           chOSppWeighted=getVecPos(channels,"2los_Weighted");
             //the probability that one is mis-measured and the other is correct:
             //P(\text{same-sign}) = p1 (1 - p2) + (1 - p1) p2 
@@ -621,7 +647,7 @@ void MyAnalysis::Loop(TString fname, TString data, TString dataset ,string year,
         }
       }
       if(sumFlavour== 11 && sumCharge==0){
-        if (leptonPass && tightCharge((*selectedPLeptons)[0]->indice_ , (*selectedPLeptons)[0]->pdgid_) && tightCharge((*selectedPLeptons)[1]->indice_ , (*selectedPLeptons)[1]->pdgid_) && isMatched((*selectedPLeptons)[0]->indice_ , (*selectedPLeptons)[0]->pdgid_,data,true) && isMatched((*selectedPLeptons)[1]->indice_ , (*selectedPLeptons)[1]->pdgid_,data,true)) {
+        if (leptonPass && tightCharge((*selectedPLeptons)[0]->indice_ , (*selectedPLeptons)[0]->pdgid_) && tightCharge((*selectedPLeptons)[1]->indice_ , (*selectedPLeptons)[1]->pdgid_) && isMatched((*selectedPLeptons)[0]->indice_ , (*selectedPLeptons)[0]->pdgid_,data,false) && isMatched((*selectedPLeptons)[1]->indice_ , (*selectedPLeptons)[1]->pdgid_,data,false)) {
           if((*selectedPLeptons)[0]->lep_==1){
             chOSppWeighted=getVecPos(channels,"2los_Weighted");
             probChOS= scale_factor(cf_ele_H, (*selectedPLeptons)[0]->pt_, abs((*selectedPLeptons)[0]->eta_),"central", true, false);
@@ -717,30 +743,30 @@ void MyAnalysis::Loop(TString fname, TString data, TString dataset ,string year,
       leptonPass=false;
       if(selectedPLeptons->size() ==1){
         if ((*selectedLeptons)[0]->pt_ > 25 && (*selectedLeptons)[1]->pt_ > 15) leptonPass=true;
-        if (leptonPass && sumCharge !=0 && tightCharge((*selectedLeptons)[0]->indice_ , (*selectedLeptons)[0]->pdgid_) && tightCharge((*selectedLeptons)[1]->indice_ , (*selectedLeptons)[1]->pdgid_)) chFA=getVecPos(channelsFA,"2lss_LF");
+        if (leptonPass && sumCharge !=0 && tightCharge((*selectedLeptons)[0]->indice_ , (*selectedLeptons)[0]->pdgid_) && tightCharge((*selectedLeptons)[1]->indice_ , (*selectedLeptons)[1]->pdgid_)&& isMatched((*selectedLeptons)[0]->indice_ , (*selectedLeptons)[0]->pdgid_,data, true) && isMatched((*selectedLeptons)[1]->indice_ , (*selectedLeptons)[1]->pdgid_,data,true)) chFA=getVecPos(channelsFA,"2lss_LF");
       }
 
       if(selectedPLeptons->size() ==2){
         if ((*selectedLeptons)[0]->pt_ > 25 && (*selectedLeptons)[1]->pt_ > 15) leptonPass=true;
         if((*selectedLeptons)[2]->lep_== 1 && (*selectedLeptons)[2]->pt_ <15) leptonPass=false;
-        if (leptonPass && onZ) chFA=getVecPos(channelsFA,"3lonZ_LLF");
-        if (leptonPass && !onZ && offZhigh) chFA=getVecPos(channelsFA,"3loffZhigh_LLF");
-        if (leptonPass && !onZ && !offZhigh) chFA=getVecPos(channelsFA,"3loffZlow_LLF");
+        if (leptonPass && onZ && isMatched((*selectedLeptons)[0]->indice_ , (*selectedLeptons)[0]->pdgid_,data,false) && isMatched((*selectedLeptons)[1]->indice_ , (*selectedLeptons)[1]->pdgid_,data,false)  && isMatched((*selectedLeptons)[2]->indice_ , (*selectedLeptons)[2]->pdgid_,data,false)) chFA=getVecPos(channelsFA,"3lonZ_LLF");
+        if (leptonPass && !onZ && offZhigh && isMatched((*selectedLeptons)[0]->indice_ , (*selectedLeptons)[0]->pdgid_,data,false) && isMatched((*selectedLeptons)[1]->indice_ , (*selectedLeptons)[1]->pdgid_,data,false)  && isMatched((*selectedLeptons)[2]->indice_ , (*selectedLeptons)[2]->pdgid_,data,false)) chFA=getVecPos(channelsFA,"3loffZhigh_LLF");
+        if (leptonPass && !onZ && !offZhigh && isMatched((*selectedLeptons)[0]->indice_ , (*selectedLeptons)[0]->pdgid_,data,false) && isMatched((*selectedLeptons)[1]->indice_ , (*selectedLeptons)[1]->pdgid_,data,false)  && isMatched((*selectedLeptons)[2]->indice_ , (*selectedLeptons)[2]->pdgid_,data,false)) chFA=getVecPos(channelsFA,"3loffZlow_LLF");
       }
     }
     if(selectedFLeptons->size()==2){
       leptonPass=false;
       if(selectedPLeptons->size() ==0){
         if ((*selectedLeptons)[0]->pt_ > 25 && (*selectedLeptons)[1]->pt_ > 15) leptonPass=true;
-        if (leptonPass &&  sumCharge!=0 && tightCharge((*selectedLeptons)[0]->indice_ , (*selectedLeptons)[0]->pdgid_) && tightCharge((*selectedLeptons)[1]->indice_ , (*selectedLeptons)[1]->pdgid_) ) chFA=getVecPos(channelsFA,"2lss_FF");
+        if (leptonPass &&  sumCharge!=0 && tightCharge((*selectedLeptons)[0]->indice_ , (*selectedLeptons)[0]->pdgid_) && tightCharge((*selectedLeptons)[1]->indice_ , (*selectedLeptons)[1]->pdgid_) && isMatched((*selectedLeptons)[0]->indice_ , (*selectedLeptons)[0]->pdgid_,data, true) && isMatched((*selectedLeptons)[1]->indice_ , (*selectedLeptons)[1]->pdgid_,data,true) ) chFA=getVecPos(channelsFA,"2lss_FF");
       }
 
       if(selectedPLeptons->size() ==1){
         if ((*selectedLeptons)[0]->pt_ > 25 && (*selectedLeptons)[1]->pt_ > 15) leptonPass=true;
         if((*selectedLeptons)[2]->lep_== 1 && (*selectedLeptons)[2]->pt_ <15) leptonPass=false;
-        if (leptonPass && onZ) chFA=getVecPos(channelsFA,"3lonZ_LFF");
-        if (leptonPass && !onZ && offZhigh ) chFA=getVecPos(channelsFA,"3loffZhigh_LFF");
-        if (leptonPass && !onZ && !offZhigh ) chFA=getVecPos(channelsFA,"3loffZlow_LFF");
+        if (leptonPass && onZ && isMatched((*selectedLeptons)[0]->indice_ , (*selectedLeptons)[0]->pdgid_,data,false) && isMatched((*selectedLeptons)[1]->indice_ , (*selectedLeptons)[1]->pdgid_,data,false)  && isMatched((*selectedLeptons)[2]->indice_ , (*selectedLeptons)[2]->pdgid_,data,false)) chFA=getVecPos(channelsFA,"3lonZ_LFF");
+        if (leptonPass && !onZ && offZhigh && isMatched((*selectedLeptons)[0]->indice_ , (*selectedLeptons)[0]->pdgid_,data,false) && isMatched((*selectedLeptons)[1]->indice_ , (*selectedLeptons)[1]->pdgid_,data,false)  && isMatched((*selectedLeptons)[2]->indice_ , (*selectedLeptons)[2]->pdgid_,data,false)) chFA=getVecPos(channelsFA,"3loffZhigh_LFF");
+        if (leptonPass && !onZ && !offZhigh && isMatched((*selectedLeptons)[0]->indice_ , (*selectedLeptons)[0]->pdgid_,data,false) && isMatched((*selectedLeptons)[1]->indice_ , (*selectedLeptons)[1]->pdgid_,data,false)  && isMatched((*selectedLeptons)[2]->indice_ , (*selectedLeptons)[2]->pdgid_,data,false) ) chFA=getVecPos(channelsFA,"3loffZlow_LFF");
       }
     }
     if(selectedFLeptons->size()==3){
@@ -748,9 +774,9 @@ void MyAnalysis::Loop(TString fname, TString data, TString dataset ,string year,
       if(selectedPLeptons->size() ==0){
         if ((*selectedLeptons)[0]->pt_ > 25 && (*selectedLeptons)[1]->pt_ > 15) leptonPass=true;
         if((*selectedLeptons)[2]->lep_== 1 && (*selectedLeptons)[2]->pt_ <15) leptonPass=false;
-        if (leptonPass && onZ) chFA=getVecPos(channelsFA,"3lonZ_FFF");
-        if (leptonPass && !onZ && offZhigh) chFA=getVecPos(channelsFA,"3loffZhigh_FFF");
-        if (leptonPass && !onZ && !offZhigh) chFA=getVecPos(channelsFA,"3loffZlow_FFF");
+        if (leptonPass && onZ && isMatched((*selectedLeptons)[0]->indice_ , (*selectedLeptons)[0]->pdgid_,data,false) && isMatched((*selectedLeptons)[1]->indice_ , (*selectedLeptons)[1]->pdgid_,data,false)  && isMatched((*selectedLeptons)[2]->indice_ , (*selectedLeptons)[2]->pdgid_,data,false)) chFA=getVecPos(channelsFA,"3lonZ_FFF");
+        if (leptonPass && !onZ && offZhigh && isMatched((*selectedLeptons)[0]->indice_ , (*selectedLeptons)[0]->pdgid_,data,false) && isMatched((*selectedLeptons)[1]->indice_ , (*selectedLeptons)[1]->pdgid_,data,false)  && isMatched((*selectedLeptons)[2]->indice_ , (*selectedLeptons)[2]->pdgid_,data,false)) chFA=getVecPos(channelsFA,"3loffZhigh_FFF");
+        if (leptonPass && !onZ && !offZhigh && isMatched((*selectedLeptons)[0]->indice_ , (*selectedLeptons)[0]->pdgid_,data,false) && isMatched((*selectedLeptons)[1]->indice_ , (*selectedLeptons)[1]->pdgid_,data,false)  && isMatched((*selectedLeptons)[2]->indice_ , (*selectedLeptons)[2]->pdgid_,data,false)) chFA=getVecPos(channelsFA,"3loffZlow_FFF");
       }
    }
 //if (ch==getVecPos(channels,"LFpp")) cout<<run<<":"<<luminosityBlock<<":"<<event<<endl;
@@ -797,18 +823,33 @@ void MyAnalysis::Loop(TString fname, TString data, TString dataset ,string year,
 //  }
 
    }
-
    for (UInt_t i=0;i<selectedFLeptons->size();i++){
      if ((*selectedFLeptons)[i]->lep_ == 1) fi = scale_factor(fr_ele_H, (*selectedFLeptons)[i]->pt_, abs((*selectedFLeptons)[i]->eta_),"central", true, false);
      else fi =scale_factor(fr_mu_H, (*selectedFLeptons)[i]->pt_, abs((*selectedFLeptons)[i]->eta_),"central", true, false);
      fakeRate=fakeRate*(fi/(1-fi));
+     if ((*selectedFLeptons)[i]->lep_ == 1) fi = scale_factor(fr_ele_H_up, (*selectedFLeptons)[i]->pt_, abs((*selectedFLeptons)[i]->eta_),"central", true, false);
+     else fi =scale_factor(fr_mu_H_up, (*selectedFLeptons)[i]->pt_, abs((*selectedFLeptons)[i]->eta_),"central", true, false);
+     sysUpWeightsFA[0]=sysUpWeightsFA[0]*(fi/(1-fi));
+     if ((*selectedFLeptons)[i]->lep_ == 1) fi = scale_factor(fr_ele_H_down, (*selectedFLeptons)[i]->pt_, abs((*selectedFLeptons)[i]->eta_),"central", true, false);
+     else fi =scale_factor(fr_mu_H_down, (*selectedFLeptons)[i]->pt_, abs((*selectedFLeptons)[i]->eta_),"central", true, false);
+     sysDownWeightsFA[0]=sysDownWeightsFA[0]*(fi/(1-fi));
+     if ((*selectedFLeptons)[i]->lep_ == 1) fi = scale_factor(fr_ele_H_ptUp, (*selectedFLeptons)[i]->pt_, abs((*selectedFLeptons)[i]->eta_),"central", true, false);
+     else fi =scale_factor(fr_mu_H_ptUp, (*selectedFLeptons)[i]->pt_, abs((*selectedFLeptons)[i]->eta_),"central", true, false);
+     sysUpWeightsFA[1]=sysUpWeightsFA[1]*(fi/(1-fi));
+     if ((*selectedFLeptons)[i]->lep_ == 1) fi = scale_factor(fr_ele_H_ptDown, (*selectedFLeptons)[i]->pt_, abs((*selectedFLeptons)[i]->eta_),"central", true, false);
+     else fi =scale_factor(fr_mu_H_ptDown, (*selectedFLeptons)[i]->pt_, abs((*selectedFLeptons)[i]->eta_),"central", true, false);
+     sysDownWeightsFA[1]=sysDownWeightsFA[1]*(fi/(1-fi));
+     if ((*selectedFLeptons)[i]->lep_ == 1) fi = scale_factor(fr_ele_H_etaUp, (*selectedFLeptons)[i]->pt_, abs((*selectedFLeptons)[i]->eta_),"central", true, false);
+     else fi =scale_factor(fr_mu_H_etaUp, (*selectedFLeptons)[i]->pt_, abs((*selectedFLeptons)[i]->eta_),"central", true, false);
+     sysUpWeightsFA[2]=sysUpWeightsFA[2]*(fi/(1-fi));
+     if ((*selectedFLeptons)[i]->lep_ == 1) fi = scale_factor(fr_ele_H_etaDown, (*selectedFLeptons)[i]->pt_, abs((*selectedFLeptons)[i]->eta_),"central", true, false);
+     else fi =scale_factor(fr_mu_H_etaDown, (*selectedFLeptons)[i]->pt_, abs((*selectedFLeptons)[i]->eta_),"central", true, false);
+     sysDownWeightsFA[2]=sysDownWeightsFA[2]*(fi/(1-fi));
    }
    if (iseft) eft_fit = new WCFit(nWCnames, wc_names_lst, nEFTfitCoefficients, EFTfitCoefficients, weight_EFT);
    else eft_fit = new WCFit(0,wc_names_lst,1, &genWeight, 1.0);
 
 
-   if(chFA<30 && nbjet==1) evaluateMVA(selectedJets, selectedLeptons, Z_FP, channelsFA[chFA],  MVAS_TUFA, MVAB_TUFA, MVAS_TCFA, MVAB_TCFA);
-   if(ch<30 && nbjet==1) evaluateMVA(selectedJets, selectedPLeptons, Z_P, channels[ch],  MVAS_TU, MVAB_TU, MVAS_TC, MVAB_TC);
 
    resetVecInt(reg);
    resetVecInt(allCh);
@@ -828,6 +869,7 @@ void MyAnalysis::Loop(TString fname, TString data, TString dataset ,string year,
      wcfitFA[0][myreg]= *eft_fit;
    }
    if(ch<30){
+     evaluateMVA(selectedJets, selectedPLeptons, Z_P, channels[ch],  MVAS_TU, MVAB_TU, MVAS_TC, MVAB_TC);
      FillD3Hists(Hists, allCh, reg, vInd(vars,"lep1Pt"), (*selectedPLeptons)[0]->pt_ ,wgt, wcfit);
      FillD3Hists(Hists, allCh, reg, vInd(vars,"lep1Eta"), (*selectedPLeptons)[0]->eta_ ,wgt, wcfit); 
      FillD3Hists(Hists, allCh, reg, vInd(vars,"lep1Phi"), (*selectedPLeptons)[0]->phi_ ,wgt, wcfit); 
@@ -844,29 +886,96 @@ void MyAnalysis::Loop(TString fname, TString data, TString dataset ,string year,
      FillD3Hists(Hists, allCh, reg, vInd(vars,"MetPhi"), MET_phi ,wgt, wcfit);
      FillD3Hists(Hists, allCh, reg, vInd(vars,"nVtx"), PV_npvs ,wgt, wcfit);
      FillD3Hists(Hists, allCh, reg, vInd(vars,"llMZw"), ((*selectedPLeptons)[0]->p4_ + (*selectedPLeptons)[1]->p4_).M() ,wgt, wcfit);
+     FillD3Hists(Hists, allCh, reg, vInd(vars,"MVATU"), MVAS_TU/MVAB_TU ,wgt, wcfit);
+     FillD3Hists(Hists, allCh, reg, vInd(vars,"MVATC"), MVAS_TC/MVAB_TC ,wgt, wcfit);
+     FillD3Hists(Hists, allCh, reg, vInd(vars,"lep3Pt"), MVA_lep3Pt,wgt, wcfit);
+     FillD3Hists(Hists, allCh, reg, vInd(vars,"lep3Eta"), MVA_lep3Eta ,wgt, wcfit);
+     FillD3Hists(Hists, allCh, reg, vInd(vars,"bJetPt"), MVA_bJetPt ,wgt, wcfit);
+     FillD3Hists(Hists, allCh, reg, vInd(vars,"bJetEta"), MVA_bJetEta ,wgt, wcfit);
+     FillD3Hists(Hists, allCh, reg, vInd(vars,"tH_topMass"), MVA_tH_topMass ,wgt, wcfit);
+     FillD3Hists(Hists, allCh, reg, vInd(vars,"tH_HMass"), MVA_tH_HMass ,wgt, wcfit);
+     FillD3Hists(Hists, allCh, reg, vInd(vars,"tH_WtopMass"), MVA_tH_WtopMass ,wgt, wcfit);
+     FillD3Hists(Hists, allCh, reg, vInd(vars,"tH_W1HMass"), MVA_tH_W1HMass ,wgt, wcfit);
+     FillD3Hists(Hists, allCh, reg, vInd(vars,"tH_W2HMass"), MVA_tH_W2HMass ,wgt, wcfit);
+     FillD3Hists(Hists, allCh, reg, vInd(vars,"tH_HPt"), MVA_tH_HPt,wgt, wcfit);
+     FillD3Hists(Hists, allCh, reg, vInd(vars,"tH_HEta"), MVA_tH_HEta,wgt, wcfit);
+     FillD3Hists(Hists, allCh, reg, vInd(vars,"tH_topPt"),MVA_tH_topPt ,wgt, wcfit);
+     FillD3Hists(Hists, allCh, reg, vInd(vars,"tH_topEta"),MVA_tH_topEta ,wgt, wcfit);
+     FillD3Hists(Hists, allCh, reg, vInd(vars,"tH_drWtopB"), MVA_tH_drWtopB ,wgt, wcfit);
+     FillD3Hists(Hists, allCh, reg, vInd(vars,"tH_drW1HW2H"), MVA_tH_drW1HW2H ,wgt, wcfit);
+     FillD3Hists(Hists, allCh, reg, vInd(vars,"tZ_topMass"), MVA_tZ_topMass ,wgt, wcfit);
+     FillD3Hists(Hists, allCh, reg, vInd(vars,"tZ_ZMass"),MVA_tZ_ZMass ,wgt, wcfit);
+     FillD3Hists(Hists, allCh, reg, vInd(vars,"tZ_WtopMass"),MVA_tZ_WtopMass ,wgt, wcfit);
+     FillD3Hists(Hists, allCh, reg, vInd(vars,"tZ_ZPt"),MVA_tZ_ZPt ,wgt, wcfit);
+     FillD3Hists(Hists, allCh, reg, vInd(vars,"tZ_ZEta"),MVA_tZ_ZEta ,wgt, wcfit);
+     FillD3Hists(Hists, allCh, reg, vInd(vars,"tZ_topPt"), MVA_tZ_topPt ,wgt, wcfit);
+     FillD3Hists(Hists, allCh, reg, vInd(vars,"tZ_topEta"), MVA_tZ_topEta,wgt, wcfit);
      if(selectedJets->size()>0){
        FillD3Hists(Hists, allCh, reg, vInd(vars,"jet1Pt"), (*selectedJets)[0]->pt_ ,wgt, wcfit);
        FillD3Hists(Hists, allCh, reg, vInd(vars,"jet1Eta"), (*selectedJets)[0]->eta_ ,wgt, wcfit);
        FillD3Hists(Hists, allCh, reg, vInd(vars,"jet1Phi"), (*selectedJets)[0]->phi_ ,wgt, wcfit);
      }
-    if(nbjet==1 && MVAB_TU!=0) FillD3Hists(Hists, allCh, reg, vInd(vars,"MVATU"), MVAS_TU/MVAB_TU ,wgt, wcfit);
-    if(nbjet==1 && MVAB_TC!=0) FillD3Hists(Hists, allCh, reg, vInd(vars,"MVATC"), MVAS_TC/MVAB_TC ,wgt, wcfit);
   }
-  if(chFA<30){  
+  if(chFA<30){ 
+     evaluateMVA(selectedJets, selectedLeptons, Z_FP, channelsFA[chFA],  MVAS_TUFA, MVAB_TUFA, MVAS_TCFA, MVAB_TCFA);
      FillD3Hists(HistsFA, allChFA, reg, vInd(varsFA,"lep1Pt"), (*selectedLeptons)[0]->pt_ ,wgtFA, wcfitFA);
      FillD3Hists(HistsFA, allChFA, reg, vInd(varsFA,"lep1Eta"), (*selectedLeptons)[0]->eta_ ,wgtFA, wcfitFA);
      FillD3Hists(HistsFA, allChFA, reg, vInd(varsFA,"lep1Phi"), (*selectedLeptons)[0]->phi_ ,wgtFA, wcfitFA);
      FillD3Hists(HistsFA, allChFA, reg, vInd(varsFA,"lep2Pt"), (*selectedLeptons)[1]->pt_ ,wgtFA, wcfitFA);
      FillD3Hists(HistsFA, allChFA, reg, vInd(varsFA,"lep2Eta"), (*selectedLeptons)[1]->eta_ ,wgtFA, wcfitFA);
      FillD3Hists(HistsFA, allChFA, reg, vInd(varsFA,"lep2Phi"), (*selectedLeptons)[1]->phi_ ,wgtFA, wcfitFA);
+     FillD3Hists(HistsFA, allChFA, reg, vInd(varsFA,"llM"), ((*selectedLeptons)[0]->p4_ + (*selectedLeptons)[1]->p4_).M() ,wgtFA, wcfitFA);
+     FillD3Hists(HistsFA, allChFA, reg, vInd(varsFA,"llPt"), ((*selectedLeptons)[0]->p4_ + (*selectedLeptons)[1]->p4_).Pt() ,wgtFA, wcfitFA);
+     FillD3Hists(HistsFA, allChFA, reg, vInd(varsFA,"llDr"), deltaR((*selectedLeptons)[0]->eta_,(*selectedLeptons)[0]->phi_,(*selectedLeptons)[1]->eta_,(*selectedLeptons)[1]->phi_) ,wgtFA, wcfitFA);
+     FillD3Hists(HistsFA, allChFA, reg, vInd(varsFA,"llDphi"), abs(deltaPhi((*selectedLeptons)[0]->phi_,(*selectedLeptons)[1]->phi_)) ,wgtFA, wcfitFA);
      FillD3Hists(HistsFA, allChFA, reg, vInd(varsFA,"njet"), selectedJets->size() ,wgtFA, wcfitFA);
+     FillD3Hists(HistsFA, allChFA, reg, vInd(varsFA,"nbjet"), nbjet ,wgtFA, wcfitFA);
+     FillD3Hists(HistsFA, allChFA, reg, vInd(varsFA,"Met"), MET_pt ,wgtFA, wcfitFA);
+     FillD3Hists(HistsFA, allChFA, reg, vInd(varsFA,"MetPhi"), MET_phi ,wgtFA, wcfitFA);
+     FillD3Hists(HistsFA, allChFA, reg, vInd(varsFA,"nVtx"), PV_npvs ,wgtFA, wcfitFA);
+     FillD3Hists(HistsFA, allChFA, reg, vInd(varsFA,"llMZw"), ((*selectedLeptons)[0]->p4_ + (*selectedLeptons)[1]->p4_).M() ,wgtFA, wcfitFA);
+     FillD3Hists(HistsFA, allChFA, reg, vInd(varsFA,"MVATU"), MVAS_TUFA/MVAB_TUFA ,wgtFA, wcfitFA);
+     FillD3Hists(HistsFA, allChFA, reg, vInd(varsFA,"MVATC"), MVAS_TCFA/MVAB_TCFA ,wgtFA, wcfitFA);
+     FillD3Hists(HistsFA, allChFA, reg, vInd(varsFA,"lep3Pt"), MVA_lep3Pt,wgtFA, wcfitFA);
+     FillD3Hists(HistsFA, allChFA, reg, vInd(varsFA,"lep3Eta"), MVA_lep3Eta ,wgtFA, wcfitFA);
+     FillD3Hists(HistsFA, allChFA, reg, vInd(varsFA,"bJetPt"), MVA_bJetPt ,wgtFA, wcfitFA);
+     FillD3Hists(HistsFA, allChFA, reg, vInd(varsFA,"bJetEta"), MVA_bJetEta ,wgtFA, wcfitFA);
+     FillD3Hists(HistsFA, allChFA, reg, vInd(varsFA,"tH_topMass"), MVA_tH_topMass ,wgtFA, wcfitFA);
+     FillD3Hists(HistsFA, allChFA, reg, vInd(varsFA,"tH_HMass"), MVA_tH_HMass ,wgtFA, wcfitFA);
+     FillD3Hists(HistsFA, allChFA, reg, vInd(varsFA,"tH_WtopMass"), MVA_tH_WtopMass ,wgtFA, wcfitFA);
+     FillD3Hists(HistsFA, allChFA, reg, vInd(varsFA,"tH_W1HMass"), MVA_tH_W1HMass ,wgtFA, wcfitFA);
+     FillD3Hists(HistsFA, allChFA, reg, vInd(varsFA,"tH_W2HMass"), MVA_tH_W2HMass ,wgtFA, wcfitFA);
+     FillD3Hists(HistsFA, allChFA, reg, vInd(varsFA,"tH_HPt"), MVA_tH_HPt,wgtFA, wcfitFA);
+     FillD3Hists(HistsFA, allChFA, reg, vInd(varsFA,"tH_HEta"), MVA_tH_HEta,wgtFA, wcfitFA);
+     FillD3Hists(HistsFA, allChFA, reg, vInd(varsFA,"tH_topPt"),MVA_tH_topPt ,wgtFA, wcfitFA);
+     FillD3Hists(HistsFA, allChFA, reg, vInd(varsFA,"tH_topEta"),MVA_tH_topEta ,wgtFA, wcfitFA);
+     FillD3Hists(HistsFA, allChFA, reg, vInd(varsFA,"tH_drWtopB"), MVA_tH_drWtopB ,wgtFA, wcfitFA);
+     FillD3Hists(HistsFA, allChFA, reg, vInd(varsFA,"tH_drW1HW2H"), MVA_tH_drW1HW2H ,wgtFA, wcfitFA);
+     FillD3Hists(HistsFA, allChFA, reg, vInd(varsFA,"tZ_topMass"), MVA_tZ_topMass ,wgtFA, wcfitFA);
+     FillD3Hists(HistsFA, allChFA, reg, vInd(varsFA,"tZ_ZMass"),MVA_tZ_ZMass ,wgtFA, wcfitFA);
+     FillD3Hists(HistsFA, allChFA, reg, vInd(varsFA,"tZ_WtopMass"),MVA_tZ_WtopMass ,wgtFA, wcfitFA);
+     FillD3Hists(HistsFA, allChFA, reg, vInd(varsFA,"tZ_ZPt"),MVA_tZ_ZPt ,wgtFA, wcfitFA);
+     FillD3Hists(HistsFA, allChFA, reg, vInd(varsFA,"tZ_ZEta"),MVA_tZ_ZEta ,wgtFA, wcfitFA);
+     FillD3Hists(HistsFA, allChFA, reg, vInd(varsFA,"tZ_topPt"), MVA_tZ_topPt ,wgtFA, wcfitFA);
+     FillD3Hists(HistsFA, allChFA, reg, vInd(varsFA,"tZ_topEta"), MVA_tZ_topEta,wgtFA, wcfitFA);
      if(selectedJets->size()>0){
        FillD3Hists(HistsFA, allChFA, reg, vInd(varsFA,"jet1Pt"), (*selectedJets)[0]->pt_ ,wgtFA, wcfitFA);
        FillD3Hists(HistsFA, allChFA, reg, vInd(varsFA,"jet1Eta"), (*selectedJets)[0]->eta_ ,wgtFA, wcfitFA);
        FillD3Hists(HistsFA, allChFA, reg, vInd(varsFA,"jet1Phi"), (*selectedJets)[0]->phi_ ,wgtFA, wcfitFA);
      }
-    if(nbjet==1 && MVAB_TUFA!=0) FillD3Hists(HistsFA, allChFA, reg, vInd(varsFA,"MVATU"), MVAS_TUFA/MVAB_TUFA ,wgtFA, wcfitFA);
-    if(nbjet==1 && MVAB_TCFA!=0) FillD3Hists(HistsFA, allChFA, reg, vInd(varsFA,"MVATC"), MVAS_TCFA/MVAB_TCFA ,wgtFA, wcfitFA);
+     //Fake sys 
+     if (ifSys){
+       for(int n=0;n<sysFA.size();++n){
+         wgtSysUp[0][myreg]=wgtFA[0][myreg]*(sysUpWeightsFA[n]/fakeRate);
+         wcfitSysUp[0][myreg]= *eft_fit;
+         FillD4Hists(HistsFAUp, allChFA, reg, vInd(varsTh,"MVATU"), MVAS_TUFA/MVAB_TUFA ,wgtSysUp, wcfitSysUp,n);
+         FillD4Hists(HistsFAUp, allChFA, reg, vInd(varsTh,"MVATC"), MVAS_TCFA/MVAB_TCFA ,wgtSysUp, wcfitSysUp,n);
+
+         wgtSysUp[0][myreg]=wgtFA[0][myreg]*(sysDownWeightsFA[n]/fakeRate);
+         FillD4Hists(HistsFADown, allChFA, reg, vInd(varsTh,"MVATU"), MVAS_TUFA/MVAB_TUFA ,wgtSysUp, wcfitSysUp,n);
+         FillD4Hists(HistsFADown, allChFA, reg, vInd(varsTh,"MVATC"), MVAS_TCFA/MVAB_TCFA ,wgtSysUp, wcfitSysUp,n);
+       }
+     }
    }
 //Fill syst histsi 
 
@@ -881,26 +990,102 @@ void MyAnalysis::Loop(TString fname, TString data, TString dataset ,string year,
        else eft_fit = new WCFit(0,wc_names_lst,1, &genWeight, 1.0);
        wgtSysUp[0][myreg]=wgt[0][myreg]*(sysUpWeights[n]/nominalWeights[n]);
        wcfitSysUp[0][myreg]= *eft_fit;
-       FillD4Hists(HistsSysUp, allCh, reg, vInd(varsSys,"lep1Pt"), (*selectedPLeptons)[0]->pt_ ,wgtSysUp, wcfitSysUp,n);
-       FillD4Hists(HistsSysUp, allCh, reg, vInd(varsSys,"lep1Eta"), (*selectedPLeptons)[0]->eta_ ,wgtSysUp, wcfitSysUp,n);
-       FillD4Hists(HistsSysUp, allCh, reg, vInd(varsSys,"njet"), selectedJets->size() ,wgtSysUp, wcfitSysUp,n);
-       FillD4Hists(HistsSysUp, allCh, reg, vInd(varsSys,"Met"), MET_pt ,wgtSysUp, wcfitSysUp,n);
-       FillD4Hists(HistsSysUp, allCh, reg, vInd(varsSys,"nVtx"), PV_npvs ,wgtSysUp, wcfitSysUp,n);
-      if(nbjet==1 && MVAB_TU!=0) FillD4Hists(HistsSysUp, allCh, reg, vInd(varsSys,"MVATU"), MVAS_TU/MVAB_TU ,wgtSysUp, wcfitSysUp,n);
-      if(nbjet==1 && MVAB_TC!=0) FillD4Hists(HistsSysUp, allCh, reg, vInd(varsSys,"MVATC"), MVAS_TC/MVAB_TC ,wgtSysUp, wcfitSysUp,n);
+       FillD4Hists(HistsSysUp, allCh, reg, vInd(varsSys,"lep1Pt"), (*selectedPLeptons)[0]->pt_ ,wgtSysUp, wcfitSysUp, n);
+       FillD4Hists(HistsSysUp, allCh, reg, vInd(varsSys,"lep1Eta"), (*selectedPLeptons)[0]->eta_ ,wgtSysUp, wcfitSysUp, n);
+       FillD4Hists(HistsSysUp, allCh, reg, vInd(varsSys,"lep1Phi"), (*selectedPLeptons)[0]->phi_ ,wgtSysUp, wcfitSysUp, n);
+       FillD4Hists(HistsSysUp, allCh, reg, vInd(varsSys,"lep2Pt"), (*selectedPLeptons)[1]->pt_ ,wgtSysUp, wcfitSysUp, n);
+       FillD4Hists(HistsSysUp, allCh, reg, vInd(varsSys,"lep2Eta"), (*selectedPLeptons)[1]->eta_ ,wgtSysUp, wcfitSysUp, n);
+       FillD4Hists(HistsSysUp, allCh, reg, vInd(varsSys,"lep2Phi"), (*selectedPLeptons)[1]->phi_ ,wgtSysUp, wcfitSysUp, n);
+       FillD4Hists(HistsSysUp, allCh, reg, vInd(varsSys,"llM"), ((*selectedPLeptons)[0]->p4_ + (*selectedPLeptons)[1]->p4_).M() ,wgtSysUp, wcfitSysUp, n);
+       FillD4Hists(HistsSysUp, allCh, reg, vInd(varsSys,"llPt"), ((*selectedPLeptons)[0]->p4_ + (*selectedPLeptons)[1]->p4_).Pt() ,wgtSysUp, wcfitSysUp, n);
+       FillD4Hists(HistsSysUp, allCh, reg, vInd(varsSys,"llDr"), deltaR((*selectedPLeptons)[0]->eta_,(*selectedPLeptons)[0]->phi_,(*selectedPLeptons)[1]->eta_,(*selectedPLeptons)[1]->phi_) ,wgtSysUp, wcfitSysUp, n);
+       FillD4Hists(HistsSysUp, allCh, reg, vInd(varsSys,"llDphi"), abs(deltaPhi((*selectedPLeptons)[0]->phi_,(*selectedPLeptons)[1]->phi_)) ,wgtSysUp, wcfitSysUp, n);
+       FillD4Hists(HistsSysUp, allCh, reg, vInd(varsSys,"njet"), selectedJets->size() ,wgtSysUp, wcfitSysUp, n);
+       FillD4Hists(HistsSysUp, allCh, reg, vInd(varsSys,"nbjet"), nbjet ,wgtSysUp, wcfitSysUp, n);
+       FillD4Hists(HistsSysUp, allCh, reg, vInd(varsSys,"Met"), MET_pt ,wgtSysUp, wcfitSysUp, n);
+       FillD4Hists(HistsSysUp, allCh, reg, vInd(varsSys,"MetPhi"), MET_phi ,wgtSysUp, wcfitSysUp, n);
+       FillD4Hists(HistsSysUp, allCh, reg, vInd(varsSys,"nVtx"), PV_npvs ,wgtSysUp, wcfitSysUp, n);
+       FillD4Hists(HistsSysUp, allCh, reg, vInd(varsSys,"llMZw"), ((*selectedPLeptons)[0]->p4_ + (*selectedPLeptons)[1]->p4_).M() ,wgtSysUp, wcfitSysUp, n);
+       FillD4Hists(HistsSysUp, allCh, reg, vInd(varsSys,"MVATU"), MVAS_TU/MVAB_TU ,wgtSysUp, wcfitSysUp, n);
+       FillD4Hists(HistsSysUp, allCh, reg, vInd(varsSys,"MVATC"), MVAS_TC/MVAB_TC ,wgtSysUp, wcfitSysUp, n);
+       FillD4Hists(HistsSysUp, allCh, reg, vInd(varsSys,"lep3Pt"), MVA_lep3Pt,wgtSysUp, wcfitSysUp, n);
+       FillD4Hists(HistsSysUp, allCh, reg, vInd(varsSys,"lep3Eta"), MVA_lep3Eta ,wgtSysUp, wcfitSysUp, n);
+       FillD4Hists(HistsSysUp, allCh, reg, vInd(varsSys,"bJetPt"), MVA_bJetPt ,wgtSysUp, wcfitSysUp, n);
+       FillD4Hists(HistsSysUp, allCh, reg, vInd(varsSys,"bJetEta"), MVA_bJetEta ,wgtSysUp, wcfitSysUp, n);
+       FillD4Hists(HistsSysUp, allCh, reg, vInd(varsSys,"tH_topMass"), MVA_tH_topMass ,wgtSysUp, wcfitSysUp, n);
+       FillD4Hists(HistsSysUp, allCh, reg, vInd(varsSys,"tH_HMass"), MVA_tH_HMass ,wgtSysUp, wcfitSysUp, n);
+       FillD4Hists(HistsSysUp, allCh, reg, vInd(varsSys,"tH_WtopMass"), MVA_tH_WtopMass ,wgtSysUp, wcfitSysUp, n);
+       FillD4Hists(HistsSysUp, allCh, reg, vInd(varsSys,"tH_W1HMass"), MVA_tH_W1HMass ,wgtSysUp, wcfitSysUp, n);
+       FillD4Hists(HistsSysUp, allCh, reg, vInd(varsSys,"tH_W2HMass"), MVA_tH_W2HMass ,wgtSysUp, wcfitSysUp, n);
+       FillD4Hists(HistsSysUp, allCh, reg, vInd(varsSys,"tH_HPt"), MVA_tH_HPt,wgtSysUp, wcfitSysUp, n);
+       FillD4Hists(HistsSysUp, allCh, reg, vInd(varsSys,"tH_HEta"), MVA_tH_HEta,wgtSysUp, wcfitSysUp, n);
+       FillD4Hists(HistsSysUp, allCh, reg, vInd(varsSys,"tH_topPt"),MVA_tH_topPt ,wgtSysUp, wcfitSysUp, n);
+       FillD4Hists(HistsSysUp, allCh, reg, vInd(varsSys,"tH_topEta"),MVA_tH_topEta ,wgtSysUp, wcfitSysUp, n);
+       FillD4Hists(HistsSysUp, allCh, reg, vInd(varsSys,"tH_drWtopB"), MVA_tH_drWtopB ,wgtSysUp, wcfitSysUp, n);
+       FillD4Hists(HistsSysUp, allCh, reg, vInd(varsSys,"tH_drW1HW2H"), MVA_tH_drW1HW2H ,wgtSysUp, wcfitSysUp, n);
+       FillD4Hists(HistsSysUp, allCh, reg, vInd(varsSys,"tZ_topMass"), MVA_tZ_topMass ,wgtSysUp, wcfitSysUp, n);
+       FillD4Hists(HistsSysUp, allCh, reg, vInd(varsSys,"tZ_ZMass"),MVA_tZ_ZMass ,wgtSysUp, wcfitSysUp, n);
+       FillD4Hists(HistsSysUp, allCh, reg, vInd(varsSys,"tZ_WtopMass"),MVA_tZ_WtopMass ,wgtSysUp, wcfitSysUp, n);
+       FillD4Hists(HistsSysUp, allCh, reg, vInd(varsSys,"tZ_ZPt"),MVA_tZ_ZPt ,wgtSysUp, wcfitSysUp, n);
+       FillD4Hists(HistsSysUp, allCh, reg, vInd(varsSys,"tZ_ZEta"),MVA_tZ_ZEta ,wgtSysUp, wcfitSysUp, n);
+       FillD4Hists(HistsSysUp, allCh, reg, vInd(varsSys,"tZ_topPt"), MVA_tZ_topPt ,wgtSysUp, wcfitSysUp, n);
+       FillD4Hists(HistsSysUp, allCh, reg, vInd(varsSys,"tZ_topEta"), MVA_tZ_topEta,wgtSysUp, wcfitSysUp, n);
+       if(selectedJets->size()>0){
+         FillD4Hists(HistsSysUp, allCh, reg, vInd(varsSys,"jet1Pt"), (*selectedJets)[0]->pt_ ,wgtSysUp, wcfitSysUp, n);
+         FillD4Hists(HistsSysUp, allCh, reg, vInd(varsSys,"jet1Eta"), (*selectedJets)[0]->eta_ ,wgtSysUp, wcfitSysUp, n);
+         FillD4Hists(HistsSysUp, allCh, reg, vInd(varsSys,"jet1Phi"), (*selectedJets)[0]->phi_ ,wgtSysUp, wcfitSysUp, n);
+       }
 
        delete eft_fit;
        if (iseft) eft_fit = new WCFit(nWCnames, wc_names_lst, nEFTfitCoefficients, EFTfitCoefficients, weight_EFT*(sysDownWeights[n]/nominalWeights[n]));
        else eft_fit = new WCFit(0,wc_names_lst,1, &genWeight, 1.0);
        wgtSysDown[0][myreg]=wgt[0][myreg]*(sysDownWeights[n]/nominalWeights[n]);
        wcfitSysDown[0][myreg]= *eft_fit;
-       FillD4Hists(HistsSysDown, allCh, reg, vInd(varsSys,"lep1Pt"), (*selectedPLeptons)[0]->pt_ ,wgtSysDown, wcfitSysDown,n);
-       FillD4Hists(HistsSysDown, allCh, reg, vInd(varsSys,"lep1Eta"), (*selectedPLeptons)[0]->eta_ ,wgtSysDown, wcfitSysDown,n);
-       FillD4Hists(HistsSysDown, allCh, reg, vInd(varsSys,"njet"), selectedJets->size() ,wgtSysDown, wcfitSysDown,n);
-       FillD4Hists(HistsSysDown, allCh, reg, vInd(varsSys,"Met"), MET_pt ,wgtSysDown, wcfitSysDown,n);
-       FillD4Hists(HistsSysDown, allCh, reg, vInd(varsSys,"nVtx"), PV_npvs ,wgtSysDown, wcfitSysDown,n);
-      if(nbjet==1 && MVAB_TU!=0) FillD4Hists(HistsSysDown, allCh, reg, vInd(varsSys,"MVATU"), MVAS_TU/MVAB_TU ,wgtSysDown, wcfitSysDown,n);
-      if(nbjet==1 && MVAB_TC!=0) FillD4Hists(HistsSysDown, allCh, reg, vInd(varsSys,"MVATC"), MVAS_TC/MVAB_TC ,wgtSysDown, wcfitSysDown,n);      
+       FillD4Hists(HistsSysDown, allCh, reg, vInd(varsSys,"lep1Pt"), (*selectedPLeptons)[0]->pt_ ,wgtSysDown, wcfitSysDown, n);
+       FillD4Hists(HistsSysDown, allCh, reg, vInd(varsSys,"lep1Eta"), (*selectedPLeptons)[0]->eta_ ,wgtSysDown, wcfitSysDown, n);
+       FillD4Hists(HistsSysDown, allCh, reg, vInd(varsSys,"lep1Phi"), (*selectedPLeptons)[0]->phi_ ,wgtSysDown, wcfitSysDown, n);
+       FillD4Hists(HistsSysDown, allCh, reg, vInd(varsSys,"lep2Pt"), (*selectedPLeptons)[1]->pt_ ,wgtSysDown, wcfitSysDown, n);
+       FillD4Hists(HistsSysDown, allCh, reg, vInd(varsSys,"lep2Eta"), (*selectedPLeptons)[1]->eta_ ,wgtSysDown, wcfitSysDown, n);
+       FillD4Hists(HistsSysDown, allCh, reg, vInd(varsSys,"lep2Phi"), (*selectedPLeptons)[1]->phi_ ,wgtSysDown, wcfitSysDown, n);
+       FillD4Hists(HistsSysDown, allCh, reg, vInd(varsSys,"llM"), ((*selectedPLeptons)[0]->p4_ + (*selectedPLeptons)[1]->p4_).M() ,wgtSysDown, wcfitSysDown, n);
+       FillD4Hists(HistsSysDown, allCh, reg, vInd(varsSys,"llPt"), ((*selectedPLeptons)[0]->p4_ + (*selectedPLeptons)[1]->p4_).Pt() ,wgtSysDown, wcfitSysDown, n);
+       FillD4Hists(HistsSysDown, allCh, reg, vInd(varsSys,"llDr"), deltaR((*selectedPLeptons)[0]->eta_,(*selectedPLeptons)[0]->phi_,(*selectedPLeptons)[1]->eta_,(*selectedPLeptons)[1]->phi_) ,wgtSysDown, wcfitSysDown, n);
+       FillD4Hists(HistsSysDown, allCh, reg, vInd(varsSys,"llDphi"), abs(deltaPhi((*selectedPLeptons)[0]->phi_,(*selectedPLeptons)[1]->phi_)) ,wgtSysDown, wcfitSysDown, n);
+       FillD4Hists(HistsSysDown, allCh, reg, vInd(varsSys,"njet"), selectedJets->size() ,wgtSysDown, wcfitSysDown, n);
+       FillD4Hists(HistsSysDown, allCh, reg, vInd(varsSys,"nbjet"), nbjet ,wgtSysDown, wcfitSysDown, n);
+       FillD4Hists(HistsSysDown, allCh, reg, vInd(varsSys,"Met"), MET_pt ,wgtSysDown, wcfitSysDown, n);
+       FillD4Hists(HistsSysDown, allCh, reg, vInd(varsSys,"MetPhi"), MET_phi ,wgtSysDown, wcfitSysDown, n);
+       FillD4Hists(HistsSysDown, allCh, reg, vInd(varsSys,"nVtx"), PV_npvs ,wgtSysDown, wcfitSysDown, n);
+       FillD4Hists(HistsSysDown, allCh, reg, vInd(varsSys,"llMZw"), ((*selectedPLeptons)[0]->p4_ + (*selectedPLeptons)[1]->p4_).M() ,wgtSysDown, wcfitSysDown, n);
+       FillD4Hists(HistsSysDown, allCh, reg, vInd(varsSys,"MVATU"), MVAS_TU/MVAB_TU ,wgtSysDown, wcfitSysDown, n);
+       FillD4Hists(HistsSysDown, allCh, reg, vInd(varsSys,"MVATC"), MVAS_TC/MVAB_TC ,wgtSysDown, wcfitSysDown, n);
+       FillD4Hists(HistsSysDown, allCh, reg, vInd(varsSys,"lep3Pt"), MVA_lep3Pt,wgtSysDown, wcfitSysDown, n);
+       FillD4Hists(HistsSysDown, allCh, reg, vInd(varsSys,"lep3Eta"), MVA_lep3Eta ,wgtSysDown, wcfitSysDown, n);
+       FillD4Hists(HistsSysDown, allCh, reg, vInd(varsSys,"bJetPt"), MVA_bJetPt ,wgtSysDown, wcfitSysDown, n);
+       FillD4Hists(HistsSysDown, allCh, reg, vInd(varsSys,"bJetEta"), MVA_bJetEta ,wgtSysDown, wcfitSysDown, n);
+       FillD4Hists(HistsSysDown, allCh, reg, vInd(varsSys,"tH_topMass"), MVA_tH_topMass ,wgtSysDown, wcfitSysDown, n);
+       FillD4Hists(HistsSysDown, allCh, reg, vInd(varsSys,"tH_HMass"), MVA_tH_HMass ,wgtSysDown, wcfitSysDown, n);
+       FillD4Hists(HistsSysDown, allCh, reg, vInd(varsSys,"tH_WtopMass"), MVA_tH_WtopMass ,wgtSysDown, wcfitSysDown, n);
+       FillD4Hists(HistsSysDown, allCh, reg, vInd(varsSys,"tH_W1HMass"), MVA_tH_W1HMass ,wgtSysDown, wcfitSysDown, n);
+       FillD4Hists(HistsSysDown, allCh, reg, vInd(varsSys,"tH_W2HMass"), MVA_tH_W2HMass ,wgtSysDown, wcfitSysDown, n);
+       FillD4Hists(HistsSysDown, allCh, reg, vInd(varsSys,"tH_HPt"), MVA_tH_HPt,wgtSysDown, wcfitSysDown, n);
+       FillD4Hists(HistsSysDown, allCh, reg, vInd(varsSys,"tH_HEta"), MVA_tH_HEta,wgtSysDown, wcfitSysDown, n);
+       FillD4Hists(HistsSysDown, allCh, reg, vInd(varsSys,"tH_topPt"),MVA_tH_topPt ,wgtSysDown, wcfitSysDown, n);
+       FillD4Hists(HistsSysDown, allCh, reg, vInd(varsSys,"tH_topEta"),MVA_tH_topEta ,wgtSysDown, wcfitSysDown, n);
+       FillD4Hists(HistsSysDown, allCh, reg, vInd(varsSys,"tH_drWtopB"), MVA_tH_drWtopB ,wgtSysDown, wcfitSysDown, n);
+       FillD4Hists(HistsSysDown, allCh, reg, vInd(varsSys,"tH_drW1HW2H"), MVA_tH_drW1HW2H ,wgtSysDown, wcfitSysDown, n);
+       FillD4Hists(HistsSysDown, allCh, reg, vInd(varsSys,"tZ_topMass"), MVA_tZ_topMass ,wgtSysDown, wcfitSysDown, n);
+       FillD4Hists(HistsSysDown, allCh, reg, vInd(varsSys,"tZ_ZMass"),MVA_tZ_ZMass ,wgtSysDown, wcfitSysDown, n);
+       FillD4Hists(HistsSysDown, allCh, reg, vInd(varsSys,"tZ_WtopMass"),MVA_tZ_WtopMass ,wgtSysDown, wcfitSysDown, n);
+       FillD4Hists(HistsSysDown, allCh, reg, vInd(varsSys,"tZ_ZPt"),MVA_tZ_ZPt ,wgtSysDown, wcfitSysDown, n);
+       FillD4Hists(HistsSysDown, allCh, reg, vInd(varsSys,"tZ_ZEta"),MVA_tZ_ZEta ,wgtSysDown, wcfitSysDown, n);
+       FillD4Hists(HistsSysDown, allCh, reg, vInd(varsSys,"tZ_topPt"), MVA_tZ_topPt ,wgtSysDown, wcfitSysDown, n);
+       FillD4Hists(HistsSysDown, allCh, reg, vInd(varsSys,"tZ_topEta"), MVA_tZ_topEta,wgtSysDown, wcfitSysDown, n);
+       if(selectedJets->size()>0){
+         FillD4Hists(HistsSysDown, allCh, reg, vInd(varsSys,"jet1Pt"), (*selectedJets)[0]->pt_ ,wgtSysDown, wcfitSysDown, n);
+         FillD4Hists(HistsSysDown, allCh, reg, vInd(varsSys,"jet1Eta"), (*selectedJets)[0]->eta_ ,wgtSysDown, wcfitSysDown, n);
+         FillD4Hists(HistsSysDown, allCh, reg, vInd(varsSys,"jet1Phi"), (*selectedJets)[0]->phi_ ,wgtSysDown, wcfitSysDown, n);
+       }
      }
 //PDF uncertainty
      sum_sq = 0.0;
@@ -912,8 +1097,8 @@ void MyAnalysis::Loop(TString fname, TString data, TString dataset ,string year,
        sum_sq += std::pow(wgt[0][myreg]*LHEPdfWeight[n] - wgt[0][myreg], 2);
      }
      wgtSysUp[0][myreg]=sum_sq;
-     if(nbjet==1 && MVAB_TU!=0) FillD4Hists(HistsThUp, allCh, reg, vInd(varsTh,"MVATU"), MVAS_TU/MVAB_TU ,wgtSysUp, wcfit,getIndex(sysTh,"PDF"));
-     if(nbjet==1 && MVAB_TC!=0) FillD4Hists(HistsThUp, allCh, reg, vInd(varsTh,"MVATC"), MVAS_TC/MVAB_TC ,wgtSysUp, wcfit,getIndex(sysTh,"PDF"));
+     FillD4Hists(HistsThUp, allCh, reg, vInd(varsTh,"MVATU"), MVAS_TU/MVAB_TU ,wgtSysUp, wcfit,getIndex(sysTh,"PDF"));
+     FillD4Hists(HistsThUp, allCh, reg, vInd(varsTh,"MVATC"), MVAS_TC/MVAB_TC ,wgtSysUp, wcfit,getIndex(sysTh,"PDF"));
      
 //Qscale uncertainty
      delete eft_fit;
@@ -921,29 +1106,29 @@ void MyAnalysis::Loop(TString fname, TString data, TString dataset ,string year,
      else eft_fit = new WCFit(0,wc_names_lst,1, &genWeight, 1.0);
      wgtSysUp[0][myreg]=wgt[0][myreg]*(LHEScaleWeight[7]);
      wcfitSysUp[0][myreg]=*eft_fit;
-     if(nbjet==1 && MVAB_TU!=0) FillD4Hists(HistsThUp, allCh, reg, vInd(varsTh,"MVATU"), MVAS_TU/MVAB_TU ,wgtSysUp, wcfitSysUp,getIndex(sysTh,"Renormalization"));
-     if(nbjet==1 && MVAB_TC!=0) FillD4Hists(HistsThUp, allCh, reg, vInd(varsTh,"MVATC"), MVAS_TC/MVAB_TC ,wgtSysUp, wcfitSysUp,getIndex(sysTh,"Renormalization"));
+     FillD4Hists(HistsThUp, allCh, reg, vInd(varsTh,"MVATU"), MVAS_TU/MVAB_TU ,wgtSysUp, wcfitSysUp,getIndex(sysTh,"Renormalization"));
+     FillD4Hists(HistsThUp, allCh, reg, vInd(varsTh,"MVATC"), MVAS_TC/MVAB_TC ,wgtSysUp, wcfitSysUp,getIndex(sysTh,"Renormalization"));
      delete eft_fit;
      if (iseft) eft_fit = new WCFit(nWCnames, wc_names_lst, nEFTfitCoefficients, EFTfitCoefficients, weight_EFT*(LHEScaleWeight[1]));
      else eft_fit = new WCFit(0,wc_names_lst,1, &genWeight, 1.0);
      wgtSysUp[0][myreg]=wgt[0][myreg]*(LHEScaleWeight[1]);
      wcfitSysUp[0][myreg]=*eft_fit;
-     if(nbjet==1 && MVAB_TU!=0) FillD4Hists(HistsThDown, allCh, reg, vInd(varsTh,"MVATU"), MVAS_TU/MVAB_TU ,wgtSysUp, wcfitSysUp,getIndex(sysTh,"Renormalization"));
-     if(nbjet==1 && MVAB_TC!=0) FillD4Hists(HistsThDown, allCh, reg, vInd(varsTh,"MVATC"), MVAS_TC/MVAB_TC ,wgtSysUp, wcfitSysUp,getIndex(sysTh,"Renormalization"));
+     FillD4Hists(HistsThDown, allCh, reg, vInd(varsTh,"MVATU"), MVAS_TU/MVAB_TU ,wgtSysUp, wcfitSysUp,getIndex(sysTh,"Renormalization"));
+     FillD4Hists(HistsThDown, allCh, reg, vInd(varsTh,"MVATC"), MVAS_TC/MVAB_TC ,wgtSysUp, wcfitSysUp,getIndex(sysTh,"Renormalization"));
      delete eft_fit;
      if (iseft) eft_fit = new WCFit(nWCnames, wc_names_lst, nEFTfitCoefficients, EFTfitCoefficients, weight_EFT*(LHEScaleWeight[5]));
      else eft_fit = new WCFit(0,wc_names_lst,1, &genWeight, 1.0);
      wgtSysUp[0][myreg]=wgt[0][myreg]*(LHEScaleWeight[5]);
      wcfitSysUp[0][myreg]=*eft_fit;
-     if(nbjet==1 && MVAB_TU!=0) FillD4Hists(HistsThUp, allCh, reg, vInd(varsTh,"MVATU"), MVAS_TU/MVAB_TU ,wgtSysUp, wcfitSysUp,getIndex(sysTh,"Factorization"));
-     if(nbjet==1 && MVAB_TC!=0) FillD4Hists(HistsThUp, allCh, reg, vInd(varsTh,"MVATC"), MVAS_TC/MVAB_TC ,wgtSysUp, wcfitSysUp,getIndex(sysTh,"Factorization"));
+     FillD4Hists(HistsThUp, allCh, reg, vInd(varsTh,"MVATU"), MVAS_TU/MVAB_TU ,wgtSysUp, wcfitSysUp,getIndex(sysTh,"Factorization"));
+     FillD4Hists(HistsThUp, allCh, reg, vInd(varsTh,"MVATC"), MVAS_TC/MVAB_TC ,wgtSysUp, wcfitSysUp,getIndex(sysTh,"Factorization"));
      delete eft_fit;
      if (iseft) eft_fit = new WCFit(nWCnames, wc_names_lst, nEFTfitCoefficients, EFTfitCoefficients, weight_EFT*(LHEScaleWeight[3]));
      else eft_fit = new WCFit(0,wc_names_lst,1, &genWeight, 1.0);
      wgtSysUp[0][myreg]=wgt[0][myreg]*(LHEScaleWeight[3]);
      wcfitSysUp[0][myreg]=*eft_fit;
-     if(nbjet==1 && MVAB_TU!=0) FillD4Hists(HistsThDown, allCh, reg, vInd(varsTh,"MVATU"), MVAS_TU/MVAB_TU ,wgtSysUp, wcfitSysUp,getIndex(sysTh,"Factorization"));
-     if(nbjet==1 && MVAB_TC!=0) FillD4Hists(HistsThDown, allCh, reg, vInd(varsTh,"MVATC"), MVAS_TC/MVAB_TC ,wgtSysUp, wcfitSysUp,getIndex(sysTh,"Factorization"));
+     FillD4Hists(HistsThDown, allCh, reg, vInd(varsTh,"MVATU"), MVAS_TU/MVAB_TU ,wgtSysUp, wcfitSysUp,getIndex(sysTh,"Factorization"));
+     FillD4Hists(HistsThDown, allCh, reg, vInd(varsTh,"MVATC"), MVAS_TC/MVAB_TC ,wgtSysUp, wcfitSysUp,getIndex(sysTh,"Factorization"));
 
 //ISR/FSR uncertainty
      delete eft_fit;
@@ -951,29 +1136,29 @@ void MyAnalysis::Loop(TString fname, TString data, TString dataset ,string year,
      else eft_fit = new WCFit(0,wc_names_lst,1, &genWeight, 1.0);
      wgtSysUp[0][myreg]=wgt[0][myreg]*(PSWeight[0]);
      wcfitSysUp[0][myreg]=*eft_fit;
-     if(nbjet==1 && MVAB_TU!=0) FillD4Hists(HistsThUp, allCh, reg, vInd(varsTh,"MVATU"), MVAS_TU/MVAB_TU ,wgtSysUp, wcfitSysUp,getIndex(sysTh,"ISR"));
-     if(nbjet==1 && MVAB_TC!=0) FillD4Hists(HistsThUp, allCh, reg, vInd(varsTh,"MVATC"), MVAS_TC/MVAB_TC ,wgtSysUp, wcfitSysUp,getIndex(sysTh,"ISR"));
+     FillD4Hists(HistsThUp, allCh, reg, vInd(varsTh,"MVATU"), MVAS_TU/MVAB_TU ,wgtSysUp, wcfitSysUp,getIndex(sysTh,"ISR"));
+     FillD4Hists(HistsThUp, allCh, reg, vInd(varsTh,"MVATC"), MVAS_TC/MVAB_TC ,wgtSysUp, wcfitSysUp,getIndex(sysTh,"ISR"));
      delete eft_fit;
      if (iseft) eft_fit = new WCFit(nWCnames, wc_names_lst, nEFTfitCoefficients, EFTfitCoefficients, weight_EFT*(PSWeight[2]));
      else eft_fit = new WCFit(0,wc_names_lst,1, &genWeight, 1.0);
      wgtSysUp[0][myreg]=wgt[0][myreg]*(PSWeight[2]);
      wcfitSysUp[0][myreg]=*eft_fit;
-     if(nbjet==1 && MVAB_TU!=0) FillD4Hists(HistsThDown, allCh, reg, vInd(varsTh,"MVATU"), MVAS_TU/MVAB_TU ,wgtSysUp, wcfitSysUp,getIndex(sysTh,"ISR"));
-     if(nbjet==1 && MVAB_TC!=0) FillD4Hists(HistsThDown, allCh, reg, vInd(varsTh,"MVATC"), MVAS_TC/MVAB_TC ,wgtSysUp, wcfitSysUp,getIndex(sysTh,"ISR"));
+     FillD4Hists(HistsThDown, allCh, reg, vInd(varsTh,"MVATU"), MVAS_TU/MVAB_TU ,wgtSysUp, wcfitSysUp,getIndex(sysTh,"ISR"));
+     FillD4Hists(HistsThDown, allCh, reg, vInd(varsTh,"MVATC"), MVAS_TC/MVAB_TC ,wgtSysUp, wcfitSysUp,getIndex(sysTh,"ISR"));
      delete eft_fit;
      if (iseft) eft_fit = new WCFit(nWCnames, wc_names_lst, nEFTfitCoefficients, EFTfitCoefficients, weight_EFT*(PSWeight[1]));
      else eft_fit = new WCFit(0,wc_names_lst,1, &genWeight, 1.0);
      wgtSysUp[0][myreg]=wgt[0][myreg]*(PSWeight[1]);
      wcfitSysUp[0][myreg]=*eft_fit;
-     if(nbjet==1 && MVAB_TU!=0) FillD4Hists(HistsThUp, allCh, reg, vInd(varsTh,"MVATU"), MVAS_TU/MVAB_TU ,wgtSysUp, wcfitSysUp,getIndex(sysTh,"FSR"));
-     if(nbjet==1 && MVAB_TC!=0) FillD4Hists(HistsThUp, allCh, reg, vInd(varsTh,"MVATC"), MVAS_TC/MVAB_TC ,wgtSysUp,wcfitSysUp,getIndex(sysTh,"FSR"));
+     FillD4Hists(HistsThUp, allCh, reg, vInd(varsTh,"MVATU"), MVAS_TU/MVAB_TU ,wgtSysUp, wcfitSysUp,getIndex(sysTh,"FSR"));
+     FillD4Hists(HistsThUp, allCh, reg, vInd(varsTh,"MVATC"), MVAS_TC/MVAB_TC ,wgtSysUp,wcfitSysUp,getIndex(sysTh,"FSR"));
      delete eft_fit;
      if (iseft) eft_fit = new WCFit(nWCnames, wc_names_lst, nEFTfitCoefficients, EFTfitCoefficients, weight_EFT*(PSWeight[3]));
      else eft_fit = new WCFit(0,wc_names_lst,1, &genWeight, 1.0);
      wgtSysUp[0][myreg]=wgt[0][myreg]*(PSWeight[3]);
      wcfitSysUp[0][myreg]=*eft_fit;
-     if(nbjet==1 && MVAB_TU!=0) FillD4Hists(HistsThDown, allCh, reg, vInd(varsTh,"MVATU"), MVAS_TU/MVAB_TU ,wgtSysUp, wcfitSysUp,getIndex(sysTh,"FSR"));
-     if(nbjet==1 && MVAB_TC!=0) FillD4Hists(HistsThDown, allCh, reg, vInd(varsTh,"MVATC"), MVAS_TC/MVAB_TC ,wgtSysUp, wcfitSysUp,getIndex(sysTh,"FSR"));
+     FillD4Hists(HistsThDown, allCh, reg, vInd(varsTh,"MVATU"), MVAS_TU/MVAB_TU ,wgtSysUp, wcfitSysUp,getIndex(sysTh,"FSR"));
+     FillD4Hists(HistsThDown, allCh, reg, vInd(varsTh,"MVATC"), MVAS_TC/MVAB_TC ,wgtSysUp, wcfitSysUp,getIndex(sysTh,"FSR"));
 
 
 //Fill JES(6)+Jer(1) histograms
@@ -990,14 +1175,52 @@ void MyAnalysis::Loop(TString fname, TString data, TString dataset ,string year,
         wgt[0][myreg]=weight_lepB;
         wcfit[0][myreg]= *eft_fit;
       }
-      if(myreg==1 || myreg==2) evaluateMVA(&(*JECsysUp)[n], selectedPLeptons, Z_P, channels[ch],  MVAS_TU, MVAB_TU, MVAS_TC, MVAB_TC);
+       evaluateMVA(&(*JECsysUp)[n], selectedPLeptons, Z_P, channels[ch],  MVAS_TU, MVAB_TU, MVAS_TC, MVAB_TC);
        FillD4Hists(HistsSysUp, allCh, reg, vInd(varsSys,"lep1Pt"), (*selectedPLeptons)[0]->pt_ ,wgt, wcfit,it);
        FillD4Hists(HistsSysUp, allCh, reg, vInd(varsSys,"lep1Eta"), (*selectedPLeptons)[0]->eta_ ,wgt, wcfit,it);
+       FillD4Hists(HistsSysUp, allCh, reg, vInd(varsSys,"lep1Phi"), (*selectedPLeptons)[0]->phi_ ,wgt, wcfit,it);
+       FillD4Hists(HistsSysUp, allCh, reg, vInd(varsSys,"lep2Pt"), (*selectedPLeptons)[1]->pt_ ,wgt, wcfit,it);
+       FillD4Hists(HistsSysUp, allCh, reg, vInd(varsSys,"lep2Eta"), (*selectedPLeptons)[1]->eta_ ,wgt, wcfit,it);
+       FillD4Hists(HistsSysUp, allCh, reg, vInd(varsSys,"lep2Phi"), (*selectedPLeptons)[1]->phi_ ,wgt, wcfit,it);
+       FillD4Hists(HistsSysUp, allCh, reg, vInd(varsSys,"llM"), ((*selectedPLeptons)[0]->p4_ + (*selectedPLeptons)[1]->p4_).M() ,wgt, wcfit,it);
+       FillD4Hists(HistsSysUp, allCh, reg, vInd(varsSys,"llPt"), ((*selectedPLeptons)[0]->p4_ + (*selectedPLeptons)[1]->p4_).Pt() ,wgt, wcfit,it);
+       FillD4Hists(HistsSysUp, allCh, reg, vInd(varsSys,"llDr"), deltaR((*selectedPLeptons)[0]->eta_,(*selectedPLeptons)[0]->phi_,(*selectedPLeptons)[1]->eta_,(*selectedPLeptons)[1]->phi_) ,wgt, wcfit,it);
+       FillD4Hists(HistsSysUp, allCh, reg, vInd(varsSys,"llDphi"), abs(deltaPhi((*selectedPLeptons)[0]->phi_,(*selectedPLeptons)[1]->phi_)) ,wgt, wcfit,it);
        FillD4Hists(HistsSysUp, allCh, reg, vInd(varsSys,"njet"), (*JECsysUp)[n].size() ,wgt, wcfit,it);
+       FillD4Hists(HistsSysUp, allCh, reg, vInd(varsSys,"nbjet"), nbjet ,wgt, wcfit,it);
        FillD4Hists(HistsSysUp, allCh, reg, vInd(varsSys,"Met"), MET_pt ,wgt, wcfit,it);
+       FillD4Hists(HistsSysUp, allCh, reg, vInd(varsSys,"MetPhi"), MET_phi ,wgt, wcfit,it);
        FillD4Hists(HistsSysUp, allCh, reg, vInd(varsSys,"nVtx"), PV_npvs ,wgt, wcfit,it);
-      if((myreg==1 || myreg==2) && MVAB_TU!=0) FillD4Hists(HistsSysUp, allCh, reg, vInd(varsSys,"MVATU"), MVAS_TU/MVAB_TU ,wgt, wcfit,it);
-      if((myreg==1 || myreg==2) && MVAB_TC!=0) FillD4Hists(HistsSysUp, allCh, reg, vInd(varsSys,"MVATC"), MVAS_TC/MVAB_TC ,wgt, wcfit,it);
+       FillD4Hists(HistsSysUp, allCh, reg, vInd(varsSys,"llMZw"), ((*selectedPLeptons)[0]->p4_ + (*selectedPLeptons)[1]->p4_).M() ,wgt, wcfit,it);
+       FillD4Hists(HistsSysUp, allCh, reg, vInd(varsSys,"MVATU"), MVAS_TU/MVAB_TU ,wgt, wcfit,it);
+       FillD4Hists(HistsSysUp, allCh, reg, vInd(varsSys,"MVATC"), MVAS_TC/MVAB_TC ,wgt, wcfit,it);
+       FillD4Hists(HistsSysUp, allCh, reg, vInd(varsSys,"lep3Pt"), MVA_lep3Pt,wgt, wcfit,it);
+       FillD4Hists(HistsSysUp, allCh, reg, vInd(varsSys,"lep3Eta"), MVA_lep3Eta ,wgt, wcfit,it);
+       FillD4Hists(HistsSysUp, allCh, reg, vInd(varsSys,"bJetPt"), MVA_bJetPt ,wgt, wcfit,it);
+       FillD4Hists(HistsSysUp, allCh, reg, vInd(varsSys,"bJetEta"), MVA_bJetEta ,wgt, wcfit,it);
+       FillD4Hists(HistsSysUp, allCh, reg, vInd(varsSys,"tH_topMass"), MVA_tH_topMass ,wgt, wcfit,it);
+       FillD4Hists(HistsSysUp, allCh, reg, vInd(varsSys,"tH_HMass"), MVA_tH_HMass ,wgt, wcfit,it);
+       FillD4Hists(HistsSysUp, allCh, reg, vInd(varsSys,"tH_WtopMass"), MVA_tH_WtopMass ,wgt, wcfit,it);
+       FillD4Hists(HistsSysUp, allCh, reg, vInd(varsSys,"tH_W1HMass"), MVA_tH_W1HMass ,wgt, wcfit,it);
+       FillD4Hists(HistsSysUp, allCh, reg, vInd(varsSys,"tH_W2HMass"), MVA_tH_W2HMass ,wgt, wcfit,it);
+       FillD4Hists(HistsSysUp, allCh, reg, vInd(varsSys,"tH_HPt"), MVA_tH_HPt,wgt, wcfit,it);
+       FillD4Hists(HistsSysUp, allCh, reg, vInd(varsSys,"tH_HEta"), MVA_tH_HEta,wgt, wcfit,it);
+       FillD4Hists(HistsSysUp, allCh, reg, vInd(varsSys,"tH_topPt"),MVA_tH_topPt ,wgt, wcfit,it);
+       FillD4Hists(HistsSysUp, allCh, reg, vInd(varsSys,"tH_topEta"),MVA_tH_topEta ,wgt, wcfit,it);
+       FillD4Hists(HistsSysUp, allCh, reg, vInd(varsSys,"tH_drWtopB"), MVA_tH_drWtopB ,wgt, wcfit,it);
+       FillD4Hists(HistsSysUp, allCh, reg, vInd(varsSys,"tH_drW1HW2H"), MVA_tH_drW1HW2H ,wgt, wcfit,it);
+       FillD4Hists(HistsSysUp, allCh, reg, vInd(varsSys,"tZ_topMass"), MVA_tZ_topMass ,wgt, wcfit,it);
+       FillD4Hists(HistsSysUp, allCh, reg, vInd(varsSys,"tZ_ZMass"),MVA_tZ_ZMass ,wgt, wcfit,it);
+       FillD4Hists(HistsSysUp, allCh, reg, vInd(varsSys,"tZ_WtopMass"),MVA_tZ_WtopMass ,wgt, wcfit,it);
+       FillD4Hists(HistsSysUp, allCh, reg, vInd(varsSys,"tZ_ZPt"),MVA_tZ_ZPt ,wgt, wcfit,it);
+       FillD4Hists(HistsSysUp, allCh, reg, vInd(varsSys,"tZ_ZEta"),MVA_tZ_ZEta ,wgt, wcfit,it);
+       FillD4Hists(HistsSysUp, allCh, reg, vInd(varsSys,"tZ_topPt"), MVA_tZ_topPt ,wgt, wcfit,it);
+       FillD4Hists(HistsSysUp, allCh, reg, vInd(varsSys,"tZ_topEta"), MVA_tZ_topEta,wgt, wcfit,it);
+       if((*JECsysUp)[n].size()>0){
+         FillD4Hists(HistsSysUp, allCh, reg, vInd(varsSys,"jet1Pt"), (*JECsysUp)[n][0]->pt_ ,wgt, wcfit,it);
+         FillD4Hists(HistsSysUp, allCh, reg, vInd(varsSys,"jet1Eta"), (*JECsysUp)[n][0]->eta_ ,wgt, wcfit,it);
+         FillD4Hists(HistsSysUp, allCh, reg, vInd(varsSys,"jet1Phi"), (*JECsysUp)[n][0]->phi_ ,wgt, wcfit,it);
+       }
 
       resetVecInt(reg);
       myreg = findRegion(&(*JECsysDown)[n],  ch, chFA);
@@ -1006,14 +1229,52 @@ void MyAnalysis::Loop(TString fname, TString data, TString dataset ,string year,
         wgt[0][myreg]=weight_lepB;
         wcfit[0][myreg]= *eft_fit;
       }
-      if(myreg==1 || myreg==2) evaluateMVA(&(*JECsysDown)[n], selectedPLeptons, Z_P, channels[ch],  MVAS_TU, MVAB_TU, MVAS_TC, MVAB_TC);
+       evaluateMVA(&(*JECsysDown)[n], selectedPLeptons, Z_P, channels[ch],  MVAS_TU, MVAB_TU, MVAS_TC, MVAB_TC);
        FillD4Hists(HistsSysDown, allCh, reg, vInd(varsSys,"lep1Pt"), (*selectedPLeptons)[0]->pt_ ,wgt, wcfit,it);
        FillD4Hists(HistsSysDown, allCh, reg, vInd(varsSys,"lep1Eta"), (*selectedPLeptons)[0]->eta_ ,wgt, wcfit,it);
+       FillD4Hists(HistsSysDown, allCh, reg, vInd(varsSys,"lep1Phi"), (*selectedPLeptons)[0]->phi_ ,wgt, wcfit,it);
+       FillD4Hists(HistsSysDown, allCh, reg, vInd(varsSys,"lep2Pt"), (*selectedPLeptons)[1]->pt_ ,wgt, wcfit,it);
+       FillD4Hists(HistsSysDown, allCh, reg, vInd(varsSys,"lep2Eta"), (*selectedPLeptons)[1]->eta_ ,wgt, wcfit,it);
+       FillD4Hists(HistsSysDown, allCh, reg, vInd(varsSys,"lep2Phi"), (*selectedPLeptons)[1]->phi_ ,wgt, wcfit,it);
+       FillD4Hists(HistsSysDown, allCh, reg, vInd(varsSys,"llM"), ((*selectedPLeptons)[0]->p4_ + (*selectedPLeptons)[1]->p4_).M() ,wgt, wcfit,it);
+       FillD4Hists(HistsSysDown, allCh, reg, vInd(varsSys,"llPt"), ((*selectedPLeptons)[0]->p4_ + (*selectedPLeptons)[1]->p4_).Pt() ,wgt, wcfit,it);
+       FillD4Hists(HistsSysDown, allCh, reg, vInd(varsSys,"llDr"), deltaR((*selectedPLeptons)[0]->eta_,(*selectedPLeptons)[0]->phi_,(*selectedPLeptons)[1]->eta_,(*selectedPLeptons)[1]->phi_) ,wgt, wcfit,it);
+       FillD4Hists(HistsSysDown, allCh, reg, vInd(varsSys,"llDphi"), abs(deltaPhi((*selectedPLeptons)[0]->phi_,(*selectedPLeptons)[1]->phi_)) ,wgt, wcfit,it);
        FillD4Hists(HistsSysDown, allCh, reg, vInd(varsSys,"njet"), (*JECsysDown)[n].size() ,wgt, wcfit,it);
+       FillD4Hists(HistsSysDown, allCh, reg, vInd(varsSys,"nbjet"), nbjet ,wgt, wcfit,it);
        FillD4Hists(HistsSysDown, allCh, reg, vInd(varsSys,"Met"), MET_pt ,wgt, wcfit,it);
+       FillD4Hists(HistsSysDown, allCh, reg, vInd(varsSys,"MetPhi"), MET_phi ,wgt, wcfit,it);
        FillD4Hists(HistsSysDown, allCh, reg, vInd(varsSys,"nVtx"), PV_npvs ,wgt, wcfit,it);
-      if((myreg==1 || myreg==2) && MVAB_TU!=0) FillD4Hists(HistsSysDown, allCh, reg, vInd(varsSys,"MVATU"), MVAS_TU/MVAB_TU ,wgt, wcfit,it);
-      if((myreg==1 || myreg==2) && MVAB_TC!=0) FillD4Hists(HistsSysDown, allCh, reg, vInd(varsSys,"MVATC"), MVAS_TC/MVAB_TC ,wgt, wcfit,it);
+       FillD4Hists(HistsSysDown, allCh, reg, vInd(varsSys,"llMZw"), ((*selectedPLeptons)[0]->p4_ + (*selectedPLeptons)[1]->p4_).M() ,wgt, wcfit,it);
+       FillD4Hists(HistsSysDown, allCh, reg, vInd(varsSys,"MVATU"), MVAS_TU/MVAB_TU ,wgt, wcfit,it);
+       FillD4Hists(HistsSysDown, allCh, reg, vInd(varsSys,"MVATC"), MVAS_TC/MVAB_TC ,wgt, wcfit,it);
+       FillD4Hists(HistsSysDown, allCh, reg, vInd(varsSys,"lep3Pt"), MVA_lep3Pt,wgt, wcfit,it);
+       FillD4Hists(HistsSysDown, allCh, reg, vInd(varsSys,"lep3Eta"), MVA_lep3Eta ,wgt, wcfit,it);
+       FillD4Hists(HistsSysDown, allCh, reg, vInd(varsSys,"bJetPt"), MVA_bJetPt ,wgt, wcfit,it);
+       FillD4Hists(HistsSysDown, allCh, reg, vInd(varsSys,"bJetEta"), MVA_bJetEta ,wgt, wcfit,it);
+       FillD4Hists(HistsSysDown, allCh, reg, vInd(varsSys,"tH_topMass"), MVA_tH_topMass ,wgt, wcfit,it);
+       FillD4Hists(HistsSysDown, allCh, reg, vInd(varsSys,"tH_HMass"), MVA_tH_HMass ,wgt, wcfit,it);
+       FillD4Hists(HistsSysDown, allCh, reg, vInd(varsSys,"tH_WtopMass"), MVA_tH_WtopMass ,wgt, wcfit,it);
+       FillD4Hists(HistsSysDown, allCh, reg, vInd(varsSys,"tH_W1HMass"), MVA_tH_W1HMass ,wgt, wcfit,it);
+       FillD4Hists(HistsSysDown, allCh, reg, vInd(varsSys,"tH_W2HMass"), MVA_tH_W2HMass ,wgt, wcfit,it);
+       FillD4Hists(HistsSysDown, allCh, reg, vInd(varsSys,"tH_HPt"), MVA_tH_HPt,wgt, wcfit,it);
+       FillD4Hists(HistsSysDown, allCh, reg, vInd(varsSys,"tH_HEta"), MVA_tH_HEta,wgt, wcfit,it);
+       FillD4Hists(HistsSysDown, allCh, reg, vInd(varsSys,"tH_topPt"),MVA_tH_topPt ,wgt, wcfit,it);
+       FillD4Hists(HistsSysDown, allCh, reg, vInd(varsSys,"tH_topEta"),MVA_tH_topEta ,wgt, wcfit,it);
+       FillD4Hists(HistsSysDown, allCh, reg, vInd(varsSys,"tH_drWtopB"), MVA_tH_drWtopB ,wgt, wcfit,it);
+       FillD4Hists(HistsSysDown, allCh, reg, vInd(varsSys,"tH_drW1HW2H"), MVA_tH_drW1HW2H ,wgt, wcfit,it);
+       FillD4Hists(HistsSysDown, allCh, reg, vInd(varsSys,"tZ_topMass"), MVA_tZ_topMass ,wgt, wcfit,it);
+       FillD4Hists(HistsSysDown, allCh, reg, vInd(varsSys,"tZ_ZMass"),MVA_tZ_ZMass ,wgt, wcfit,it);
+       FillD4Hists(HistsSysDown, allCh, reg, vInd(varsSys,"tZ_WtopMass"),MVA_tZ_WtopMass ,wgt, wcfit,it);
+       FillD4Hists(HistsSysDown, allCh, reg, vInd(varsSys,"tZ_ZPt"),MVA_tZ_ZPt ,wgt, wcfit,it);
+       FillD4Hists(HistsSysDown, allCh, reg, vInd(varsSys,"tZ_ZEta"),MVA_tZ_ZEta ,wgt, wcfit,it);
+       FillD4Hists(HistsSysDown, allCh, reg, vInd(varsSys,"tZ_topPt"), MVA_tZ_topPt ,wgt, wcfit,it);
+       FillD4Hists(HistsSysDown, allCh, reg, vInd(varsSys,"tZ_topEta"), MVA_tZ_topEta,wgt, wcfit,it);
+       if((*JECsysDown)[n].size()>0){
+         FillD4Hists(HistsSysDown, allCh, reg, vInd(varsSys,"jet1Pt"), (*JECsysDown)[n][0]->pt_ ,wgt, wcfit,it);
+         FillD4Hists(HistsSysDown, allCh, reg, vInd(varsSys,"jet1Eta"), (*JECsysDown)[n][0]->eta_ ,wgt, wcfit,it);
+         FillD4Hists(HistsSysDown, allCh, reg, vInd(varsSys,"jet1Phi"), (*JECsysDown)[n][0]->phi_ ,wgt, wcfit,it);
+       }
     }
   }
 
@@ -1127,20 +1388,19 @@ void MyAnalysis::Loop(TString fname, TString data, TString dataset ,string year,
 
     if(MVAB_TU!=0) MVATU_=MVAS_TU/MVAB_TU;
     else MVATU_= -1;
-     tree_out->Fill();
+ //   tree_out->Fill();
    }
 
    delete eft_fit;
    objectSelectionEnd();
 
   }
-
+  cout<<"Virtual Memory: "<<getValue()/1048576.0<<" GB"<<endl;
   cout<<"Loop is completed"<<endl;
   cout<<"from "<<ntr<<" events, "<<nAccept<<" events are accepted"<<endl;
-
-  TFile file_out ("ANoutput.root","RECREATE");
+  ROOT::DisableImplicitMT();
+  TFile file_out (("ANoutput" + std::to_string(end) + ".root").c_str(),"RECREATE");
   endHists(data, year, ifSys);
-
   h2_BTaggingEff_Denom_b   ->Write("",TObject::kOverwrite);
   h2_BTaggingEff_Denom_c   ->Write("",TObject::kOverwrite);
   h2_BTaggingEff_Denom_udsg->Write("",TObject::kOverwrite);
@@ -1168,10 +1428,34 @@ void MyAnalysis::Loop(TString fname, TString data, TString dataset ,string year,
 
   genAnalysis.writeGENHists();
   file_out.Close() ;
-  cout<<"Job is finished"<<endl;
-  cout<<"some of weight="<<sumWeight<<endl;
 
-cout<<"Total Virtual Memory: "<<getValue()<<endl;
+  delete jigsawTzFCNC;
+  delete jigsawThFCNC;
+  delete h2_BTaggingEff_Denom_b    ;
+  delete h2_BTaggingEff_Denom_c    ;
+  delete h2_BTaggingEff_Denom_udsg ;
+  delete h2_BTaggingEff_Num_b      ;
+  delete h2_BTaggingEff_Num_c      ;
+  delete h2_BTaggingEff_Num_udsg   ;
+  delete JigsawWmass ;
+  delete JigsawTmass ;
+  delete JigsawWmassReco;
+  delete JigsawTmassReco;
+  delete JigsawWmass_tHFCNC;
+  delete JigsawTmass_tHFCNC;
+  delete JigsawHmass_tHFCNC;
+  delete JigsawWmassReco_tHFCNC;
+  delete JigsawTmassReco_tHFCNC;
+  delete JigsawHmassReco_tHFCNC;
+  delete DRij;
+  delete DRtH;
+  delete DRWHWH;
+  delete DPhitH;
+  delete HmassVsnJet;
+  delete crossSection;
+  malloc_trim(0);
+  cout<<"Job is finished"<<endl;
+  cout<<"Total Virtual Memory: "<<getValue()/1048576.0<<" GB"<<endl;
 
 }
 

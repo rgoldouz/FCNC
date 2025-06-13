@@ -17,6 +17,7 @@ void MyAnalysis::initiateHists(TString data,string year, bool ifSys){
       for( auto it = vars.cbegin() ; it != vars.cend() ; ++it ){
         name<<channels[i]<<"_"<<regions[k]<<"_"<<it->first;
         h_test = new TH1EFT((name.str()).c_str(),(name.str()).c_str(),it->second.at(1), it->second.at(2), it->second.at(3));
+        h_test->SetDirectory(0);
         h_test->StatOverflows(kTRUE);
         h_test->Sumw2(kTRUE);
         Hists[i][k][it->second.at(0)] = h_test;
@@ -37,6 +38,7 @@ void MyAnalysis::initiateHists(TString data,string year, bool ifSys){
       for( auto it = varsFA.cbegin() ; it != varsFA.cend() ; ++it ){
         name<<channelsFA[i]<<"_"<<regions[k]<<"_"<<it->first;
         h_test = new TH1EFT((name.str()).c_str(),(name.str()).c_str(),it->second.at(1), it->second.at(2), it->second.at(3));
+        h_test->SetDirectory(0);
         h_test->StatOverflows(kTRUE);
         h_test->Sumw2(kTRUE);
         HistsFA[i][k][it->second.at(0)] = h_test;
@@ -44,6 +46,51 @@ void MyAnalysis::initiateHists(TString data,string year, bool ifSys){
       }
     }
   }
+
+  if(ifSys){
+    HistsFAUp.resize(channelsFA.size());
+    for (int i=0;i<channelsFA.size();++i){
+      HistsFAUp[i].resize(regions.size());
+      for (int k=0;k<regions.size();++k){
+        HistsFAUp[i][k].resize(varsTh.size());
+        for (int n=0;n<varsTh.size();++n){
+          HistsFAUp[i][k][n].resize(sysFA.size());
+        }
+      }
+    }
+    HistsFADown.resize(channelsFA.size());
+    for (int i=0;i<channelsFA.size();++i){
+      HistsFADown[i].resize(regions.size());
+      for (int k=0;k<regions.size();++k){
+        HistsFADown[i][k].resize(varsTh.size());
+        for (int n=0;n<varsTh.size();++n){
+          HistsFADown[i][k][n].resize(sysFA.size());
+        }
+      }
+    }
+    for (int i=0;i<channelsFA.size();++i){
+      for (int k=0;k<regions.size();++k){
+        for( auto it = varsTh.cbegin() ; it != varsTh.cend() ; ++it ){
+          for (int n=0;n<sysFA.size();++n){
+            name<<channelsFA[i]<<"_"<<regions[k]<<"_"<<it->first<<"_"<<sysFA[n]<<"_Up";
+            h_test = new TH1EFT((name.str()).c_str(),(name.str()).c_str(),it->second.at(1), it->second.at(2), it->second.at(3));
+            h_test->SetDirectory(0);
+            h_test->StatOverflows(kTRUE);
+            h_test->Sumw2(kTRUE);
+            HistsFAUp[i][k][it->second.at(0)][n] = h_test;
+            name.str("");
+            name<<channelsFA[i]<<"_"<<regions[k]<<"_"<<it->first<<"_"<<sysFA[n]<<"_Down";
+            h_test = new TH1EFT((name.str()).c_str(),(name.str()).c_str(),it->second.at(1), it->second.at(2), it->second.at(3));
+            h_test->SetDirectory(0);
+            h_test->StatOverflows(kTRUE);
+            h_test->Sumw2(kTRUE);
+            HistsFADown[i][k][it->second.at(0)][n] = h_test;
+            name.str("");
+          }
+        }
+      }
+    }
+  }  
 
   if(data == "mc" && ifSys){
     HistsSysUp.resize(channelsSys.size());
@@ -72,12 +119,14 @@ void MyAnalysis::initiateHists(TString data,string year, bool ifSys){
           for (int n=0;n<sys.size();++n){
             name<<channelsSys[i]<<"_"<<regions[k]<<"_"<<it->first<<"_"<<sys[n]<<"_Up";
             h_test = new TH1EFT((name.str()).c_str(),(name.str()).c_str(),it->second.at(1), it->second.at(2), it->second.at(3));
+            h_test->SetDirectory(0);
             h_test->StatOverflows(kTRUE);
             h_test->Sumw2(kTRUE);
             HistsSysUp[i][k][it->second.at(0)][n] = h_test;
             name.str("");
             name<<channelsSys[i]<<"_"<<regions[k]<<"_"<<it->first<<"_"<<sys[n]<<"_Down";
             h_test = new TH1EFT((name.str()).c_str(),(name.str()).c_str(),it->second.at(1), it->second.at(2), it->second.at(3));
+            h_test->SetDirectory(0);
             h_test->StatOverflows(kTRUE);
             h_test->Sumw2(kTRUE);
             HistsSysDown[i][k][it->second.at(0)][n] = h_test;
@@ -113,12 +162,14 @@ void MyAnalysis::initiateHists(TString data,string year, bool ifSys){
           for (int n=0;n<sysTh.size();++n){
             name<<channelsSys[i]<<"_"<<regions[k]<<"_"<<it->first<<"_"<<sysTh[n]<<"_Up";
             h_test = new TH1EFT((name.str()).c_str(),(name.str()).c_str(),it->second.at(1), it->second.at(2), it->second.at(3));
+            h_test->SetDirectory(0);
             h_test->StatOverflows(kTRUE);
             h_test->Sumw2(kTRUE);
             HistsThUp[i][k][it->second.at(0)][n] = h_test;
             name.str("");
             name<<channelsSys[i]<<"_"<<regions[k]<<"_"<<it->first<<"_"<<sysTh[n]<<"_Down";
             h_test = new TH1EFT((name.str()).c_str(),(name.str()).c_str(),it->second.at(1), it->second.at(2), it->second.at(3));
+            h_test->SetDirectory(0);
             h_test->StatOverflows(kTRUE);
             h_test->Sumw2(kTRUE);
             HistsThDown[i][k][it->second.at(0)][n] = h_test;
@@ -129,6 +180,66 @@ void MyAnalysis::initiateHists(TString data,string year, bool ifSys){
     }
   }
   cout<<"All histograms are initiated"<<endl;
+  tree_out = new TTree("FCNC","Top FCNC analysis") ;
+  tree_out->Branch("HT"      , &HT_ , "HT/F" ) ;
+  tree_out->Branch("lep1Pt"      , &lep1Pt_ , "lep1Pt/F" ) ;
+  tree_out->Branch("lep1Eta"      , &lep1Eta_ , "lep1Eta/F" ) ;
+  tree_out->Branch("lep2Pt"      , &lep2Pt_ , "lep2Pt/F" ) ;
+  tree_out->Branch("lep2Eta"      , &lep2Eta_ , "lep2Eta/F" ) ;
+  tree_out->Branch("lep3Pt"      , &lep3Pt_ , "lep3Pt/F" ) ;
+  tree_out->Branch("lep3Eta"      , &lep3Eta_ , "lep3Eta/F" ) ;
+  tree_out->Branch("llM"      , &llM_ , "llM/F" ) ;
+  tree_out->Branch("llPt"      , &llPt_ , "llPt/F" ) ;
+  tree_out->Branch("llDr"      , &llDr_ , "llDr/F" ) ;
+  tree_out->Branch("llDphi"      , &llDphi_ , "llDphi/F" ) ;
+  tree_out->Branch("jet1Pt"      , &jet1Pt_ , "jet1Pt/F" ) ;
+  tree_out->Branch("jet1Eta"      , &jet1Eta_ , "jet1Eta/F"  ) ;
+  tree_out->Branch("bJetPt"      , &bJetPt_ , "bJetPt/F" ) ;
+  tree_out->Branch("bJetEta"      , &bJetEta_ , "bJetEta/F"  ) ;
+  tree_out->Branch("nJets"      , &nJets_ , "nJets/I"  ) ;
+  tree_out->Branch("tH_topMass"      , &tH_topMass_ , "tH_topMass/F"  ) ;
+  tree_out->Branch("tH_HMass"      , &tH_HMass_ , "tH_HMass/F"  ) ;
+  tree_out->Branch("tH_WtopMass"      , &tH_WtopMass_ , "tH_WtopMass/F"  ) ;
+  tree_out->Branch("tH_W1HMass"      , &tH_W1HMass_ , "tH_W1HMass/F"  ) ;
+  tree_out->Branch("tH_W2HMass"      , &tH_W2HMass_ , "tH_W2HMass/F"  ) ;
+  tree_out->Branch("tH_HPt"      , &tH_HPt_ , "tH_HPt/F"  ) ;
+  tree_out->Branch("tH_HEta"      , &tH_HEta_ , "tH_HEta/F"  ) ;
+  tree_out->Branch("tH_topPt"      , &tH_topPt_ , "tH_topPt/F"  ) ;
+  tree_out->Branch("tH_topEta"      , &tH_topEta_ , "tH_topEta/F"  ) ;
+  tree_out->Branch("tH_drWtopB"      , &tH_drWtopB_ , "tH_drWtopB/F"  ) ;
+  tree_out->Branch("tH_drW1HW2H"      , &tH_drW1HW2H_ , "tH_drW1HW2H/F"  ) ;
+  tree_out->Branch("tZ_topMass"      , &tZ_topMass_ , "tZ_topMass/F"  ) ;
+  tree_out->Branch("tZ_ZMass"      , &tZ_ZMass_ , "tZ_ZMass/F"  ) ;
+  tree_out->Branch("tZ_WtopMass"      , &tZ_WtopMass_ , "tZ_WtopMass/F"  ) ;
+  tree_out->Branch("tZ_ZPt"      , &tZ_ZPt_ , "tZ_ZPt/F"  ) ;
+  tree_out->Branch("tZ_ZEta"      , &tZ_ZEta_ , "tZ_ZEta/F"  ) ;
+  tree_out->Branch("tZ_topPt"      , &tZ_topPt_ , "tZ_topPt/F"  ) ;
+  tree_out->Branch("tZ_topEta"      , &tZ_topEta_ , "tZ_topEta/F"  ) ;
+
+  tree_out->Branch("weightSM"      , &weightSM_ , "weightSM/F" ) ;
+  tree_out->Branch("weightSMfake"      , &weightSMfake_ , "weightSMfake/F" ) ;
+  tree_out->Branch("weightctp"      , &weightctp_ , "weightctp/F" ) ;
+  tree_out->Branch("weightctlS"      , &weightctlS_ , "weightctlS/F" ) ;
+  tree_out->Branch("weightcte"      , &weightcte_ , "weightcte/F" ) ;
+  tree_out->Branch("weightctl"      , &weightctl_ , "weightctl/F" ) ;
+  tree_out->Branch("weightctlT"      , &weightctlT_ , "weightctlT/F" ) ;
+  tree_out->Branch("weightctZ"      , &weightctZ_ , "weightctZ/F" ) ;
+  tree_out->Branch("weightcpt"      , &weightcpt_ , "weightcpt/F" ) ;
+  tree_out->Branch("weightcpQM"      , &weightcpQM_ , "weightcpQM/F" ) ;
+  tree_out->Branch("weightctA"      , &weightctA_ , "weightctA/F" ) ;
+  tree_out->Branch("weightcQe"      , &weightcQe_ , "weightcQe/F" ) ;
+  tree_out->Branch("weightctG"      , &weightctG_ , "weightctG/F" ) ;
+  tree_out->Branch("weightcQlM"      , &weightcQlM_ , "weightcQlM/F" ) ;
+  tree_out->Branch("ch"      , &ch_, "ch/I" ) ;
+  tree_out->Branch("chFA"      , &chFA_, "chFA/I" ) ;
+  tree_out->Branch("reg"      , &reg_, "reg/I" ) ;
+  tree_out->Branch("MVATU"      , &MVATU_ , "MVATU/F" ) ;
+
+  cout<<"Output tree is ready to be used"<<endl;
+}
+
+void MyAnalysis::inputs(TString data,string year){
+  ROOT::DisableImplicitMT();
   const char* srcnames[nsrc] = {"FlavorQCD", "BBEC1", "Absolute", "RelativeBal", "RelativeSample_2016","Total"};
   string yearName;
   string yearNameS;
@@ -313,9 +424,46 @@ void MyAnalysis::initiateHists(TString data,string year, bool ifSys){
     htemp = (TH2F*)lepFR->Get("FR_mva085_mu_data_comb_recorrected");
     fr_mu_H = (TH2F*)htemp->Clone("fr_mu_H_clone");
     fr_mu_H->SetDirectory(0);
+    htemp = (TH2F*)lepFR->Get("FR_mva085_mu_data_comb_recorrected_up");
+    fr_mu_H_up = (TH2F*)htemp->Clone("FR_mva085_mu_data_comb_recorrected_up_clone");
+    fr_mu_H_up->SetDirectory(0);
+    htemp = (TH2F*)lepFR->Get("FR_mva085_mu_data_comb_recorrected_down");
+    fr_mu_H_down = (TH2F*)htemp->Clone("FR_mva085_mu_data_comb_recorrected_down_clone");
+    fr_mu_H_down->SetDirectory(0);
+    htemp = (TH2F*)lepFR->Get("FR_mva085_mu_data_comb_recorrected_pt1");
+    fr_mu_H_ptUp = (TH2F*)htemp->Clone("FR_mva085_mu_data_comb_recorrected_pt1_clone");
+    fr_mu_H_ptUp->SetDirectory(0);
+    htemp = (TH2F*)lepFR->Get("FR_mva085_mu_data_comb_recorrected_pt2");
+    fr_mu_H_ptDown = (TH2F*)htemp->Clone("FR_mva085_mu_data_comb_recorrected_pt2_clone");
+    fr_mu_H_ptDown->SetDirectory(0);
+    htemp = (TH2F*)lepFR->Get("FR_mva085_mu_data_comb_recorrected_be1");
+    fr_mu_H_etaUp = (TH2F*)htemp->Clone("FR_mva085_mu_data_comb_recorrected_be1_clone");
+    fr_mu_H_etaUp->SetDirectory(0);    
+    htemp = (TH2F*)lepFR->Get("FR_mva085_mu_data_comb_recorrected_be2");
+    fr_mu_H_etaDown = (TH2F*)htemp->Clone("FR_mva085_mu_data_comb_recorrected_be2_clone");
+    fr_mu_H_etaDown->SetDirectory(0);
+
     htemp = (TH2F*)lepFR->Get("FR_mva090_el_data_comb_NC_recorrected");
     fr_ele_H = (TH2F*)htemp->Clone("fr_ele_H_clone");
     fr_ele_H->SetDirectory(0);
+    htemp = (TH2F*)lepFR->Get("FR_mva090_el_data_comb_NC_recorrected_up");
+    fr_ele_H_up = (TH2F*)htemp->Clone("FR_mva090_el_data_comb_NC_recorrected_up_clone");
+    fr_ele_H_up->SetDirectory(0);
+    htemp = (TH2F*)lepFR->Get("FR_mva090_el_data_comb_NC_recorrected_down");
+    fr_ele_H_down = (TH2F*)htemp->Clone("FR_mva090_el_data_comb_NC_recorrected_down_clone");
+    fr_ele_H_down->SetDirectory(0);
+    htemp = (TH2F*)lepFR->Get("FR_mva090_el_data_comb_NC_recorrected_pt1");
+    fr_ele_H_ptUp = (TH2F*)htemp->Clone("FR_mva090_el_data_comb_NC_recorrected_pt1_clone");
+    fr_ele_H_ptUp->SetDirectory(0);
+    htemp = (TH2F*)lepFR->Get("FR_mva090_el_data_comb_NC_recorrected_pt2");
+    fr_ele_H_ptDown = (TH2F*)htemp->Clone("FR_mva090_el_data_comb_NC_recorrected_pt2_clone");
+    fr_ele_H_ptDown->SetDirectory(0);
+    htemp = (TH2F*)lepFR->Get("FR_mva090_el_data_comb_NC_recorrected_be1");
+    fr_ele_H_etaUp = (TH2F*)htemp->Clone("FR_mva090_el_data_comb_NC_recorrected_be1_clone");
+    fr_ele_H_etaUp->SetDirectory(0);
+    htemp = (TH2F*)lepFR->Get("FR_mva090_el_data_comb_NC_recorrected_be2");
+    fr_ele_H_etaDown = (TH2F*)htemp->Clone("FR_mva090_el_data_comb_NC_recorrected_be2_clone");
+    fr_ele_H_etaDown->SetDirectory(0);
     lepFR->Close();
     delete lepFR;
 
@@ -372,62 +520,6 @@ void MyAnalysis::initiateHists(TString data,string year, bool ifSys){
     lRun=325175;
   }
   cout<<"Scale factor histograms are ready to be used"<<endl;
-  tree_out = new TTree("FCNC","Top FCNC analysis") ;
-  tree_out->Branch("HT"      , &HT_ , "HT/F" ) ;
-  tree_out->Branch("lep1Pt"      , &lep1Pt_ , "lep1Pt/F" ) ;
-  tree_out->Branch("lep1Eta"      , &lep1Eta_ , "lep1Eta/F" ) ;
-  tree_out->Branch("lep2Pt"      , &lep2Pt_ , "lep2Pt/F" ) ;
-  tree_out->Branch("lep2Eta"      , &lep2Eta_ , "lep2Eta/F" ) ;
-  tree_out->Branch("lep3Pt"      , &lep3Pt_ , "lep3Pt/F" ) ;
-  tree_out->Branch("lep3Eta"      , &lep3Eta_ , "lep3Eta/F" ) ;
-  tree_out->Branch("llM"      , &llM_ , "llM/F" ) ;
-  tree_out->Branch("llPt"      , &llPt_ , "llPt/F" ) ;
-  tree_out->Branch("llDr"      , &llDr_ , "llDr/F" ) ;
-  tree_out->Branch("llDphi"      , &llDphi_ , "llDphi/F" ) ;
-  tree_out->Branch("jet1Pt"      , &jet1Pt_ , "jet1Pt/F" ) ;
-  tree_out->Branch("jet1Eta"      , &jet1Eta_ , "jet1Eta/F"  ) ;
-  tree_out->Branch("bJetPt"      , &bJetPt_ , "bJetPt/F" ) ;
-  tree_out->Branch("bJetEta"      , &bJetEta_ , "bJetEta/F"  ) ;
-  tree_out->Branch("nJets"      , &nJets_ , "nJets/I"  ) ;
-  tree_out->Branch("tH_topMass"      , &tH_topMass_ , "tH_topMass/F"  ) ;
-  tree_out->Branch("tH_HMass"      , &tH_HMass_ , "tH_HMass/F"  ) ;
-  tree_out->Branch("tH_WtopMass"      , &tH_WtopMass_ , "tH_WtopMass/F"  ) ;
-  tree_out->Branch("tH_W1HMass"      , &tH_W1HMass_ , "tH_W1HMass/F"  ) ;
-  tree_out->Branch("tH_W2HMass"      , &tH_W2HMass_ , "tH_W2HMass/F"  ) ;
-  tree_out->Branch("tH_HPt"      , &tH_HPt_ , "tH_HPt/F"  ) ;
-  tree_out->Branch("tH_HEta"      , &tH_HEta_ , "tH_HEta/F"  ) ;
-  tree_out->Branch("tH_topPt"      , &tH_topPt_ , "tH_topPt/F"  ) ;
-  tree_out->Branch("tH_topEta"      , &tH_topEta_ , "tH_topEta/F"  ) ;
-  tree_out->Branch("tH_drWtopB"      , &tH_drWtopB_ , "tH_drWtopB/F"  ) ;
-  tree_out->Branch("tH_drW1HW2H"      , &tH_drW1HW2H_ , "tH_drW1HW2H/F"  ) ;
-  tree_out->Branch("tZ_topMass"      , &tZ_topMass_ , "tZ_topMass/F"  ) ;
-  tree_out->Branch("tZ_ZMass"      , &tZ_ZMass_ , "tZ_ZMass/F"  ) ;
-  tree_out->Branch("tZ_WtopMass"      , &tZ_WtopMass_ , "tZ_WtopMass/F"  ) ;
-  tree_out->Branch("tZ_ZPt"      , &tZ_ZPt_ , "tZ_ZPt/F"  ) ;
-  tree_out->Branch("tZ_ZEta"      , &tZ_ZEta_ , "tZ_ZEta/F"  ) ;
-  tree_out->Branch("tZ_topPt"      , &tZ_topPt_ , "tZ_topPt/F"  ) ;
-  tree_out->Branch("tZ_topEta"      , &tZ_topEta_ , "tZ_topEta/F"  ) ;
-
-  tree_out->Branch("weightSM"      , &weightSM_ , "weightSM/F" ) ;
-  tree_out->Branch("weightSMfake"      , &weightSMfake_ , "weightSMfake/F" ) ;
-  tree_out->Branch("weightctp"      , &weightctp_ , "weightctp/F" ) ;
-  tree_out->Branch("weightctlS"      , &weightctlS_ , "weightctlS/F" ) ;
-  tree_out->Branch("weightcte"      , &weightcte_ , "weightcte/F" ) ;
-  tree_out->Branch("weightctl"      , &weightctl_ , "weightctl/F" ) ;
-  tree_out->Branch("weightctlT"      , &weightctlT_ , "weightctlT/F" ) ;
-  tree_out->Branch("weightctZ"      , &weightctZ_ , "weightctZ/F" ) ;
-  tree_out->Branch("weightcpt"      , &weightcpt_ , "weightcpt/F" ) ;
-  tree_out->Branch("weightcpQM"      , &weightcpQM_ , "weightcpQM/F" ) ;
-  tree_out->Branch("weightctA"      , &weightctA_ , "weightctA/F" ) ;
-  tree_out->Branch("weightcQe"      , &weightcQe_ , "weightcQe/F" ) ;
-  tree_out->Branch("weightctG"      , &weightctG_ , "weightctG/F" ) ;
-  tree_out->Branch("weightcQlM"      , &weightcQlM_ , "weightcQlM/F" ) ;
-  tree_out->Branch("ch"      , &ch_, "ch/I" ) ;
-  tree_out->Branch("chFA"      , &chFA_, "chFA/I" ) ;
-  tree_out->Branch("reg"      , &reg_, "reg/I" ) ;
-  tree_out->Branch("MVATU"      , &MVATU_ , "MVATU/F" ) ;
-
-  cout<<"Output tree is ready to be used"<<endl;
 
   csetFileEleSF = CorrectionSet::from_file(eleSF);
   csetEleIdReco = csetFileEleSF->at("UL-Electron-ID-SF");
@@ -564,7 +656,7 @@ void MyAnalysis::initiateHists(TString data,string year, bool ifSys){
   readerMVA2lss_TC->AddVariable( "nJets",          &MVA_nJets );
   readerMVA2lss_TC->BookMVA( "BDT::BDT", "/users/rgoldouz/FCNC/NanoAnalysis/MVA/tmp_TMVAClassification_TC_2lss/dataset/weights/TMVAClassification_TC_2lss_BDT.weights.xml");
 
-vsrc.resize(nsrc);
+  vsrc.resize(nsrc);
 
   for (int isrc = 0; isrc < nsrc; isrc++) {
     JetCorrectorParameters *p = new JetCorrectorParameters(JECFile, srcnames[isrc]);
@@ -597,6 +689,20 @@ void MyAnalysis::endHists(TString data,string year, bool ifSys){
     }
   }
 
+  if (ifSys){
+    for (int i=0;i<channelsFA.size();++i){
+      for (int k=0;k<regions.size();++k){
+        for (int l=0;l<varsTh.size();++l){
+          for (int n=0;n<sysFA.size();++n){
+            HistsFAUp[i][k][l][n]->Write("",TObject::kOverwrite);
+            HistsFADown[i][k][l][n]->Write("",TObject::kOverwrite);
+            delete HistsFAUp[i][k][l][n];
+            delete HistsFADown[i][k][l][n];
+          }
+        }	  
+      }
+    }
+  }    
   if (data == "mc" && ifSys){
     for (int i=0;i<channelsSys.size();++i){
       for (int k=0;k<regions.size();++k){
@@ -623,6 +729,9 @@ void MyAnalysis::endHists(TString data,string year, bool ifSys){
   delete tree_out;
 
   Hists.clear();
+  Hists.shrink_to_fit();
+  HistsFA.clear();
+  HistsFA.shrink_to_fit();
   cout<<"Hists cleaned"<<endl;
   if(ifSys){
     HistsSysUp.clear();
@@ -636,7 +745,7 @@ void MyAnalysis::endHists(TString data,string year, bool ifSys){
     cout<<"HistsSysUp cleaned"<<endl;
     HistsThDown.clear();
     HistsThDown.shrink_to_fit();
-    cout<<"HistsSysDown cleaned"<<endl;
+    cout<<"HistsSysTh cleaned"<<endl;
   }
 }
 

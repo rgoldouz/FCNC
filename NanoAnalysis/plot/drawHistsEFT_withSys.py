@@ -27,11 +27,10 @@ def EFTtoNormal(H, wc):
             print  H.GetName()+"Bin content is inf"
         hpx.SetBinContent(b+1, H.GetBinContent(b+1,wc))
         hpx.SetBinError(b+1, H.GetBinError(b+1))
+    hpx.SetBinContent(hpx.GetXaxis().GetNbins(), hpx.GetBinContent(hpx.GetXaxis().GetNbins()) + H.GetBinContent(hpx.GetXaxis().GetNbins()+1,wc))
+    hpx.SetBinError(hpx.GetXaxis().GetNbins(), (H.GetBinError(hpx.GetXaxis().GetNbins())**2 + H.GetBinError(hpx.GetXaxis().GetNbins()+1)**2)**0.5)
     hpx.SetLineColor(H.GetLineColor())
     hpx.SetLineStyle(H.GetLineStyle())
-    hpx.SetBinContent(hpx.GetXaxis().GetNbins(), hpx.GetBinContent(hpx.GetXaxis().GetNbins()) + hpx.GetBinContent(hpx.GetXaxis().GetNbins()+1))
-#    if hpx.Integral()>0:
-#        hpx.Scale(1/hpx.Integral())
     return hpx
 
 
@@ -395,22 +394,23 @@ regionsName=["0b","1bxj", "1b$>$xj", "$>$1Bjet"]
 channels=["2lss", "2los_Weighted", "2los_EpEm_CR", "2los_MUpMUm_CR", "2los_EpmMUmp_CR", "3lonZ", "3loffZhigh", "3loffZlow","4l_CR"]
 channelsFake=["2lss_LF", "2lss_FF", "3lonZ_LLF", "3lonZ_LFF","3lonZ_FFF","3loffZhigh_LLF", "3loffZhigh_LFF","3loffZhigh_FFF", "3loffZlow_LLF", "3loffZlow_LFF","3loffZlow_FFF"]
 variables=["lep1Pt","lep1Eta","lep1Phi","lep2Pt","lep2Eta","lep2Phi","llM","llPt","llDr","llDphi","jet1Pt","jet1Eta","jet1Phi","njet","nbjet","Met","MetPhi","nVtx","llMZw", "MVATU","MVATC"]
-variables=[ "MVATU","MVATC","njet"]
+#variables=[ "MVATU","MVATC","njet"]
 variablesName=["p_{T}(leading lepton)","#eta(leading lepton)","#Phi(leading lepton)","p_{T}(sub-leading lepton)","#eta(sub-leading lepton)","#Phi(sub-leading lepton)","M(ll)","p_{T}(ll)","#Delta R(ll)","#Delta #Phi(ll)","p_{T}(leading jet)","#eta(leading jet)","#Phi(leading jet)","Number of jets","Number of b-tagged jets","MET","#Phi(MET)","Number of vertices", "M(ll) [z window]","Likelihood ratio TU", "Likelihood ratio TC"]
-variablesName=["MVATU","MVATC","njet"]
+#variablesName=["MVATU","MVATC","njet"]
 variablesFR=["lep1Pt","lep1Eta","lep1Phi","lep2Pt","lep2Eta","lep2Phi","jet1Pt","jet1Eta","jet1Phi","njet", "MVATU","MVATC"]
 variablesNameFR=["p_{T}(leading lepton)","#eta(leading lepton)","#Phi(leading lepton)","p_{T}(sub-leading lepton)","#eta(sub-leading lepton)","#Phi(sub-leading lepton)","p_{T}(leading jet)","#eta(leading jet)","#Phi(leading jet)","Number of jets","MVATU","MVATC"]
 HistAddress = '/users/rgoldouz/FCNC/NanoAnalysis/hists/'
+variablesSys=["lep1Pt","lep1Eta","jet1Pt","jet1Eta","njet","Met", "nVtx", "MVATU","MVATC"]
+variablesTh=["MVATU","MVATC"]
 
-
-Samples = ['data.root','Triboson.root', 'Diboson.root', 'ttbar.root', 'ST.root','DY.root', 'Conv.root','TTX.root','FCNCProduction.root','FCNCDecay.root']
-SamplesName = ['Data','Triboson', 'Diboson', 't#bar{t}', 'Single top','DY', 'Conv','TTX+TX','FCNC-Production','FCNC-Decay']# , 'BNV_ST_TBCE', 'BNV_ST_TBUE', 'BNV_ST_TDCE',  'BNV_ST_TDUE',  'BNV_ST_TSCE',  'BNV_ST_TSUE']
 Samples = ['data.root','Triboson.root', 'Diboson.root', 'ttbar.root', 'ST.root','DY.root', 'Conv.root','TTX.root','FCNCTUProduction.root','FCNCTUDecay.root']
+#Samples = ['data.root','FCNCTUProduction.root']
 SamplesName = ['Data','Triboson', 'Diboson', 't#bar{t}', 'Single top','DY', 'Conv','TTX+TX','FCNC-Production','FCNC-Decay']#
 fakeMC=['ttbar.root', 'ST.root','WJets.root']
 channelsSys=["2lss", "3lonZ", "3loffZhigh"]
 sys = ["eleRecoIdIso","muRecoIdIso","triggerSF","pu","prefiring","bcTagSfCorr","LTagSfCorr","bcTagSfUnCorr","LTagSfUnCorr","LTagSfUnCorr","JetPuID", "JesFlavorQCD", "JesBBEC1", "JesAbsolute", "JesRelativeBal", "JesRelativeSample","Jes","Jer"]
 jetSys=["JetPuID", "JesFlavorQCD", "JesBBEC1", "JesAbsolute", "JesRelativeBal", "JesRelativeSample","Jes","Jer"]
+ThSys=["PDF","Renormalization","Factorization", "ISR", "FSR"]
 colors =  [ROOT.kBlack,ROOT.TColor.GetColor("#3f90da"),ROOT.TColor.GetColor("#ffa90e"), ROOT.TColor.GetColor("#bd1f01"),ROOT.TColor.GetColor("#94a4a2"), ROOT.TColor.GetColor("#832db6"),ROOT.TColor.GetColor("#a96b59"),ROOT.TColor.GetColor("#e76300"),ROOT.TColor.GetColor("#b9ac70"),ROOT.TColor.GetColor("#717581"),ROOT.TColor.GetColor("#92dadd")]
 
 
@@ -426,6 +426,8 @@ wc1 = ROOT.WCPoint("EFTrwgt4_cpQM_1.0_cpt_1.0_ctA_1.0_ctZ_0.5_ctG_0.1_cQlM_1.0_c
 Hists = []
 HistsSysUp = []
 HistsSysDown = []
+HistsThUp = []
+HistsThDown = []
 Hists_copy =[]
 HistsFake = []
 drawFakeRegions=True
@@ -435,39 +437,51 @@ for numyear, nameyear in enumerate(year):
     copyl0=[]
     SysUpl0=[]
     SysDownl0=[]
+    ThUpl0=[]
+    ThDownl0=[]
     Files = []
     for f in range(len(Samples)):
         l1=[]
         copyl1=[]
         SysUpl1=[]
         SysDownl1=[]
+        ThUpl1=[]
+        ThDownl1=[]
         Files.append(ROOT.TFile.Open(HistAddress + nameyear+ '_' + Samples[f]))
-        print HistAddress + nameyear+ '_' + Samples[f]
+#        print HistAddress + nameyear+ '_' + Samples[f]
         for numch, namech in enumerate(channels):
             l2=[]
             copyl2=[]
             SysUpl2=[]
             SysDownl2=[]
+            ThUpl2=[]
+            ThDownl2=[]
             for numreg, namereg in enumerate(regions):
                 l3=[]
                 copyl3=[]
                 SysUpl3=[]
                 SysDownl3=[]
+                ThUpl3=[]
+                ThDownl3=[]
                 for numvar, namevar in enumerate(variables):
                     SysUpl4=[]
                     SysDownl4=[]
+                    ThUpl4=[]
+                    ThDownl4=[]
                     for key in binsDic:
                         if key in namech:
                             bins=binsDic[key]
                     h= Files[f].Get(namech + '_' + namereg + '_' + namevar)
                     h= EFTtoNormal(h,wc1)
+#                    print Samples[f] + '-' + namech + '_' + namereg + '_' + namevar+ ' before rebinning:'+ str(h.Integral())
                     if 'MVA' in namevar:
                         h=h.Rebin(len(bins)-1,"",bins)
                     h.SetFillColor(colors[f])
                     h.SetLineColor(colors[f])
                     l3.append(h)
+                    #print Samples[f] + '-' + namech + '_' + namereg + '_' + namevar+ ':'+ str(h.Integral())
                     copyl3.append(h.Clone())
-                    if f>0 and namech in channelsSys:
+                    if f>0 and namech in channelsSys and namevar in variablesSys:
                         for numsys, namesys in enumerate(sys):
                             h= Files[f].Get(namech + '_' + namereg + '_' + namevar+ '_' + namesys+ '_Up')
                             h= EFTtoNormal(h,wc1)
@@ -475,7 +489,7 @@ for numyear, nameyear in enumerate(year):
                             h.SetLineColor(colors[f])
                             if 'MVA' in namevar:
                                 h=h.Rebin(len(bins)-1,"",bins)
-                           # print Samples[f] + '-' + namech + '_' + namereg + '_' + namevar+ '_' + namesys+ '_Up:'+ str(h.Integral())
+                     #       print namesys + '_Up:'+ str(h.Integral())
                             SysUpl4.append(h)
                             h= Files[f].Get(namech + '_' + namereg + '_' + namevar+ '_' + namesys+ '_Down')
                             h= EFTtoNormal(h,wc1)
@@ -483,26 +497,53 @@ for numyear, nameyear in enumerate(year):
                             h.SetLineColor(colors[f])
                             if 'MVA' in namevar:
                                 h=h.Rebin(len(bins)-1,"",bins)
+                      #      print namesys + '_Down:'+ str(h.Integral())
                             SysDownl4.append(h)
+                    if f>0 and namech in channelsSys and namevar in variablesTh:
+                        for numsys, namesys in enumerate(ThSys):
+                            h= Files[f].Get(namech + '_' + namereg + '_' + namevar+ '_' + namesys+ '_Up')
+                            h= EFTtoNormal(h,wc1)
+                            h.SetFillColor(colors[f])
+                            h.SetLineColor(colors[f])
+                            if 'MVA' in namevar:
+                                h=h.Rebin(len(bins)-1,"",bins)
+                            ThUpl4.append(h)
+                            h= Files[f].Get(namech + '_' + namereg + '_' + namevar+ '_' + namesys+ '_Down')
+                            h= EFTtoNormal(h,wc1)
+                            h.SetFillColor(colors[f])
+                            h.SetLineColor(colors[f])
+                            if 'MVA' in namevar:
+                                h=h.Rebin(len(bins)-1,"",bins)
+                      #      print namesys + '_Down:'+ str(h.Integral())
+                            ThDownl4.append(h)
                     SysUpl3.append(SysUpl4)
                     SysDownl3.append(SysDownl4)
+                    ThUpl3.append(ThUpl4)
+                    ThDownl3.append(ThDownl4)
                 l2.append(l3)
                 copyl2.append(copyl3)
                 SysUpl2.append(SysUpl3)
                 SysDownl2.append(SysDownl3)
+                ThUpl2.append(ThUpl3)
+                ThDownl2.append(ThDownl3)
             l1.append(l2)
             copyl1.append(copyl2)
             SysUpl1.append(SysUpl2)
             SysDownl1.append(SysDownl2)
+            ThUpl1.append(ThUpl2)
+            ThDownl1.append(ThDownl2)
         l0.append(l1)
         copyl0.append(copyl1)
         SysUpl0.append(SysUpl1)
         SysDownl0.append(SysDownl1)
+        ThUpl0.append(ThUpl1)
+        ThDownl0.append(ThDownl1)
     Hists.append(l0)
     Hists_copy.append(copyl0)
     HistsSysUp.append(SysUpl0)
     HistsSysDown.append(SysDownl0)
-
+    HistsThUp.append(ThUpl0)
+    HistsThDown.append(ThDownl0)
 #tgraph_nominal = []
 #tgraph_ratio = []
 #errup = 0
@@ -566,9 +607,9 @@ for numyear, nameyear in enumerate(year):
 for f in range(1,len(Samples)):
     for numyear, nameyear in enumerate(year):
         for numch, namech in enumerate(channels):
-            if f>0 and namech in channelsSys:
-                for numreg, namereg in enumerate(regions):
-                    for numvar, namevar in enumerate(variables):
+            for numreg, namereg in enumerate(regions):
+                for numvar, namevar in enumerate(variables):
+                    if f>0 and namech in channelsSys and namevar in variablesSys:
                         glistup = []
                         glistdown = []
                         for numsys2, namesys2 in enumerate(sys):
@@ -586,14 +627,14 @@ for f in range(1,len(Samples)):
                                     hdown.SetBinContent(b+1, 0 - abs(min((HistsSysUp[numyear][f][numch][numreg][numvar][numsys2].GetBinContent(b+1)-cv)*rb, (HistsSysDown[numyear][f][numch][numreg][numvar][numsys2].GetBinContent(b+1)-cv)*rb,0)))
                             glistup.append(hup)
                             glistdown.append(hdown)
-                        compareError(glistup,glistdown, sys, namech, namereg, nameyear,namevar,variablesName[numvar], 'ExpNonJets_'+Samples[f]+'_')
+#                        compareError(glistup,glistdown, sys, namech, namereg, nameyear,namevar,variablesName[numvar], 'ExpNonJets_'+Samples[f]+'_')
 
 for f in range(1,len(Samples)):
     for numyear, nameyear in enumerate(year):
         for numch, namech in enumerate(channels):
-            if f>0 and namech in channelsSys:
-                for numreg, namereg in enumerate(regions):
-                    for numvar, namevar in enumerate(variables):
+            for numreg, namereg in enumerate(regions):
+                for numvar, namevar in enumerate(variables):
+                   if f>0 and namech in channelsSys and namevar in variablesSys:
                         glistup = []
                         glistdown = []
                         for numsys2, namesys2 in enumerate(sys):
@@ -601,17 +642,44 @@ for f in range(1,len(Samples)):
                                 continue;
                             hup = HistsSysUp[numyear][f][numch][numreg][numvar][numsys2].Clone()
                             hdown = HistsSysDown[numyear][f][numch][numreg][numvar][numsys2].Clone()
+                           # print namesys2 + str(Hists_copy[numyear][f][numch][numreg][numvar].Integral())+' Up:'+str(hup.Integral()) + ' Down:'+str(hdown.Integral())
                             if hup.Integral()>0 or hdown.Integral()>0:
                                 for b in range(hup.GetNbinsX()):
                                     cv = Hists_copy[numyear][f][numch][numreg][numvar].GetBinContent(b+1)
                                     rb = 0
                                     if cv>0:
                                         rb = 100/cv
+                                   # print 'bin'+str(b+1)+' '+str(cv)+' '+str(HistsSysUp[numyear][f][numch][numreg][numvar][numsys2].GetBinContent(b+1))+' '+str(HistsSysDown[numyear][f][numch][numreg][numvar][numsys2].GetBinContent(b+1))
                                     hup.SetBinContent(b+1, 0 + abs(max((HistsSysUp[numyear][f][numch][numreg][numvar][numsys2].GetBinContent(b+1)-cv)*rb, (HistsSysDown[numyear][f][numch][numreg][numvar][numsys2].GetBinContent(b+1)-cv)*rb,0)))
                                     hdown.SetBinContent(b+1, 0 - abs(min((HistsSysUp[numyear][f][numch][numreg][numvar][numsys2].GetBinContent(b+1)-cv)*rb, (HistsSysDown[numyear][f][numch][numreg][numvar][numsys2].GetBinContent(b+1)-cv)*rb,0)))
                             glistup.append(hup)
                             glistdown.append(hdown)
-                        compareError(glistup,glistdown, jetSys, namech, namereg, nameyear,namevar,variablesName[numvar], 'ExpJets_'+Samples[f]+'_')
+#                        compareError(glistup,glistdown, jetSys, namech, namereg, nameyear,namevar,variablesName[numvar], 'ExpJets_'+Samples[f]+'_')
+
+for f in range(1,len(Samples)):
+    for numyear, nameyear in enumerate(year):
+        for numch, namech in enumerate(channels):
+            for numreg, namereg in enumerate(regions):
+                for numvar, namevar in enumerate(variables):
+                   if f>0 and namech in channelsSys and namevar in variablesTh:
+                        glistup = []
+                        glistdown = []
+                        for numsys2, namesys2 in enumerate(ThSys):
+                            hup = HistsThUp[numyear][f][numch][numreg][numvar][numsys2].Clone()
+                            hdown = HistsThDown[numyear][f][numch][numreg][numvar][numsys2].Clone()
+                           # print namesys2 + str(Hists_copy[numyear][f][numch][numreg][numvar].Integral())+' Up:'+str(hup.Integral()) + ' Down:'+str(hdown.Integral())
+                            if hup.Integral()>0 or hdown.Integral()>0:
+                                for b in range(hup.GetNbinsX()):
+                                    cv = Hists_copy[numyear][f][numch][numreg][numvar].GetBinContent(b+1)
+                                    rb = 0
+                                    if cv>0:
+                                        rb = 100/cv
+                                   # print 'bin'+str(b+1)+' '+str(cv)+' '+str(HistsSysUp[numyear][f][numch][numreg][numvar][numsys2].GetBinContent(b+1))+' '+str(HistsSysDown[numyear][f][numch][numreg][numvar][numsys2].GetBinContent(b+1))
+                                    hup.SetBinContent(b+1, 0 + abs(max((HistsThUp[numyear][f][numch][numreg][numvar][numsys2].GetBinContent(b+1)-cv)*rb, (HistsThDown[numyear][f][numch][numreg][numvar][numsys2].GetBinContent(b+1)-cv)*rb,0)))
+                                    hdown.SetBinContent(b+1, 0 - abs(min((HistsThUp[numyear][f][numch][numreg][numvar][numsys2].GetBinContent(b+1)-cv)*rb, (HistsThDown[numyear][f][numch][numreg][numvar][numsys2].GetBinContent(b+1)-cv)*rb,0)))
+                            glistup.append(hup)
+                            glistdown.append(hdown)
+                        compareError(glistup,glistdown, ThSys, namech, namereg, nameyear,namevar,variablesName[numvar], 'Th_'+Samples[f]+'_')
 
 for numyear, nameyear in enumerate(year):
     l0=[]
@@ -660,7 +728,7 @@ if drawFakeRegions:
                     for f in range(len(Samples)):
                         HH.append(HistsFake[numyear][f][numch][numreg][numvar])
                         SN.append(SamplesName[f])
-#                    stackPlots(HH, HHsignal, SN, SNsignal, namech, namereg, nameyear,namevar,variablesNameFR[numvar])
+                    stackPlots(HH, HHsignal, SN, SNsignal, namech, namereg, nameyear,namevar,variablesNameFR[numvar])
 
 
 for numyear, nameyear in enumerate(year):
@@ -717,7 +785,7 @@ for numyear, nameyear in enumerate(year):
                     Hists[numyear][0][channels.index("2los_Weighted")][numreg][numvar].SetLineColor(ROOT.TColor.GetColor("#92dadd"))
                     HH.append(Hists[numyear][0][channels.index("2los_Weighted")][numreg][numvar])
                     SN.append("ChargeFlip")
-#                stackPlots(HH, HHsignal, SN, SNsignal, namech, namereg, nameyear,namevar,variablesName[numvar])
+                stackPlots(HH, HHsignal, SN, SNsignal, namech, namereg, nameyear,namevar,variablesName[numvar])
     os.system('tar -cvf '+nameyear+'.tar ' +nameyear)
 
 os.system('tar -cvf sys.tar sys')

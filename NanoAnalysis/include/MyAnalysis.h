@@ -3445,7 +3445,8 @@ public :
    virtual Int_t    GetEntry(Long64_t entry);
    virtual Long64_t LoadTree(Long64_t entry);
    virtual void     Init(TTree *tree);
-   virtual void     Loop(TString fname, TString data, TString dataset ,string year, TString run, float xs, float lumi, float Nevent, int iseft, int nRuns, int onlyGen, MyAnalysis *Evt);
+   virtual void     Loop(TString fname, TString data, TString dataset ,string year, TString run, float xs, float lumi, float Nevent, int iseft, int nRuns, int onlyGen, MyAnalysis *Evt, Long64_t start, Long64_t end);
+   virtual void     Analyze(TString fname, TString data, TString dataset ,string year, TString run, float xs, float lumi, float Nevent, int iseft, int nRuns, int onlyGen, MyAnalysis *Evt);
    typedef vector<TH1EFT*> Dim1;
    typedef vector<Dim1> Dim2;
    typedef vector<Dim2> Dim3;
@@ -3454,13 +3455,14 @@ public :
    typedef vector< vector < vector < TH1EFT* > > > D3HistsContainer;
    D3HistsContainer Hists;
    D3HistsContainer HistsFA;
+   D4HistsContainer HistsFAUp;
+   D4HistsContainer HistsFADown;
    D4HistsContainer HistsSysUp;
    D4HistsContainer HistsSysDown;
-   D4HistsContainer HistsJecUp;
-   D4HistsContainer HistsJecDown;
    D4HistsContainer HistsThUp;
    D4HistsContainer HistsThDown;
    TH1EFT *h_test;
+   void inputs(TString data,string year);
    void initiateHists(TString data,string year, bool ifSys);
    void endHists(TString data,string year, bool ifSys);
    bool trigger(TString data,TString dataset, string year);
@@ -3559,6 +3561,7 @@ public :
    std::vector<TString> sysJec{"JesFlavorQCD", "JesBBEC1", "JesAbsolute", "JesRelativeBal", "JesRelativeSample","Jes","Jer"};
    std::vector<TString> sysNotWeight{"JesFlavorQCD", "JesBBEC1", "JesAbsolute", "JesRelativeBal", "JesRelativeSample","Jes","Jer"};
    std::vector<TString> sysTh{"PDF","Renormalization","Factorization", "ISR", "FSR"};
+   std::vector<TString> sysFA{"fakeAll","fakePt","fakeEta"};
    const int nsrc = 6;
    std::vector<float> nominalWeights;
    std::vector<float> sysDownWeights;
@@ -3567,10 +3570,10 @@ public :
    PU wPU;
    const std::map<TString, std::vector<float>> vars =
    {
-    {"lep1Pt",                         {0,      60,   0,  1500}},
+    {"lep1Pt",                         {0,      35,   0,  700}},
     {"lep1Eta",                        {1,      20,   -3, 3   }},
     {"lep1Phi",                        {2,      25,   -4, 4   }},
-    {"lep2Pt",                         {3,      25,   0,  1000}},
+    {"lep2Pt",                         {3,      20,   0,  400}},
     {"lep2Eta",                        {4,      20,   -3, 3   }},
     {"lep2Phi",                        {5,      25,   -4, 4   }},
     {"llM",                            {6,      30,    0, 500 }},
@@ -3588,34 +3591,121 @@ public :
     {"llMZw",                          {18,     80,    70, 110}},
     {"MVATU",                          {19,   500,    0, 50}},
     {"MVATC",                          {20,   500,    0, 50}},
+    {"lep3Pt",                         {21,      15,   0,  300}},
+    {"lep3Eta",                        {22,      20,   -3, 3   }},
+    {"bJetPt",                         {23,     20,    0, 300 }},
+    {"bJetEta",                        {24,     20,    -3, 3  }},
+    {"tH_topMass",                     {25,      35,   0,  700}},
+    {"tH_HMass",                       {26,      35,   0,  700}},
+    {"tH_WtopMass",                    {27,      35,   0,  700}},
+    {"tH_W1HMass",                     {28,      35,   0,  700}},
+    {"tH_W2HMass",                     {29,      35,   0,  700}},
+    {"tH_HPt",                         {30,      35,   0,  700}},
+    {"tH_HEta",                        {31,      30,   -5, 5   }},
+    {"tH_topPt",                       {32,      35,   0,  700}},
+    {"tH_topEta",                      {33,      30,   -5, 5   }},
+    {"tH_drWtopB",                     {34,      25,    0, 7   }},
+    {"tH_drW1HW2H",                    {35,      25,    0, 7   }},
+    {"tZ_topMass",                     {36,      35,   0,  700}},
+    {"tZ_ZMass",                       {37,      35,   0,  700}},
+    {"tZ_WtopMass",                    {38,      35,   0,  700}},
+    {"tZ_ZPt",                         {39,      35,   0,  700}},
+    {"tZ_ZEta",                        {40,      30,   -5, 5   }},
+    {"tZ_topPt",                       {41,      35,   0,  700}},
+    {"tZ_topEta",                      {42,      30,   -5, 5   }},
    };
    const std::map<TString, std::vector<float>> varsFA =
    {
-    {"lep1Pt",                         {0,      60,   0,  1500}},
+    {"lep1Pt",                         {0,      35,   0,  700}},
     {"lep1Eta",                        {1,      20,   -3, 3   }},
     {"lep1Phi",                        {2,      25,   -4, 4   }},
-    {"lep2Pt",                         {3,      25,   0,  1000}},
+    {"lep2Pt",                         {3,      20,   0,  400}},
     {"lep2Eta",                        {4,      20,   -3, 3   }},
     {"lep2Phi",                        {5,      25,   -4, 4   }},
-    {"jet1Pt",                         {6,     20,    0, 300 }},
-    {"jet1Eta",                        {7,     20,    -3, 3  }},
-    {"jet1Phi",                        {8,     25,    -4, 4  }},
-    {"njet",                           {9,     10,    0, 10  }},
-    {"MVATU",                          {10,   500,    0, 50}},
-    {"MVATC",                          {11,   500,    0, 50}},
+    {"llM",                            {6,      30,    0, 500 }},
+    {"llPt",                           {7,      20,    0, 200 }},
+    {"llDr",                           {8,      25,    0, 7   }},
+    {"llDphi",                         {9,      15,    0, 4   }},
+    {"jet1Pt",                         {10,     20,    0, 300 }},
+    {"jet1Eta",                        {11,     20,    -3, 3  }},
+    {"jet1Phi",                        {12,     25,    -4, 4  }},
+    {"njet",                           {13,     10,    0, 10  }},
+    {"nbjet",                          {14,     6,     0, 6   }},
+    {"Met",                            {15,     30,    0, 210 }},
+    {"MetPhi",                         {16,     20,    -4, 4  }},
+    {"nVtx",                           {17,     70,    0, 70  }},
+    {"llMZw",                          {18,     80,    70, 110}},
+    {"MVATU",                          {19,   500,    0, 50}},
+    {"MVATC",                          {20,   500,    0, 50}},
+    {"lep3Pt",                         {21,      15,   0,  300}},
+    {"lep3Eta",                        {22,      20,   -3, 3   }},
+    {"bJetPt",                         {23,     20,    0, 300 }},
+    {"bJetEta",                        {24,     20,    -3, 3  }},
+    {"tH_topMass",                     {25,      35,   0,  700}},
+    {"tH_HMass",                       {26,      35,   0,  700}},
+    {"tH_WtopMass",                    {27,      35,   0,  700}},
+    {"tH_W1HMass",                     {28,      35,   0,  700}},
+    {"tH_W2HMass",                     {29,      35,   0,  700}},
+    {"tH_HPt",                         {30,      35,   0,  700}},
+    {"tH_HEta",                        {31,      30,   -5, 5   }},
+    {"tH_topPt",                       {32,      35,   0,  700}},
+    {"tH_topEta",                      {33,      30,   -5, 5   }},
+    {"tH_drWtopB",                     {34,      25,    0, 7   }},
+    {"tH_drW1HW2H",                    {35,      25,    0, 7   }},
+    {"tZ_topMass",                     {36,      35,   0,  700}},
+    {"tZ_ZMass",                       {37,      35,   0,  700}},
+    {"tZ_WtopMass",                    {38,      35,   0,  700}},
+    {"tZ_ZPt",                         {39,      35,   0,  700}},
+    {"tZ_ZEta",                        {40,      30,   -5, 5   }},
+    {"tZ_topPt",                       {41,      35,   0,  700}},
+    {"tZ_topEta",                      {42,      30,   -5, 5   }},
    };
 
    const std::map<TString, std::vector<float>> varsSys =
    {
-    {"lep1Pt",                         {0,      60,   0,  1500}},
+    {"lep1Pt",                         {0,      35,   0,  700}},
     {"lep1Eta",                        {1,      20,   -3, 3   }},
-    {"jet1Pt",                         {2,     20,    0, 300 }},
-    {"jet1Eta",                        {3,     20,    -3, 3  }},
-    {"njet",                           {4,     10,    0, 10  }},
-    {"Met",                            {5,     30,    0, 210 }},
-    {"nVtx",                           {6,     70,    0, 70  }},
-    {"MVATU",                          {7,   500,    0, 50}},
-    {"MVATC",                          {8,   500,    0, 50}},
+    {"lep1Phi",                        {2,      25,   -4, 4   }},
+    {"lep2Pt",                         {3,      20,   0,  400}},
+    {"lep2Eta",                        {4,      20,   -3, 3   }},
+    {"lep2Phi",                        {5,      25,   -4, 4   }},
+    {"llM",                            {6,      30,    0, 500 }},
+    {"llPt",                           {7,      20,    0, 200 }},
+    {"llDr",                           {8,      25,    0, 7   }},
+    {"llDphi",                         {9,      15,    0, 4   }},
+    {"jet1Pt",                         {10,     20,    0, 300 }},
+    {"jet1Eta",                        {11,     20,    -3, 3  }},
+    {"jet1Phi",                        {12,     25,    -4, 4  }},
+    {"njet",                           {13,     10,    0, 10  }},
+    {"nbjet",                          {14,     6,     0, 6   }},
+    {"Met",                            {15,     30,    0, 210 }},
+    {"MetPhi",                         {16,     20,    -4, 4  }},
+    {"nVtx",                           {17,     70,    0, 70  }},
+    {"llMZw",                          {18,     80,    70, 110}},
+    {"MVATU",                          {19,   500,    0, 50}},
+    {"MVATC",                          {20,   500,    0, 50}},
+    {"lep3Pt",                         {21,      15,   0,  300}},
+    {"lep3Eta",                        {22,      20,   -3, 3   }},
+    {"bJetPt",                         {23,     20,    0, 300 }},
+    {"bJetEta",                        {24,     20,    -3, 3  }},
+    {"tH_topMass",                     {25,      35,   0,  700}},
+    {"tH_HMass",                       {26,      35,   0,  700}},
+    {"tH_WtopMass",                    {27,      35,   0,  700}},
+    {"tH_W1HMass",                     {28,      35,   0,  700}},
+    {"tH_W2HMass",                     {29,      35,   0,  700}},
+    {"tH_HPt",                         {30,      35,   0,  700}},
+    {"tH_HEta",                        {31,      30,   -5, 5   }},
+    {"tH_topPt",                       {32,      35,   0,  700}},
+    {"tH_topEta",                      {33,      30,   -5, 5   }},
+    {"tH_drWtopB",                     {34,      25,    0, 7   }},
+    {"tH_drW1HW2H",                    {35,      25,    0, 7   }},
+    {"tZ_topMass",                     {36,      35,   0,  700}},
+    {"tZ_ZMass",                       {37,      35,   0,  700}},
+    {"tZ_WtopMass",                    {38,      35,   0,  700}},
+    {"tZ_ZPt",                         {39,      35,   0,  700}},
+    {"tZ_ZEta",                        {40,      30,   -5, 5   }},
+    {"tZ_topPt",                       {41,      35,   0,  700}},
+    {"tZ_topEta",                      {42,      30,   -5, 5   }},
    };
 
    const std::map<TString, std::vector<float>> varsTh =
@@ -3640,6 +3730,18 @@ public :
    TH2F*  sf_eleLooseMVATight2lss_H;
    TH2F*  fr_mu_H;
    TH2F*  fr_ele_H;
+   TH2F*  fr_mu_H_up;
+   TH2F*  fr_ele_H_up;
+   TH2F*  fr_mu_H_down;
+   TH2F*  fr_ele_H_down;
+   TH2F*  fr_mu_H_ptUp;
+   TH2F*  fr_ele_H_ptUp;
+   TH2F*  fr_mu_H_ptDown;
+   TH2F*  fr_ele_H_ptDown;
+   TH2F*  fr_mu_H_etaUp;
+   TH2F*  fr_ele_H_etaUp;
+   TH2F*  fr_mu_H_etaDown;
+   TH2F*  fr_ele_H_etaDown;
    TH2F*  cf_ele_H;
    string rochesterFile;
    string btagFile;

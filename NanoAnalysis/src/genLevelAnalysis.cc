@@ -91,8 +91,6 @@ bool genLevelAnalysis::overlapRemoval(double Et_cut, double Eta_cut, double dR_c
     return haveOverlap;
 }
 
-void genLevelAnalysis::fillLHEHists(float weight, std::vector<string> wc_names){}
-
 void genLevelAnalysis::fillGENHists(float weight, std::vector<string> wc_names){
   WCFit *eft_fit;
   if (wc_names.size()>0) eft_fit = new WCFit(wc_names.size(), wc_names, eI->nEFTfitCoefficients, eI->EFTfitCoefficients, weight);
@@ -156,11 +154,17 @@ void genLevelAnalysis::fillGENHists(float weight, std::vector<string> wc_names){
 }
 
 void genLevelAnalysis::writeGENHists(){
-  cout<<"The following Gen level distributions are written on the output file"<<endl;
+//  cout<<"The following Gen level distributions are written on the output file"<<endl;
   for (int i=0;i<GenHists.size();++i){
-    cout<<i<<":"<<GenHists[i]->GetName()<<endl;
+//    cout<<i<<":"<<GenHists[i]->GetName()<<endl;
     GenHists[i]->Write("",TObject::kOverwrite);
   }
 }
 
-genLevelAnalysis::~genLevelAnalysis(){}
+genLevelAnalysis::~genLevelAnalysis(){
+  for (int n=0;n<GenHists.size();++n){
+    delete GenHists[n];
+  }
+  GenHists.clear();
+  GenHists.shrink_to_fit();
+}
