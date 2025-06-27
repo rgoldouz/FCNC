@@ -44,7 +44,7 @@ std::vector<bool> parsePhotonVIDCuts(int bitMap, int cutLevel);
 float scale_factor( TH2F* h, float X, float Y , TString uncert,bool, bool);
 float topPt(float pt);
 TLorentzVector Wneutrino(double MET, double METphi, double leptonPT, double leptonEta, double leptonPhi);
-int vInd(std::map<TString, std::vector<float>> V, TString name);
+int vInd(std::map<TString, std::tuple<int, int, const double*>> V, TString name);
 int getVecPos(std::vector<TString> vec, string element);
 template <class T>
 void cleanVec( std::vector<T*> *vec ){

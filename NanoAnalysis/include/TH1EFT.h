@@ -17,7 +17,7 @@ class TH1EFT : public TH1D
         
         // usual constructor:
         TH1EFT(const char *name, const char *title, Int_t nbinsx, Double_t xlow, Double_t xup);
-        
+        TH1EFT(const char *name, const char *title, Int_t nbinsx, const Double_t *xbins);  
         std::vector<WCFit> hist_fits;
         //TODO(maybe?): Add over/underflow bin fit functions and update Fill to use them accordingly
         WCFit overflow_fit;
@@ -30,6 +30,7 @@ class TH1EFT : public TH1D
         void Copy(TObject &obj) const;  // This allows Clone to properly copy the WCFit objects
 
         Int_t Fill(Double_t x, Double_t w, WCFit fit);
+        WCFit GetBinsFit(unsigned int bin1, unsigned int bin2);
         WCFit GetBinFit(Int_t bin);
         WCFit GetSumFit();
         Double_t GetBinContent(Int_t bin, WCPoint wc_pt);

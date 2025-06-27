@@ -9,7 +9,7 @@ ROOT.gROOT.SetBatch(ROOT.kTRUE)
 ROOT.gROOT.ProcessLine("gErrorIgnoreLevel = 1;")
 ROOT.TH1.AddDirectory(ROOT.kFALSE)
 ROOT.gStyle.SetOptStat(0)
-from array import array
+import array
 from ROOT import TColor
 from ROOT import TGaxis
 from ROOT import THStack
@@ -17,24 +17,28 @@ import gc
 TGaxis.SetMaxDigits(2)
 
 def EFTtoNormal(H, wc):
-    hpx    = ROOT.TH1F( H.GetName(), H.GetName(), H.GetXaxis().GetNbins(), H.GetXaxis().GetXmin(),H.GetXaxis().GetXmax() )
+    nbins = H.GetNbinsX()
+    bin_edges = [H.GetBinLowEdge(i + 1) for i in range(nbins)]
+    bin_edges.append(H.GetXaxis().GetBinUpEdge(nbins))
+    bin_array = array.array('d', bin_edges)
+    hpx = ROOT.TH1F(H.GetName(), H.GetName(), nbins, bin_array)
     r=1
-    for b in range(hpx.GetNbinsX()):
+    for b in range(hpx.GetNbinsX()+1):
         content = H.GetBinContent(b+1,wc)
         if math.isnan(content):
             print  H.GetName()+"Bin content is NaN"
         if math.isinf(content):
             print  H.GetName()+"Bin content is inf"
-#        if H.GetBinContent(b+1,ROOT.WCPoint("NONE"))>0:
-#            r = H.GetBinError(b+1)/H.GetBinContent(b+1,ROOT.WCPoint("NONE"))
         hpx.SetBinContent(b+1, H.GetBinContent(b+1,wc))
         hpx.SetBinError(b+1, H.GetBinError(b+1))
+    hpx.SetBinContent(hpx.GetXaxis().GetNbins(), hpx.GetBinContent(hpx.GetXaxis().GetNbins()) + hpx.GetBinContent(hpx.GetXaxis().GetNbins()+1))
+    hpx.SetBinError(hpx.GetXaxis().GetNbins(), (H.GetBinError(hpx.GetXaxis().GetNbins())**2 + H.GetBinError(hpx.GetXaxis().GetNbins()+1)**2)**0.5)
     hpx.SetLineColor(H.GetLineColor())
     hpx.SetLineStyle(H.GetLineStyle())
-    hpx.SetBinContent(hpx.GetXaxis().GetNbins(), hpx.GetBinContent(hpx.GetXaxis().GetNbins()) + hpx.GetBinContent(hpx.GetXaxis().GetNbins()+1))
 #    if hpx.Integral()>0:
 #        hpx.Scale(1/hpx.Integral())
     return hpx
+
 
 def cutFlowTable(hists, samples, regions, ch, year,caption='2016', nsig=6):
     mcSum = list(0 for i in xrange(0,len(regions)))
@@ -242,7 +246,7 @@ def stackPlots(hists, SignalHists, Fnames,FnamesS, ch = "channel", reg = "region
     dummy_ratio.GetYaxis().SetTitleOffset(0.42)
     dummy_ratio.GetXaxis().SetTitleOffset(1.1)
     dummy_ratio.GetYaxis().SetNdivisions(504)    
-    dummy_ratio.GetYaxis().SetRangeUser(0.8,1.2)
+    dummy_ratio.GetYaxis().SetRangeUser(0.5,1.5)
     dummy_ratio.Divide(SumofMC)
     dummy_ratio.SetStats(ROOT.kFALSE)
     dummy_ratio.GetYaxis().SetTitle('Data/Pred.')
@@ -287,11 +291,11 @@ fakeMC=['ttbar.root', 'ST.root','WJets.root']
 colors =  [ROOT.kBlack,ROOT.TColor.GetColor("#3f90da"),ROOT.TColor.GetColor("#ffa90e"), ROOT.TColor.GetColor("#bd1f01"),ROOT.TColor.GetColor("#94a4a2"), ROOT.TColor.GetColor("#832db6"),ROOT.TColor.GetColor("#a96b59"),ROOT.TColor.GetColor("#e76300"),ROOT.TColor.GetColor("#b9ac70"),ROOT.TColor.GetColor("#717581"),ROOT.TColor.GetColor("#92dadd")]
 
 
-bins = array( 'd',[0.01,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2,50] )
+bins = array.array( 'd',[0.01,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2,50] )
 binsDic = {
-'2l':array( 'd',[0.01,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2,4,50] ),
-'3lonZ':array( 'd',[0.01,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0,1.2,1.4,1.6,1.8,2,2.5,3,5.0,10.0,20.0,50.0] ),
-'3loffZ':array( 'd',[0.01,0.1,0.2,0.3,0.6,1.0,2.0,5.0,50.0] ),
+'2l':array.array( 'd',[0.01,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2,4,50] ),
+'3lonZ':array.array( 'd',[0.01,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0,1.2,1.4,1.6,1.8,2,2.5,3,5.0,10.0,20.0,50.0] ),
+'3loffZ':array.array( 'd',[0.01,0.1,0.2,0.3,0.6,1.0,2.0,5.0,50.0] ),
 }
 
 wc1 = ROOT.WCPoint("EFTrwgt4_cpQM_1.0_cpt_1.0_ctA_1.0_ctZ_0.5_ctG_0.1_cQlM_1.0_cQe_1.0_ctl_1.0_cte_1.0_ctlS_1.0_ctlT_0.05_ctp_1.0")
@@ -438,8 +442,11 @@ for numyear, nameyear in enumerate(year):
                 if namech=="2lss":
                     Hists[numyear][0][channels.index("2los_Weighted")][numreg][numvar].SetFillColor(ROOT.TColor.GetColor("#92dadd"))
                     Hists[numyear][0][channels.index("2los_Weighted")][numreg][numvar].SetLineColor(ROOT.TColor.GetColor("#92dadd"))
-                    HH.append(Hists[numyear][0][channels.index("2los_Weighted")][numreg][numvar])
-                    SN.append("ChargeFlip")
+                   # HH.append(Hists[numyear][0][channels.index("2los_Weighted")][numreg][numvar])
+                   # SN.append("ChargeFlip")
+                    index = SN.index("DY")
+                    HH[index]=Hists[numyear][0][channels.index("2los_Weighted")][numreg][numvar]
+                    SN[index]="ChargeFlip"
                 stackPlots(HH, HHsignal, SN, SNsignal, namech, namereg, nameyear,namevar,variablesName[numvar])
     os.system('tar -cvf '+nameyear+'.tar ' +nameyear)
 

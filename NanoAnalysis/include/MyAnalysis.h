@@ -53,6 +53,7 @@
 #include "TMVA/Reader.h"
 #include "TMVA/Tools.h"
 
+
 // Header file for the classes stored in the TTree if any.
 using namespace std;
 using namespace correction;
@@ -3453,15 +3454,20 @@ public :
    typedef vector<Dim3> Dim4;
    typedef vector< vector < vector < vector< TH1EFT* > > > > D4HistsContainer;
    typedef vector< vector < vector < TH1EFT* > > > D3HistsContainer;
+   typedef vector< vector < vector < vector< TH1F* > > > > normalD4HistsContainer;
    D3HistsContainer Hists;
    D3HistsContainer HistsFA;
    D4HistsContainer HistsFAUp;
    D4HistsContainer HistsFADown;
    D4HistsContainer HistsSysUp;
    D4HistsContainer HistsSysDown;
-   D4HistsContainer HistsThUp;
-   D4HistsContainer HistsThDown;
+   D3HistsContainer HistsTh;
+   D3HistsContainer HistsSysCompactUp;
+   D3HistsContainer HistsSysCompactDown;
+   normalD4HistsContainer HistsNormalSysUp;
+   normalD4HistsContainer HistsNormalSysDown;
    TH1EFT *h_test;
+   TH1F *h_testNormal;
    void inputs(TString data,string year);
    void initiateHists(TString data,string year, bool ifSys);
    void endHists(TString data,string year, bool ifSys);
@@ -3502,6 +3508,11 @@ public :
  
    std::unique_ptr<correction::CorrectionSet> csetFileJetSF;
    std::shared_ptr<const correction::Correction> csetJetPuID;
+
+   std::unique_ptr<correction::CorrectionSet> csetFilePDFScale;
+   std::shared_ptr<const correction::Correction> csetPDF;
+   std::shared_ptr<const correction::Correction> csetScale;
+
    RoccoR  rc;
 ////////////////////////////////////////////////////////////////////////////////////
 //
@@ -3551,6 +3562,7 @@ public :
    void FillD3Hists(D3HistsContainer H3, std::vector<int> v1, std::vector<int> v2, int v3, float value, std::vector<std::vector<float>> weight, std::vector<std::vector<WCFit>> wcfit);
 //   void FillD3Hists(D3HistsContainer H3, int v1, std::vector<int> v2, int v3, float value, std::vector<float> weight, std::vector<WCFit>);
    void FillD4Hists(D4HistsContainer H4, std::vector<int> v1, std::vector<int> v2, int v3, float value, std::vector<std::vector<float>> weight, std::vector<std::vector<WCFit>> wcfit, int n);
+   void normalFillD4Hists(normalD4HistsContainer H4, std::vector<int> v1, std::vector<int> v2, int v3, float value, std::vector<std::vector<float>> weight, int n);
    virtual Bool_t   Notify();
    virtual void     Show(Long64_t entry = -1);
    std::vector<TString> channels{"2lss", "2los_Weighted", "2los_EpEm_CR", "2los_MUpMUm_CR", "2los_EpmMUmp_CR", "3lonZ", "3loffZhigh", "3loffZlow","4l_CR"};
@@ -3560,7 +3572,7 @@ public :
    std::vector<TString> sys{"eleRecoIdIso","muRecoIdIso","triggerSF","pu","prefiring","bcTagSfCorr","LTagSfCorr","bcTagSfUnCorr","LTagSfUnCorr","JetPuID", "JesFlavorQCD", "JesBBEC1", "JesAbsolute", "JesRelativeBal", "JesRelativeSample","Jes","Jer"};
    std::vector<TString> sysJec{"JesFlavorQCD", "JesBBEC1", "JesAbsolute", "JesRelativeBal", "JesRelativeSample","Jes","Jer"};
    std::vector<TString> sysNotWeight{"JesFlavorQCD", "JesBBEC1", "JesAbsolute", "JesRelativeBal", "JesRelativeSample","Jes","Jer"};
-   std::vector<TString> sysTh{"PDF","Renormalization","Factorization", "ISR", "FSR"};
+   std::vector<TString> sysNormal{"Jes","Jer"};
    std::vector<TString> sysFA{"fakeAll","fakePt","fakeEta"};
    const int nsrc = 6;
    std::vector<float> nominalWeights;
@@ -3568,152 +3580,10 @@ public :
    std::vector<float> sysUpWeights;
 
    PU wPU;
-   const std::map<TString, std::vector<float>> vars =
-   {
-    {"lep1Pt",                         {0,      35,   0,  700}},
-    {"lep1Eta",                        {1,      20,   -3, 3   }},
-    {"lep1Phi",                        {2,      25,   -4, 4   }},
-    {"lep2Pt",                         {3,      20,   0,  400}},
-    {"lep2Eta",                        {4,      20,   -3, 3   }},
-    {"lep2Phi",                        {5,      25,   -4, 4   }},
-    {"llM",                            {6,      30,    0, 500 }},
-    {"llPt",                           {7,      20,    0, 200 }},
-    {"llDr",                           {8,      25,    0, 7   }},
-    {"llDphi",                         {9,      15,    0, 4   }},
-    {"jet1Pt",                         {10,     20,    0, 300 }},
-    {"jet1Eta",                        {11,     20,    -3, 3  }},
-    {"jet1Phi",                        {12,     25,    -4, 4  }},
-    {"njet",                           {13,     10,    0, 10  }},
-    {"nbjet",                          {14,     6,     0, 6   }},
-    {"Met",                            {15,     30,    0, 210 }},
-    {"MetPhi",                         {16,     20,    -4, 4  }},
-    {"nVtx",                           {17,     70,    0, 70  }},
-    {"llMZw",                          {18,     80,    70, 110}},
-    {"MVATU",                          {19,   500,    0, 50}},
-    {"MVATC",                          {20,   500,    0, 50}},
-    {"lep3Pt",                         {21,      15,   0,  300}},
-    {"lep3Eta",                        {22,      20,   -3, 3   }},
-    {"bJetPt",                         {23,     20,    0, 300 }},
-    {"bJetEta",                        {24,     20,    -3, 3  }},
-    {"tH_topMass",                     {25,      35,   0,  700}},
-    {"tH_HMass",                       {26,      35,   0,  700}},
-    {"tH_WtopMass",                    {27,      35,   0,  700}},
-    {"tH_W1HMass",                     {28,      35,   0,  700}},
-    {"tH_W2HMass",                     {29,      35,   0,  700}},
-    {"tH_HPt",                         {30,      35,   0,  700}},
-    {"tH_HEta",                        {31,      30,   -5, 5   }},
-    {"tH_topPt",                       {32,      35,   0,  700}},
-    {"tH_topEta",                      {33,      30,   -5, 5   }},
-    {"tH_drWtopB",                     {34,      25,    0, 7   }},
-    {"tH_drW1HW2H",                    {35,      25,    0, 7   }},
-    {"tZ_topMass",                     {36,      35,   0,  700}},
-    {"tZ_ZMass",                       {37,      35,   0,  700}},
-    {"tZ_WtopMass",                    {38,      35,   0,  700}},
-    {"tZ_ZPt",                         {39,      35,   0,  700}},
-    {"tZ_ZEta",                        {40,      30,   -5, 5   }},
-    {"tZ_topPt",                       {41,      35,   0,  700}},
-    {"tZ_topEta",                      {42,      30,   -5, 5   }},
-   };
-   const std::map<TString, std::vector<float>> varsFA =
-   {
-    {"lep1Pt",                         {0,      35,   0,  700}},
-    {"lep1Eta",                        {1,      20,   -3, 3   }},
-    {"lep1Phi",                        {2,      25,   -4, 4   }},
-    {"lep2Pt",                         {3,      20,   0,  400}},
-    {"lep2Eta",                        {4,      20,   -3, 3   }},
-    {"lep2Phi",                        {5,      25,   -4, 4   }},
-    {"llM",                            {6,      30,    0, 500 }},
-    {"llPt",                           {7,      20,    0, 200 }},
-    {"llDr",                           {8,      25,    0, 7   }},
-    {"llDphi",                         {9,      15,    0, 4   }},
-    {"jet1Pt",                         {10,     20,    0, 300 }},
-    {"jet1Eta",                        {11,     20,    -3, 3  }},
-    {"jet1Phi",                        {12,     25,    -4, 4  }},
-    {"njet",                           {13,     10,    0, 10  }},
-    {"nbjet",                          {14,     6,     0, 6   }},
-    {"Met",                            {15,     30,    0, 210 }},
-    {"MetPhi",                         {16,     20,    -4, 4  }},
-    {"nVtx",                           {17,     70,    0, 70  }},
-    {"llMZw",                          {18,     80,    70, 110}},
-    {"MVATU",                          {19,   500,    0, 50}},
-    {"MVATC",                          {20,   500,    0, 50}},
-    {"lep3Pt",                         {21,      15,   0,  300}},
-    {"lep3Eta",                        {22,      20,   -3, 3   }},
-    {"bJetPt",                         {23,     20,    0, 300 }},
-    {"bJetEta",                        {24,     20,    -3, 3  }},
-    {"tH_topMass",                     {25,      35,   0,  700}},
-    {"tH_HMass",                       {26,      35,   0,  700}},
-    {"tH_WtopMass",                    {27,      35,   0,  700}},
-    {"tH_W1HMass",                     {28,      35,   0,  700}},
-    {"tH_W2HMass",                     {29,      35,   0,  700}},
-    {"tH_HPt",                         {30,      35,   0,  700}},
-    {"tH_HEta",                        {31,      30,   -5, 5   }},
-    {"tH_topPt",                       {32,      35,   0,  700}},
-    {"tH_topEta",                      {33,      30,   -5, 5   }},
-    {"tH_drWtopB",                     {34,      25,    0, 7   }},
-    {"tH_drW1HW2H",                    {35,      25,    0, 7   }},
-    {"tZ_topMass",                     {36,      35,   0,  700}},
-    {"tZ_ZMass",                       {37,      35,   0,  700}},
-    {"tZ_WtopMass",                    {38,      35,   0,  700}},
-    {"tZ_ZPt",                         {39,      35,   0,  700}},
-    {"tZ_ZEta",                        {40,      30,   -5, 5   }},
-    {"tZ_topPt",                       {41,      35,   0,  700}},
-    {"tZ_topEta",                      {42,      30,   -5, 5   }},
-   };
-
-   const std::map<TString, std::vector<float>> varsSys =
-   {
-    {"lep1Pt",                         {0,      35,   0,  700}},
-    {"lep1Eta",                        {1,      20,   -3, 3   }},
-    {"lep1Phi",                        {2,      25,   -4, 4   }},
-    {"lep2Pt",                         {3,      20,   0,  400}},
-    {"lep2Eta",                        {4,      20,   -3, 3   }},
-    {"lep2Phi",                        {5,      25,   -4, 4   }},
-    {"llM",                            {6,      30,    0, 500 }},
-    {"llPt",                           {7,      20,    0, 200 }},
-    {"llDr",                           {8,      25,    0, 7   }},
-    {"llDphi",                         {9,      15,    0, 4   }},
-    {"jet1Pt",                         {10,     20,    0, 300 }},
-    {"jet1Eta",                        {11,     20,    -3, 3  }},
-    {"jet1Phi",                        {12,     25,    -4, 4  }},
-    {"njet",                           {13,     10,    0, 10  }},
-    {"nbjet",                          {14,     6,     0, 6   }},
-    {"Met",                            {15,     30,    0, 210 }},
-    {"MetPhi",                         {16,     20,    -4, 4  }},
-    {"nVtx",                           {17,     70,    0, 70  }},
-    {"llMZw",                          {18,     80,    70, 110}},
-    {"MVATU",                          {19,   500,    0, 50}},
-    {"MVATC",                          {20,   500,    0, 50}},
-    {"lep3Pt",                         {21,      15,   0,  300}},
-    {"lep3Eta",                        {22,      20,   -3, 3   }},
-    {"bJetPt",                         {23,     20,    0, 300 }},
-    {"bJetEta",                        {24,     20,    -3, 3  }},
-    {"tH_topMass",                     {25,      35,   0,  700}},
-    {"tH_HMass",                       {26,      35,   0,  700}},
-    {"tH_WtopMass",                    {27,      35,   0,  700}},
-    {"tH_W1HMass",                     {28,      35,   0,  700}},
-    {"tH_W2HMass",                     {29,      35,   0,  700}},
-    {"tH_HPt",                         {30,      35,   0,  700}},
-    {"tH_HEta",                        {31,      30,   -5, 5   }},
-    {"tH_topPt",                       {32,      35,   0,  700}},
-    {"tH_topEta",                      {33,      30,   -5, 5   }},
-    {"tH_drWtopB",                     {34,      25,    0, 7   }},
-    {"tH_drW1HW2H",                    {35,      25,    0, 7   }},
-    {"tZ_topMass",                     {36,      35,   0,  700}},
-    {"tZ_ZMass",                       {37,      35,   0,  700}},
-    {"tZ_WtopMass",                    {38,      35,   0,  700}},
-    {"tZ_ZPt",                         {39,      35,   0,  700}},
-    {"tZ_ZEta",                        {40,      30,   -5, 5   }},
-    {"tZ_topPt",                       {41,      35,   0,  700}},
-    {"tZ_topEta",                      {42,      30,   -5, 5   }},
-   };
-
-   const std::map<TString, std::vector<float>> varsTh =
-   {
-    {"MVATU",                          {0,   500,    0, 50}},
-    {"MVATC",                          {1,   500,    0, 50}},
-   };
-
+   static const std::map<TString, std::tuple<int, int, const double*>> vars;
+   static const std::map<TString, std::tuple<int, int, const double*>> varsFA;
+   static const std::map<TString, std::tuple<int, int, const double*>> varsSys;
+   static const std::map<TString, std::tuple<int, int, const double*>> varsFullSys;
    TH2F*  btagEff_b_H;
    TH2F*  btagEff_c_H;
    TH2F*  btagEff_udsg_H;
@@ -3817,6 +3687,8 @@ public :
   float weightcQe_;
   float weightctG_;
   float weightcQlM_;
+  int memory;
+  int NbTag;
 
   TTree *tree_out;
   std::vector<lepton_candidate*> *selectedLeptons;

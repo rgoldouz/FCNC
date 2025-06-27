@@ -1,6 +1,8 @@
 import subprocess
 import sys
 import os
+import glob
+
 # Fix missing $HOME to avoid ROOT crash
 if not os.environ.get("HOME"):
     tmp_home = "/tmp/" + os.environ.get("USER", "default_user")
@@ -50,13 +52,31 @@ os.system('cp temp.txt MyAnalysis.h')
 #os.system('ls /users/rgoldouz/FCNC/NanoAnalysis')
 #os.system('ls /users/rgoldouz/FCNC/NanoAnalysis/RestFrames')
 #os.system('ls /users/rgoldouz/FCNC/NanoAnalysis/RestFrames/setup_RestFrames.sh')
-os.system('export OMP_NUM_THREADS=1')
-os.system('export MKL_NUM_THREADS=1')
-os.system('export OPENBLAS_NUM_THREADS=1')
-os.system('export ROOT_DISABLE_IMT=1')
 os.system('source /users/rgoldouz/FCNC/NanoAnalysis/RestFrames/setup_RestFrames.sh') 
 os.environ["CPATH"] = "/users/rgoldouz/FCNC/NanoAnalysis/RestFrames/include:/users/rgoldouz/FCNC/NanoAnalysis/include"
-os.system('root -b -q -l libRestFrames.so.1.0.0 libJetMETCorrectionsModules.so libcorrectionlib.so libEFTGenReaderEFTHelperUtilities.so libboost_serialization.so libmain.so main.C')
+env = os.environ.copy()
+env["OMP_NUM_THREADS"] = "1"
+env["MKL_NUM_THREADS"] = "1"
+env["OPENBLAS_NUM_THREADS"] = "1"
+env["ROOT_DISABLE_IMT"] = "1"
+subprocess.call([
+    "root", "-b", "-q", "-l",
+    "libRestFrames.so.1.0.0",
+    "libJetMETCorrectionsModules.so",
+    "libcorrectionlib.so",
+    "libEFTGenReaderEFTHelperUtilities.so",
+    "libboost_serialization.so",
+    "libmain.so",
+    "main.C"
+], env=env)
+#os.system('OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 ROOT_DISABLE_IMT=1 root -b -q -l libRestFrames.so.1.0.0 libJetMETCorrectionsModules.so libcorrectionlib.so libEFTGenReaderEFTHelperUtilities.so libboost_serialization.so libmain.so main.C')
+# Get matching files
+files = glob.glob("ANoutput*.root")
+
+if not files:
+    print "No output ROOT files found. Skipping hadd."
+    sys.exit(1)  # Or raise an exception
+
 os.system('hadd ANoutput.root ANoutput*')
 #os.system('source /afs/crc.nd.edu/user/r/rgoldouz/FCNC/NanoAnalysis/RestFrames/setup_RestFrames.sh')
 #os.environ["CPATH"] = "/afs/crc.nd.edu/user/r/rgoldouz/FCNC/NanoAnalysis/RestFrames/include:/afs/crc.nd.edu/user/r/rgoldouz/FCNC/NanoAnalysis/include"

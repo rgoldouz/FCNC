@@ -1,3 +1,4 @@
+#pragma once
 #ifndef MY_JigsawRecTZFCNC_h
 #define MYJigsawRecTZFCNC_h
 #include <iostream>

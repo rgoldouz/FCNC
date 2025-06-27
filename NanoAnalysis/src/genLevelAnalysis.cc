@@ -4,10 +4,10 @@
 
 genLevelAnalysis::genLevelAnalysis(MyAnalysis *evt){
   eI = evt;
-  GenHists.resize(vars.size());
+  GenHists.resize(varsGen.size());
   std::stringstream name;
   TH1EFT *h_test;
-  for( auto it = vars.cbegin() ; it != vars.cend() ; ++it ){
+  for( auto it = varsGen.cbegin() ; it != varsGen.cend() ; ++it ){
     name<<it->first;
     h_test = new TH1EFT((name.str()).c_str(),(name.str()).c_str(),it->second.at(1), it->second.at(2), it->second.at(3));
     h_test->StatOverflows(kTRUE);
@@ -129,18 +129,18 @@ void genLevelAnalysis::fillGENHists(float weight, std::vector<string> wc_names){
       }
     }
   }
-  GenHists[vInd(vars,"eventsAll")]->Fill(0.5,weight,*eft_fit);
-  if(top->Pt()>0) GenHists[vInd(vars,"topPtLHE")]->Fill(top->Pt(),weight,*eft_fit);
-  if(top->Pt()>0) GenHists[vInd(vars,"topEtaLHE")]->Fill(top->Eta(),weight,*eft_fit);
-  if(aTop->Pt()>0) GenHists[vInd(vars,"aTopPtLHE")]->Fill(aTop->Pt(),weight,*eft_fit);
-  if(aTop->Pt()>0) GenHists[vInd(vars,"aTopEtaLHE")]->Fill(aTop->Eta(),weight,*eft_fit);
-  if(selectedLeptons->size()>0) GenHists[vInd(vars,"leadingLeptonPtMc")]->Fill((*selectedLeptons)[0]->pt_,weight,*eft_fit);
-  if(selectedLeptons->size()>0) GenHists[vInd(vars,"leadingLeptonEtaMc")]->Fill((*selectedLeptons)[0]->eta_,weight,*eft_fit);
-  if(massCandidate>0) GenHists[vInd(vars,"massLlNotFromTopMc")]->Fill(massCandidate,weight,*eft_fit);
-  if(Z->Pt()>0) GenHists[vInd(vars,"ZPtMc")]->Fill(Z->Pt(),weight,*eft_fit);
-  if(Z->Pt()>0) GenHists[vInd(vars,"ZEtaMc")]->Fill(Z->Eta(),weight,*eft_fit);
-  if(H->Pt()>0) GenHists[vInd(vars,"HPtMc")]->Fill(H->Pt(),weight,*eft_fit);
-  if(H->Pt()>0) GenHists[vInd(vars,"HEtaMc")]->Fill(H->Eta(),weight,*eft_fit);
+//  GenHists[vInd(varsGen,"eventsAll")]->Fill(0.5,weight,*eft_fit);
+//  if(top->Pt()>0) GenHists[vInd(varsGen,"topPtLHE")]->Fill(top->Pt(),weight,*eft_fit);
+//  if(top->Pt()>0) GenHists[vInd(varsGen,"topEtaLHE")]->Fill(top->Eta(),weight,*eft_fit);
+//  if(aTop->Pt()>0) GenHists[vInd(varsGen,"aTopPtLHE")]->Fill(aTop->Pt(),weight,*eft_fit);
+//  if(aTop->Pt()>0) GenHists[vInd(varsGen,"aTopEtaLHE")]->Fill(aTop->Eta(),weight,*eft_fit);
+//  if(selectedLeptons->size()>0) GenHists[vInd(varsGen,"leadingLeptonPtMc")]->Fill((*selectedLeptons)[0]->pt_,weight,*eft_fit);
+//  if(selectedLeptons->size()>0) GenHists[vInd(varsGen,"leadingLeptonEtaMc")]->Fill((*selectedLeptons)[0]->eta_,weight,*eft_fit);
+//  if(massCandidate>0) GenHists[vInd(varsGen,"massLlNotFromTopMc")]->Fill(massCandidate,weight,*eft_fit);
+//  if(Z->Pt()>0) GenHists[vInd(varsGen,"ZPtMc")]->Fill(Z->Pt(),weight,*eft_fit);
+//  if(Z->Pt()>0) GenHists[vInd(varsGen,"ZEtaMc")]->Fill(Z->Eta(),weight,*eft_fit);
+//  if(H->Pt()>0) GenHists[vInd(varsGen,"HPtMc")]->Fill(H->Pt(),weight,*eft_fit);
+//  if(H->Pt()>0) GenHists[vInd(varsGen,"HEtaMc")]->Fill(H->Eta(),weight,*eft_fit);
   delete top;
   delete aTop;
   delete Z;

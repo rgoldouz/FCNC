@@ -170,7 +170,7 @@ TLorentzVector Wneutrino(double MET, double METphi, double leptonPT, double lept
   return  neutrino;
 }
 
-int vInd(std::map<TString, std::vector<float>> V, TString name){
-  return V.find(name)->second.at(0);
+int vInd(std::map<TString, std::tuple<int, int, const double*>> V, TString name){
+  return std::get<0>(V.find(name)->second);
 }
 

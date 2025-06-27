@@ -47,9 +47,10 @@ storage = StorageConfiguration(
 gs_resources = Category(
     name='gs',
     cores=1,
-    memory=15900,
-    disk=15900,
-    mode='fixed'
+    memory=1990,
+    disk=14990,
+#    mode='fixed',
+    runtime=10000
 )
 
 

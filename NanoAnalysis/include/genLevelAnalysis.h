@@ -27,7 +27,7 @@ public:
   void fillLHEHists(float weight, std::vector<string> wc_names);
   void fillGENHists(float weight, std::vector<string> wc_names);
   void writeGENHists();
-  const std::map<TString, std::vector<float>> vars =
+  const std::map<TString, std::vector<float>> varsGen =
   {
     {"topPtLHE",                        {0,      25,   0,  500}},
     {"aTopPtLHE",                       {1,      25,   0,  500}},

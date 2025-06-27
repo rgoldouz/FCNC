@@ -1,9 +1,120 @@
 #include "MyAnalysis.h"
 #include "TH1EFT.h"
 
+   double binsPtH[]={0, 10, 20, 30, 50, 80, 120, 170, 250, 350, 500,750,1000};
+   double binsPtM[]={0, 10, 20, 30, 50, 80, 110, 150, 200, 250, 300, 400, 500};
+   double binsPtL[]={0, 10, 20, 30, 50, 80, 110, 150, 200, 250, 300};
+   double binsEta[]={-5,-4,-3,-2.75,-2.5,-2.25,-2,-1.75,-1.5,-1.25,-1,-0.75,-0.5,-0.25,0,0.25,0.5,0.75,1,1.25,1.5,1.75,2,2.25,2.5,2.75,3,4,5};
+   double binsPhi[]={-4,-3,-2,-1,0,1,2,3,4};
+   double binsMVA[]={0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2,2.5,3,3.5,4,4.5,5,10,15,20,25,30,35,40,45,50};
+   double binsDr[]={0,0.5,1,1.5,2,2.5,3,3.5,4,4.5,5,5.5,6,6.5,7};
+   double binsMz[]={70.0, 71.0256, 72.0513, 73.0769, 74.1026, 75.1282, 76.1538, 77.1795, 78.2051, 79.2308,80.2564, 81.2821, 82.3077, 83.3333, 84.3590, 85.3846, 86.4103, 87.4359, 88.4615, 89.4872,90.5128, 91.5385, 92.5641, 93.5897, 94.6154, 95.6410, 96.6667, 97.6923, 98.7179, 99.7436,100.7692, 101.7949, 102.8205, 103.8462, 104.8718, 105.8974, 106.9231, 107.9487, 108.9744, 110.0};
+   double binsnJets[]={0,1,2,3,4,5,6,7,8};
+   double binsnVtx[]={0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60};
+
+   const std::map<TString, std::tuple<int, int, const double*>> MyAnalysis::vars =
+   {
+    {"lep1Pt",                         {0,       sizeof(binsPtH)/sizeof(double) - 1, binsPtH}},
+    {"lep1Eta",                        {1,       sizeof(binsEta)/sizeof(double) - 1, binsEta}},
+    {"lep1Phi",                        {2,       sizeof(binsPhi)/sizeof(double) - 1, binsPhi}},
+    {"lep2Pt",                         {3,       sizeof(binsPtM)/sizeof(double) - 1, binsPtM}},
+    {"lep2Eta",                        {4,       sizeof(binsEta)/sizeof(double) - 1, binsEta}},
+    {"lep2Phi",                        {5,       sizeof(binsPhi)/sizeof(double) - 1, binsPhi}},
+    {"llM",                            {6,       sizeof(binsPtM)/sizeof(double) - 1, binsPtM }},
+    {"llPt",                           {7,       sizeof(binsPtM)/sizeof(double) - 1, binsPtM }},
+    {"llDr",                           {8,       sizeof(binsDr)/sizeof(double) - 1, binsDr}},
+    {"llDphi",                         {9,       sizeof(binsDr)/sizeof(double) - 1, binsDr}},
+    {"jet1Pt",                         {10,      sizeof(binsPtL)/sizeof(double) - 1, binsPtL }},
+    {"jet1Eta",                        {11,      sizeof(binsEta)/sizeof(double) - 1, binsEta}},
+    {"jet1Phi",                        {12,      sizeof(binsPhi)/sizeof(double) - 1, binsPhi}},
+    {"njet",                           {13,      sizeof(binsnJets)/sizeof(double) - 1, binsnJets}},
+    {"nbjet",                          {14,      sizeof(binsnJets)/sizeof(double) - 1, binsnJets}},
+    {"Met",                            {15,      sizeof(binsPtL)/sizeof(double) - 1, binsPtL }},
+    {"MetPhi",                         {16,      sizeof(binsPhi)/sizeof(double) - 1, binsPhi}},
+    {"nVtx",                           {17,      sizeof(binsnVtx)/sizeof(double) - 1, binsnVtx}},
+    {"llMZw",                          {18,      sizeof(binsMz)/sizeof(double) - 1, binsMz}},
+    {"MVATU",                          {19,      sizeof(binsMVA)/sizeof(double) - 1, binsMVA}},
+    {"MVATC",                          {20,      sizeof(binsMVA)/sizeof(double) - 1, binsMVA}},
+    {"lep3Pt",                         {21,      sizeof(binsPtL)/sizeof(double) - 1, binsPtL}},
+    {"lep3Eta",                        {22,      sizeof(binsEta)/sizeof(double) - 1, binsEta}},
+    {"bJetPt",                         {23,      sizeof(binsPtL)/sizeof(double) - 1, binsPtL }},
+    {"bJetEta",                        {24,      sizeof(binsEta)/sizeof(double) - 1, binsEta}},
+    {"tH_topMass",                     {25,      sizeof(binsPtH)/sizeof(double) - 1, binsPtH}},
+    {"tH_HMass",                       {26,      sizeof(binsPtH)/sizeof(double) - 1, binsPtH}},
+    {"tH_WtopMass",                    {27,      sizeof(binsPtH)/sizeof(double) - 1, binsPtH}},
+    {"tH_W1HMass",                     {28,      sizeof(binsPtH)/sizeof(double) - 1, binsPtH}},
+    {"tH_W2HMass",                     {29,      sizeof(binsPtH)/sizeof(double) - 1, binsPtH}},
+    {"tH_HPt",                         {30,      sizeof(binsPtH)/sizeof(double) - 1, binsPtH}},
+    {"tH_HEta",                        {31,      sizeof(binsEta)/sizeof(double) - 1, binsEta}},
+    {"tH_topPt",                       {32,      sizeof(binsPtH)/sizeof(double) - 1, binsPtH}},
+    {"tH_topEta",                      {33,      sizeof(binsEta)/sizeof(double) - 1, binsEta}},
+    {"tH_drWtopB",                     {34,      sizeof(binsDr)/sizeof(double) - 1, binsDr}},
+    {"tH_drW1HW2H",                    {35,      sizeof(binsDr)/sizeof(double) - 1, binsDr}},
+    {"tZ_topMass",                     {36,      sizeof(binsPtH)/sizeof(double) - 1, binsPtH}},
+    {"tZ_ZMass",                       {37,      sizeof(binsPtH)/sizeof(double) - 1, binsPtH}},
+    {"tZ_WtopMass",                    {38,      sizeof(binsPtH)/sizeof(double) - 1, binsPtH}},
+    {"tZ_ZPt",                         {39,      sizeof(binsPtH)/sizeof(double) - 1, binsPtH}},
+    {"tZ_ZEta",                        {40,      sizeof(binsEta)/sizeof(double) - 1, binsEta}},
+    {"tZ_topPt",                       {41,      sizeof(binsPtH)/sizeof(double) - 1, binsPtH}},
+    {"tZ_topEta",                      {42,      sizeof(binsEta)/sizeof(double) - 1, binsEta}},
+   };
+
+      const std::map<TString, std::tuple<int, int, const double*>> MyAnalysis::varsFA =
+   {
+    {"lep1Pt",                         {0,       sizeof(binsPtH)/sizeof(double) - 1, binsPtH}},
+    {"lep1Eta",                        {1,       sizeof(binsEta)/sizeof(double) - 1, binsEta}},
+    {"lep1Phi",                        {2,       sizeof(binsPhi)/sizeof(double) - 1, binsPhi}},
+    {"lep2Pt",                         {3,       sizeof(binsPtM)/sizeof(double) - 1, binsPtM}},
+    {"lep2Eta",                        {4,       sizeof(binsEta)/sizeof(double) - 1, binsEta}},
+    {"lep2Phi",                        {5,       sizeof(binsPhi)/sizeof(double) - 1, binsPhi}},
+    {"llM",                            {6,       sizeof(binsPtM)/sizeof(double) - 1, binsPtM }},
+    {"llPt",                           {7,       sizeof(binsPtM)/sizeof(double) - 1, binsPtM }},
+    {"llDr",                           {8,       sizeof(binsDr)/sizeof(double) - 1, binsDr}},
+    {"llDphi",                         {9,       sizeof(binsDr)/sizeof(double) - 1, binsDr}},
+    {"jet1Pt",                         {10,      sizeof(binsPtL)/sizeof(double) - 1, binsPtL }},
+    {"jet1Eta",                        {11,      sizeof(binsEta)/sizeof(double) - 1, binsEta}},
+    {"jet1Phi",                        {12,      sizeof(binsPhi)/sizeof(double) - 1, binsPhi}},
+    {"njet",                           {13,      sizeof(binsnJets)/sizeof(double) - 1, binsnJets}},
+    {"nbjet",                          {14,      sizeof(binsnJets)/sizeof(double) - 1, binsnJets}},
+    {"Met",                            {15,      sizeof(binsPtL)/sizeof(double) - 1, binsPtL }},
+    {"MetPhi",                         {16,      sizeof(binsPhi)/sizeof(double) - 1, binsPhi}},
+    {"nVtx",                           {17,      sizeof(binsnVtx)/sizeof(double) - 1, binsnVtx}},
+    {"llMZw",                          {18,      sizeof(binsMz)/sizeof(double) - 1, binsMz}},
+    {"MVATU",                          {19,      sizeof(binsMVA)/sizeof(double) - 1, binsMVA}},
+    {"MVATC",                          {20,      sizeof(binsMVA)/sizeof(double) - 1, binsMVA}},
+    {"lep3Pt",                         {21,      sizeof(binsPtL)/sizeof(double) - 1, binsPtL}},
+    {"lep3Eta",                        {22,      sizeof(binsEta)/sizeof(double) - 1, binsEta}},
+    {"bJetPt",                         {23,      sizeof(binsPtL)/sizeof(double) - 1, binsPtL }},
+    {"bJetEta",                        {24,      sizeof(binsEta)/sizeof(double) - 1, binsEta}},
+    {"tH_topMass",                     {25,      sizeof(binsPtH)/sizeof(double) - 1, binsPtH}},
+    {"tH_HMass",                       {26,      sizeof(binsPtH)/sizeof(double) - 1, binsPtH}},
+    {"tH_WtopMass",                    {27,      sizeof(binsPtH)/sizeof(double) - 1, binsPtH}},
+    {"tH_W1HMass",                     {28,      sizeof(binsPtH)/sizeof(double) - 1, binsPtH}},
+    {"tH_W2HMass",                     {29,      sizeof(binsPtH)/sizeof(double) - 1, binsPtH}},
+    {"tH_HPt",                         {30,      sizeof(binsPtH)/sizeof(double) - 1, binsPtH}},
+    {"tH_HEta",                        {31,      sizeof(binsEta)/sizeof(double) - 1, binsEta}},
+    {"tH_topPt",                       {32,      sizeof(binsPtH)/sizeof(double) - 1, binsPtH}},
+    {"tH_topEta",                      {33,      sizeof(binsEta)/sizeof(double) - 1, binsEta}},
+    {"tH_drWtopB",                     {34,      sizeof(binsDr)/sizeof(double) - 1, binsDr}},
+    {"tH_drW1HW2H",                    {35,      sizeof(binsDr)/sizeof(double) - 1, binsDr}},
+    {"tZ_topMass",                     {36,      sizeof(binsPtH)/sizeof(double) - 1, binsPtH}},
+    {"tZ_ZMass",                       {37,      sizeof(binsPtH)/sizeof(double) - 1, binsPtH}},
+    {"tZ_WtopMass",                    {38,      sizeof(binsPtH)/sizeof(double) - 1, binsPtH}},
+    {"tZ_ZPt",                         {39,      sizeof(binsPtH)/sizeof(double) - 1, binsPtH}},
+    {"tZ_ZEta",                        {40,      sizeof(binsEta)/sizeof(double) - 1, binsEta}},
+    {"tZ_topPt",                       {41,      sizeof(binsPtH)/sizeof(double) - 1, binsPtH}},
+    {"tZ_topEta",                      {42,      sizeof(binsEta)/sizeof(double) - 1, binsEta}},
+   };
+
+   const std::map<TString, std::tuple<int, int, const double*>> MyAnalysis::varsFullSys =
+   {
+    {"MVATU",                          {0,      sizeof(binsMVA)/sizeof(double) - 1, binsMVA}},
+    {"MVATC",                          {1,      sizeof(binsMVA)/sizeof(double) - 1, binsMVA}},
+   };
+
 void MyAnalysis::initiateHists(TString data,string year, bool ifSys){
   cout<<"Start initiating"<<endl;
-
+  //Hists is used to save nominal histograms in signal regions
   Hists.resize(channels.size());
   for (int i=0;i<channels.size();++i){
     Hists[i].resize(regions.size());
@@ -16,16 +127,16 @@ void MyAnalysis::initiateHists(TString data,string year, bool ifSys){
     for (int k=0;k<regions.size();++k){
       for( auto it = vars.cbegin() ; it != vars.cend() ; ++it ){
         name<<channels[i]<<"_"<<regions[k]<<"_"<<it->first;
-        h_test = new TH1EFT((name.str()).c_str(),(name.str()).c_str(),it->second.at(1), it->second.at(2), it->second.at(3));
+        h_test = new TH1EFT((name.str()).c_str(),(name.str()).c_str(),std::get<1>(it->second), std::get<2>(it->second));
         h_test->SetDirectory(0);
         h_test->StatOverflows(kTRUE);
         h_test->Sumw2(kTRUE);
-        Hists[i][k][it->second.at(0)] = h_test;
+        Hists[i][k][std::get<0>(it->second)] = h_test;
         name.str("");
       }
     }
   }
-
+  //HistsFA is used to save nominal histograms in fake control regions
   HistsFA.resize(channelsFA.size());
   for (int i=0;i<channelsFA.size();++i){
     HistsFA[i].resize(regions.size());
@@ -37,23 +148,24 @@ void MyAnalysis::initiateHists(TString data,string year, bool ifSys){
     for (int k=0;k<regions.size();++k){
       for( auto it = varsFA.cbegin() ; it != varsFA.cend() ; ++it ){
         name<<channelsFA[i]<<"_"<<regions[k]<<"_"<<it->first;
-        h_test = new TH1EFT((name.str()).c_str(),(name.str()).c_str(),it->second.at(1), it->second.at(2), it->second.at(3));
+        h_test = new TH1EFT((name.str()).c_str(),(name.str()).c_str(),std::get<1>(it->second), std::get<2>(it->second));
         h_test->SetDirectory(0);
         h_test->StatOverflows(kTRUE);
         h_test->Sumw2(kTRUE);
-        HistsFA[i][k][it->second.at(0)] = h_test;
+        HistsFA[i][k][std::get<0>(it->second)] = h_test;
         name.str("");
       }
     }
   }
 
   if(ifSys){
+    //HistsFAUp/Down is used to save systematic uncertainties related to the fake rate estimation	  
     HistsFAUp.resize(channelsFA.size());
     for (int i=0;i<channelsFA.size();++i){
       HistsFAUp[i].resize(regions.size());
       for (int k=0;k<regions.size();++k){
-        HistsFAUp[i][k].resize(varsTh.size());
-        for (int n=0;n<varsTh.size();++n){
+        HistsFAUp[i][k].resize(varsFullSys.size());
+        for (int n=0;n<varsFullSys.size();++n){
           HistsFAUp[i][k][n].resize(sysFA.size());
         }
       }
@@ -62,29 +174,27 @@ void MyAnalysis::initiateHists(TString data,string year, bool ifSys){
     for (int i=0;i<channelsFA.size();++i){
       HistsFADown[i].resize(regions.size());
       for (int k=0;k<regions.size();++k){
-        HistsFADown[i][k].resize(varsTh.size());
-        for (int n=0;n<varsTh.size();++n){
+        HistsFADown[i][k].resize(varsFullSys.size());
+        for (int n=0;n<varsFullSys.size();++n){
           HistsFADown[i][k][n].resize(sysFA.size());
         }
       }
     }
     for (int i=0;i<channelsFA.size();++i){
       for (int k=0;k<regions.size();++k){
-        for( auto it = varsTh.cbegin() ; it != varsTh.cend() ; ++it ){
+        for( auto it = varsFullSys.cbegin() ; it != varsFullSys.cend() ; ++it ){
           for (int n=0;n<sysFA.size();++n){
             name<<channelsFA[i]<<"_"<<regions[k]<<"_"<<it->first<<"_"<<sysFA[n]<<"_Up";
-            h_test = new TH1EFT((name.str()).c_str(),(name.str()).c_str(),it->second.at(1), it->second.at(2), it->second.at(3));
+            h_test = new TH1EFT((name.str()).c_str(),(name.str()).c_str(),std::get<1>(it->second), std::get<2>(it->second));
             h_test->SetDirectory(0);
             h_test->StatOverflows(kTRUE);
-            h_test->Sumw2(kTRUE);
-            HistsFAUp[i][k][it->second.at(0)][n] = h_test;
+            HistsFAUp[i][k][std::get<0>(it->second)][n] = h_test;
             name.str("");
             name<<channelsFA[i]<<"_"<<regions[k]<<"_"<<it->first<<"_"<<sysFA[n]<<"_Down";
-            h_test = new TH1EFT((name.str()).c_str(),(name.str()).c_str(),it->second.at(1), it->second.at(2), it->second.at(3));
+            h_test = new TH1EFT((name.str()).c_str(),(name.str()).c_str(),std::get<1>(it->second), std::get<2>(it->second));
             h_test->SetDirectory(0);
             h_test->StatOverflows(kTRUE);
-            h_test->Sumw2(kTRUE);
-            HistsFADown[i][k][it->second.at(0)][n] = h_test;
+            HistsFADown[i][k][std::get<0>(it->second)][n] = h_test;
             name.str("");
           }
         }
@@ -93,12 +203,48 @@ void MyAnalysis::initiateHists(TString data,string year, bool ifSys){
   }  
 
   if(data == "mc" && ifSys){
+    //HistsSysCompactUp/Down is used to save TH1EFT histograms including systematics that change event weights. Each constant is used to save the weight of events in a new scenario. So instead of keeping n histogram for n systematic variation, we save one histogram with different weights. 
+    HistsSysCompactUp.resize(channelsSys.size());
+    for (int i=0;i<channelsSys.size();++i){
+      HistsSysCompactUp[i].resize(regions.size());
+      for (int k=0;k<regions.size();++k){
+        HistsSysCompactUp[i][k].resize(vars.size());
+      }
+    }
+    HistsSysCompactDown.resize(channelsSys.size());
+    for (int i=0;i<channelsSys.size();++i){
+      HistsSysCompactDown[i].resize(regions.size());
+      for (int k=0;k<regions.size();++k){
+        HistsSysCompactDown[i][k].resize(vars.size());
+      }
+    }
+    for (int i=0;i<channelsSys.size();++i){
+      for (int k=0;k<regions.size();++k){
+        for( auto it = vars.cbegin() ; it != vars.cend() ; ++it ){
+          name<<channelsSys[i]<<"_"<<regions[k]<<"_"<<it->first<<"_"<<"_Up";
+          h_test = new TH1EFT((name.str()).c_str(),(name.str()).c_str(),std::get<1>(it->second), std::get<2>(it->second));
+          h_test->SetDirectory(0);
+          h_test->StatOverflows(kTRUE);
+         // h_test->Sumw2(kTRUE);
+          HistsSysCompactUp[i][k][std::get<0>(it->second)] = h_test;
+          name.str("");
+          name<<channelsSys[i]<<"_"<<regions[k]<<"_"<<it->first<<"_"<<"_Down";
+          h_test = new TH1EFT((name.str()).c_str(),(name.str()).c_str(),std::get<1>(it->second), std::get<2>(it->second));
+          h_test->SetDirectory(0);
+          h_test->StatOverflows(kTRUE);
+         // h_test->Sumw2(kTRUE);
+          HistsSysCompactDown[i][k][std::get<0>(it->second)] = h_test;
+          name.str("");
+        }
+      }
+    }
+
     HistsSysUp.resize(channelsSys.size());
     for (int i=0;i<channelsSys.size();++i){
       HistsSysUp[i].resize(regions.size());
       for (int k=0;k<regions.size();++k){
-        HistsSysUp[i][k].resize(varsSys.size());
-        for (int n=0;n<varsSys.size();++n){
+        HistsSysUp[i][k].resize(varsFullSys.size());
+        for (int n=0;n<varsFullSys.size();++n){
           HistsSysUp[i][k][n].resize(sys.size());
         }
       }
@@ -107,74 +253,95 @@ void MyAnalysis::initiateHists(TString data,string year, bool ifSys){
     for (int i=0;i<channelsSys.size();++i){
       HistsSysDown[i].resize(regions.size());
       for (int k=0;k<regions.size();++k){
-        HistsSysDown[i][k].resize(varsSys.size());
-        for (int n=0;n<varsSys.size();++n){
+        HistsSysDown[i][k].resize(varsFullSys.size());
+        for (int n=0;n<varsFullSys.size();++n){
           HistsSysDown[i][k][n].resize(sys.size());
         }
       }
     }
     for (int i=0;i<channelsSys.size();++i){
       for (int k=0;k<regions.size();++k){
-        for( auto it = varsSys.cbegin() ; it != varsSys.cend() ; ++it ){
+        for( auto it = varsFullSys.cbegin() ; it != varsFullSys.cend() ; ++it ){
           for (int n=0;n<sys.size();++n){
             name<<channelsSys[i]<<"_"<<regions[k]<<"_"<<it->first<<"_"<<sys[n]<<"_Up";
-            h_test = new TH1EFT((name.str()).c_str(),(name.str()).c_str(),it->second.at(1), it->second.at(2), it->second.at(3));
+            h_test = new TH1EFT((name.str()).c_str(),(name.str()).c_str(),std::get<1>(it->second), std::get<2>(it->second));
             h_test->SetDirectory(0);
             h_test->StatOverflows(kTRUE);
-            h_test->Sumw2(kTRUE);
-            HistsSysUp[i][k][it->second.at(0)][n] = h_test;
+           // h_test->Sumw2(kTRUE);
+            HistsSysUp[i][k][std::get<0>(it->second)][n] = h_test;
             name.str("");
             name<<channelsSys[i]<<"_"<<regions[k]<<"_"<<it->first<<"_"<<sys[n]<<"_Down";
-            h_test = new TH1EFT((name.str()).c_str(),(name.str()).c_str(),it->second.at(1), it->second.at(2), it->second.at(3));
+            h_test = new TH1EFT((name.str()).c_str(),(name.str()).c_str(),std::get<1>(it->second), std::get<2>(it->second));
             h_test->SetDirectory(0);
             h_test->StatOverflows(kTRUE);
-            h_test->Sumw2(kTRUE);
-            HistsSysDown[i][k][it->second.at(0)][n] = h_test;
+           // h_test->Sumw2(kTRUE);
+            HistsSysDown[i][k][std::get<0>(it->second)][n] = h_test;
             name.str("");
           }
         }
       }
     }
 
-    HistsThUp.resize(channelsSys.size());
+    HistsNormalSysUp.resize(channelsSys.size());
     for (int i=0;i<channelsSys.size();++i){
-      HistsThUp[i].resize(regions.size());
+      HistsNormalSysUp[i].resize(regions.size());
       for (int k=0;k<regions.size();++k){
-        HistsThUp[i][k].resize(varsTh.size());
-        for (int n=0;n<varsTh.size();++n){
-          HistsThUp[i][k][n].resize(sys.size());
+        HistsNormalSysUp[i][k].resize(vars.size());
+        for (int n=0;n<vars.size();++n){
+          HistsNormalSysUp[i][k][n].resize(sysNormal.size());
         }
       }
     }
-    HistsThDown.resize(channelsSys.size());
+    HistsNormalSysDown.resize(channelsSys.size());
     for (int i=0;i<channelsSys.size();++i){
-      HistsThDown[i].resize(regions.size());
+      HistsNormalSysDown[i].resize(regions.size());
       for (int k=0;k<regions.size();++k){
-        HistsThDown[i][k].resize(varsTh.size());
-        for (int n=0;n<varsTh.size();++n){
-          HistsThDown[i][k][n].resize(sys.size());
+        HistsNormalSysDown[i][k].resize(vars.size());
+        for (int n=0;n<vars.size();++n){
+          HistsNormalSysDown[i][k][n].resize(sysNormal.size());
         }
       }
     }
+
     for (int i=0;i<channelsSys.size();++i){
       for (int k=0;k<regions.size();++k){
-        for( auto it = varsTh.cbegin() ; it != varsTh.cend() ; ++it ){
-          for (int n=0;n<sysTh.size();++n){
-            name<<channelsSys[i]<<"_"<<regions[k]<<"_"<<it->first<<"_"<<sysTh[n]<<"_Up";
-            h_test = new TH1EFT((name.str()).c_str(),(name.str()).c_str(),it->second.at(1), it->second.at(2), it->second.at(3));
-            h_test->SetDirectory(0);
-            h_test->StatOverflows(kTRUE);
-            h_test->Sumw2(kTRUE);
-            HistsThUp[i][k][it->second.at(0)][n] = h_test;
+        for( auto it = vars.cbegin() ; it != vars.cend() ; ++it ){
+          for (int n=0;n<sysNormal.size();++n){
+            name<<channelsSys[i]<<"_"<<regions[k]<<"_"<<it->first<<"_"<<sysNormal[n]<<"__Up";
+            h_testNormal = new TH1F((name.str()).c_str(),(name.str()).c_str(),std::get<1>(it->second), std::get<2>(it->second));
+            h_testNormal->SetDirectory(0);
+            h_testNormal->StatOverflows(kTRUE);
+           // h_test->Sumw2(kTRUE);
+            HistsNormalSysUp[i][k][std::get<0>(it->second)][n] = h_testNormal;
             name.str("");
-            name<<channelsSys[i]<<"_"<<regions[k]<<"_"<<it->first<<"_"<<sysTh[n]<<"_Down";
-            h_test = new TH1EFT((name.str()).c_str(),(name.str()).c_str(),it->second.at(1), it->second.at(2), it->second.at(3));
-            h_test->SetDirectory(0);
-            h_test->StatOverflows(kTRUE);
-            h_test->Sumw2(kTRUE);
-            HistsThDown[i][k][it->second.at(0)][n] = h_test;
+            name<<channelsSys[i]<<"_"<<regions[k]<<"_"<<it->first<<"_"<<sysNormal[n]<<"__Down";
+            h_testNormal = new TH1F((name.str()).c_str(),(name.str()).c_str(),std::get<1>(it->second), std::get<2>(it->second));
+            h_testNormal->SetDirectory(0);
+            h_testNormal->StatOverflows(kTRUE);
+           // h_test->Sumw2(kTRUE);
+            HistsNormalSysDown[i][k][std::get<0>(it->second)][n] = h_testNormal;
             name.str("");
           }
+        }
+      }
+    }
+
+    HistsTh.resize(channelsSys.size());
+    for (int i=0;i<channelsSys.size();++i){
+      HistsTh[i].resize(regions.size());
+      for (int k=0;k<regions.size();++k){
+        HistsTh[i][k].resize(varsFullSys.size());
+      }
+    }
+    for (int i=0;i<channelsSys.size();++i){
+      for (int k=0;k<regions.size();++k){
+        for( auto it = varsFullSys.cbegin() ; it != varsFullSys.cend() ; ++it ){
+          name<<channelsSys[i]<<"_"<<regions[k]<<"_"<<it->first<<"_Th";
+          h_test = new TH1EFT((name.str()).c_str(),(name.str()).c_str(),std::get<1>(it->second), std::get<2>(it->second));
+          h_test->SetDirectory(0);
+          h_test->StatOverflows(kTRUE);
+          HistsTh[i][k][std::get<0>(it->second)] = h_test;
+          name.str("");
         }
       }
     }
@@ -535,6 +702,11 @@ void MyAnalysis::inputs(TString data,string year){
 
   csetFileJetSF = CorrectionSet::from_file(jetSF);
   csetJetPuID = csetFileJetSF->at("PUJetID_eff");
+
+  csetFilePDFScale = CorrectionSet::from_file("/users/rgoldouz/FCNC/NanoAnalysis/bin/lhe_weight_sums.json");
+  csetPDF = csetFilePDFScale->at("pdf_weight_sums");
+  csetScale = csetFilePDFScale->at("qcd_scale_weight_sums");
+
   nominalWeights.assign(sys.size(), 1);
   sysUpWeights.assign(sys.size(), 1);
   sysDownWeights.assign(sys.size(), 1);
@@ -692,7 +864,7 @@ void MyAnalysis::endHists(TString data,string year, bool ifSys){
   if (ifSys){
     for (int i=0;i<channelsFA.size();++i){
       for (int k=0;k<regions.size();++k){
-        for (int l=0;l<varsTh.size();++l){
+        for (int l=0;l<varsFullSys.size();++l){
           for (int n=0;n<sysFA.size();++n){
             HistsFAUp[i][k][l][n]->Write("",TObject::kOverwrite);
             HistsFADown[i][k][l][n]->Write("",TObject::kOverwrite);
@@ -706,20 +878,30 @@ void MyAnalysis::endHists(TString data,string year, bool ifSys){
   if (data == "mc" && ifSys){
     for (int i=0;i<channelsSys.size();++i){
       for (int k=0;k<regions.size();++k){
-        for (int l=0;l<varsSys.size();++l){
+        for (int l=0;l<vars.size();++l){
+          HistsSysCompactUp[i][k][l]->Write("",TObject::kOverwrite);
+          delete HistsSysCompactUp[i][k][l];
+          HistsSysCompactDown[i][k][l]->Write("",TObject::kOverwrite);
+          delete HistsSysCompactDown[i][k][l];
+          for (int n=0;n<sysNormal.size();++n){
+            HistsNormalSysUp[i][k][l][n]->Write("",TObject::kOverwrite);
+            HistsNormalSysDown[i][k][l][n]->Write("",TObject::kOverwrite);
+            delete HistsNormalSysUp[i][k][l][n];
+            delete HistsNormalSysDown[i][k][l][n];
+          }
+        }
+      }
+    }
+    for (int i=0;i<channelsSys.size();++i){
+      for (int k=0;k<regions.size();++k){
+        for (int l=0;l<varsFullSys.size();++l){
+	  HistsTh[i][k][l]->Write("",TObject::kOverwrite);
+          delete HistsTh[i][k][l];
           for (int n=0;n<sys.size();++n){
             HistsSysUp[i][k][l][n]->Write("",TObject::kOverwrite);
             HistsSysDown[i][k][l][n]->Write("",TObject::kOverwrite);
             delete HistsSysUp[i][k][l][n];
             delete HistsSysDown[i][k][l][n];
-          }
-        }
-        for (int l=0;l<varsTh.size();++l){ 
-          for (int n=0;n<sysTh.size();++n){
-            HistsThUp[i][k][l][n]->Write("",TObject::kOverwrite);
-            HistsThDown[i][k][l][n]->Write("",TObject::kOverwrite);
-            delete HistsThUp[i][k][l][n];
-            delete HistsThDown[i][k][l][n];
           }
         }
       }
@@ -732,20 +914,26 @@ void MyAnalysis::endHists(TString data,string year, bool ifSys){
   Hists.shrink_to_fit();
   HistsFA.clear();
   HistsFA.shrink_to_fit();
-  cout<<"Hists cleaned"<<endl;
+//  cout<<"Hists cleaned"<<endl;
   if(ifSys){
     HistsSysUp.clear();
     HistsSysUp.shrink_to_fit();
-    cout<<"HistsSysUp cleaned"<<endl;
+//    cout<<"HistsSysUp cleaned"<<endl;
+    HistsNormalSysUp.clear();
+    HistsNormalSysUp.shrink_to_fit();
+    HistsSysCompactUp.clear();
+    HistsSysCompactUp.shrink_to_fit();
+    HistsSysCompactDown.clear();
+    HistsSysCompactDown.shrink_to_fit();
     HistsSysDown.clear();
     HistsSysDown.shrink_to_fit();
-    cout<<"HistsSysDown cleaned"<<endl;
-    HistsThUp.clear();
-    HistsThUp.shrink_to_fit();
-    cout<<"HistsSysUp cleaned"<<endl;
-    HistsThDown.clear();
-    HistsThDown.shrink_to_fit();
-    cout<<"HistsSysTh cleaned"<<endl;
+    HistsNormalSysDown.clear();
+    HistsNormalSysDown.shrink_to_fit();
+//    cout<<"HistsSysDown cleaned"<<endl;
+    HistsTh.clear();
+    HistsTh.shrink_to_fit();
+//    cout<<"HistsSysUp cleaned"<<endl;
+
   }
 }
 

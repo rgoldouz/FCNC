@@ -22,7 +22,108 @@ import readline
 import string
 import glob
 from joblib import Parallel, delayed
+import json
+import re
+
 MCSAMPLES = {}
+
+def build_category(name, description, data_by_sample, index_name):
+    content = []
+    for sample_name, index_sums in data_by_sample.iteritems():
+        inner_content = []
+        for i, val in enumerate(index_sums):
+            inner_content.append({
+                "key": i,
+                "value": val
+            })
+        content.append({
+            "key": sample_name,
+            "value": {
+                "nodetype": "category",
+                "input": index_name,
+                "content": inner_content
+            }
+        })
+
+    return {
+        "name": name,
+        "description": description,
+        "version": 1,
+        "inputs": [
+            {
+                "name": "sample",
+                "type": "string"
+            },
+            {
+                "name": index_name,
+                "type": "int"
+            }
+        ],
+        "output": {
+            "name": "sum_weight",
+            "type": "real"
+        },
+        "data": {
+            "nodetype": "category",
+            "input": "sample",
+            "content": content
+        }
+    }
+def makeJson(pdf_sums_by_sample,qcd_sums_by_sample):
+    # Build both correction entries
+    corrections_json = {
+        "version": 1,
+        "schema_version": 2,
+        "corrections": [
+            build_category(
+                "pdf_weight_sums",
+                "Sum of LHE PDF weights for normalization by sample",
+                pdf_sums_by_sample,
+                "pdf_index"
+            ),
+            build_category(
+                "qcd_scale_weight_sums",
+                "Sum of LHE QCD scale weights for normalization by sample",
+                qcd_sums_by_sample,
+                "scale_index"
+            )
+        ]
+    }
+    
+    # Write to file
+    with open("lhe_weight_sums.json", "w") as f:
+#        f.write(json.dumps(corrections_json, indent=2))
+        json_str=json.dumps(corrections_json, separators=(',', ':'))
+        json_str_modified = re.sub(r'\](\s*[,\}])', r']\n\1', json_str)
+        f.write(json_str_modified)
+
+def SumofWeight(add):
+    genEventSumw = 0
+    genEventSumwScale = [0]*9
+    genEventSumwPdf = [0]*100
+    for root, dirs, files in os.walk(add):
+        if len(files) == 0:
+            continue
+        for f in files:
+            filename = root + '/' + f
+            if 'fail' in f:
+                continue
+            fi = TFile.Open(filename)
+            tree_meta = fi.Get('Runs')
+            for i in range( tree_meta.GetEntries() ):
+                tree_meta.GetEntry(i)
+                genEventSumw += tree_meta.genEventSumw
+                for pdf in range(100):
+                    genEventSumwPdf[pdf] += tree_meta.LHEPdfSumw[pdf]*tree_meta.genEventSumw
+                for Q in range(len(tree_meta.LHEScaleSumw)):
+                    genEventSumwScale[Q] += tree_meta.LHEScaleSumw[Q]*tree_meta.genEventSumw
+            tree_meta.Reset()
+            tree_meta.Delete()
+            fi.Close()
+    if genEventSumwScale[8]==0:
+        del genEventSumwScale[8]
+    return [genEventSumw/x for x in genEventSumwScale] , [genEventSumw/x for x in genEventSumwPdf]
+
 
 def f(name):
     print name
@@ -246,7 +347,16 @@ if __name__ == '__main__':
         value[7] = str(neventsweight)
         if isNanoGen:
             value[10] = "1"    
-    
+    Qscale={}
+    PDF={}
+    for key, value in MCSAMPLES.items():
+        if "data" in key:
+            continue 
+        print key
+        SWscale, SWpdf =  SumofWeight('/cms/cephfs/data/store/user/'+value[0][0])
+        PDF[key]=SWpdf
+        Qscale[key]=SWscale
+    makeJson(PDF,Qscale) 
     text += 'UL17={'                
     #text += str(MCSAMPLES)
     text += '\n'

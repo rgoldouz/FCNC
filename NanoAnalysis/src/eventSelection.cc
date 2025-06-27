@@ -1,7 +1,7 @@
 #include "MyAnalysis.h"
-#include "Utils.h"
 #include "JigsawRecTZFCNC.h"
 #include "JigsawRecTHFCNC.h"
+#include "Utils.h"
 
 int MyAnalysis::findRegion(std::vector<jet_candidate*> *J, int ch, int chFA){
   int reg=-1;
@@ -12,6 +12,7 @@ int MyAnalysis::findRegion(std::vector<jet_candidate*> *J, int ch, int chFA){
   for (UInt_t l=0;l<J->size();l++){
     if((*J)[l]->btag_) nB++;
   }
+  NbTag=nB;
   if(nB==0) reg=0;
   else if(nB==1){
     if (C.Contains("2l")) {
@@ -28,6 +29,8 @@ int MyAnalysis::findRegion(std::vector<jet_candidate*> *J, int ch, int chFA){
 }
 
 void MyAnalysis::evaluateMVA(std::vector<jet_candidate*> *J, std::vector<lepton_candidate*> *L, std::vector<Z_candidate*> *Z, TString C,float &MVAS_TU, float &MVAB_TU, float &MVAS_TC, float &MVAB_TC){
+  JigsawRecTZFCNC jigSawTZFCNC;
+  JigsawRecTHFCNC jigSawTHFCNC;
   std::vector<Float_t> probs;
   float rawBDT;
   MVAS_TU=0;
@@ -69,8 +72,6 @@ void MyAnalysis::evaluateMVA(std::vector<jet_candidate*> *J, std::vector<lepton_
     }
   }
 
-  JigsawRecTZFCNC jigSawTZFCNC;
-  JigsawRecTHFCNC jigSawTHFCNC;
 
   TLorentzVector bt_tZFCNC, lt_tZFCNC, nut_tZFCNC, lpZ_tZFCNC, lmZ_tZFCNC ;
   TLorentzVector hL_tHFCNC, hU_tHFCNC, hD_tHFCNC, tB_tHFCNC, tL_tHFCNC, met_tHFCNC;
