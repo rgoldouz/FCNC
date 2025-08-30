@@ -13,10 +13,12 @@ int MyAnalysis::findRegion(std::vector<jet_candidate*> *J, int ch, int chFA){
     if((*J)[l]->btag_) nB++;
   }
   NbTag=nB;
-  if(nB==0) reg=0;
+  if(nB==0){
+    reg=0;
+  }  
   else if(nB==1){
     if (C.Contains("2l")) {
-      if(J->size()<=2) reg=1;
+      if(J->size()<=3) reg=1;
       else reg=2;
     }
     else{
@@ -28,7 +30,7 @@ int MyAnalysis::findRegion(std::vector<jet_candidate*> *J, int ch, int chFA){
   return reg;
 }
 
-void MyAnalysis::evaluateMVA(std::vector<jet_candidate*> *J, std::vector<lepton_candidate*> *L, std::vector<Z_candidate*> *Z, TString C,float &MVAS_TU, float &MVAB_TU, float &MVAS_TC, float &MVAB_TC){
+void MyAnalysis::evaluateMVA(std::vector<jet_candidate*> *J, std::vector<lepton_candidate*> *L, std::vector<Z_candidate*> *Z, TString C, float metPt, float metPhi, float &MVAS_TU, float &MVAB_TU, float &MVAS_TC, float &MVAB_TC){
   JigsawRecTZFCNC jigSawTZFCNC;
   JigsawRecTHFCNC jigSawTHFCNC;
   std::vector<Float_t> probs;
@@ -86,8 +88,8 @@ void MyAnalysis::evaluateMVA(std::vector<jet_candidate*> *J, std::vector<lepton_
        break;
      }
    }
-   met_tHFCNC.SetPtEtaPhiM(MET_pt,0,MET_phi,0);
-   nut_tZFCNC.SetPtEtaPhiM(MET_pt,0,MET_phi,0);
+   met_tHFCNC.SetPtEtaPhiM(metPt,0,metPhi,0);
+   nut_tZFCNC.SetPtEtaPhiM(metPt,0,metPhi,0);
    float bestMass=10000;
    for (UInt_t i=0;i<J->size();i++){
      if(J->size()==2 && i!=bIndex) hU_tHFCNC=(*J)[i]->p4_;
@@ -174,19 +176,98 @@ void MyAnalysis::evaluateMVA(std::vector<jet_candidate*> *J, std::vector<lepton_
   }
   if(C.Contains("3lonZ")){
     probs = readerMVA3lonZ_TU->EvaluateMulticlass("BDT::BDT");
-    for (size_t j = 0; j < probs.size()-2; ++j)   MVAS_TU=MVAS_TU+probs[j];
-    MVAB_TU=probs[probs.size()-2];
+    for (size_t j = 0; j < probs.size()-1; ++j)   MVAS_TU=MVAS_TU+probs[j];
+    MVAB_TU=probs[probs.size()-1];
     probs = readerMVA3lonZ_TC->EvaluateMulticlass("BDT::BDT");
-    for (size_t j = 0; j < probs.size()-2; ++j)   MVAS_TC=MVAS_TC+probs[j];
-    MVAB_TC=probs[probs.size()-2];
+    for (size_t j = 0; j < probs.size()-1; ++j)   MVAS_TC=MVAS_TC+probs[j];
+    MVAB_TC=probs[probs.size()-1];
   }
 
   if(C.Contains("3loffZhigh")){
     probs = readerMVA3loffZ_TU->EvaluateMulticlass("BDT::BDT");
-    for (size_t j = 0; j < probs.size()-2; ++j)   MVAS_TU=MVAS_TU+probs[j];
-    MVAB_TU=probs[probs.size()-2];
+    for (size_t j = 0; j < probs.size()-1; ++j)   MVAS_TU=MVAS_TU+probs[j];
+    MVAB_TU=probs[probs.size()-1];
     probs = readerMVA3loffZ_TC->EvaluateMulticlass("BDT::BDT");
-    for (size_t j = 0; j < probs.size()-2; ++j)   MVAS_TC=MVAS_TC+probs[j];
-    MVAB_TC=probs[probs.size()-2];
+    for (size_t j = 0; j < probs.size()-1; ++j)   MVAS_TC=MVAS_TC+probs[j];
+    MVAB_TC=probs[probs.size()-1];
   }
+}
+
+bool MyAnalysis::overlapRemoval(double Et_cut, double Eta_cut, double dR_cut, bool verbose, bool reversePtCut){
+    bool haveOverlap = false;
+    vector<int> extraPIDIgnore={22};
+    for(int mcInd=0; mcInd<nGenPart; ++mcInd){
+        if(GenPart_pdgId[mcInd]==22){
+
+            bool parentagePass=false;
+            vector<double> minDR_Result = {-1.,0.};
+            bool Overlaps = false;
+            int maxPDGID = 0;
+            bool ptCut;
+            if(reversePtCut) ptCut=GenPart_pt[mcInd] < Et_cut;
+            else ptCut= GenPart_pt[mcInd] >= Et_cut;
+            if (ptCut &&
+                fabs(GenPart_eta[mcInd]) <= Eta_cut){
+
+                Int_t parentIdx = mcInd;
+                int motherPDGID = 0;
+                bool fromTopDecay = false;
+                while (parentIdx != -1){
+                    motherPDGID = std::abs(GenPart_pdgId[parentIdx]);
+                    maxPDGID = std::max(maxPDGID,motherPDGID);
+                    parentIdx = GenPart_genPartIdxMother[parentIdx];
+                }
+
+                bool parentagePass = maxPDGID < 37;
+                if (parentagePass) {
+                    minDR_Result= minGenDr(mcInd, extraPIDIgnore);
+                    if(minDR_Result.at(0) > dR_cut) {
+                        haveOverlap = true;
+                        Overlaps = true;
+                    }
+                }
+            }
+            if (verbose){
+                cout << " gen particle idx="<<mcInd << " pdgID="<<GenPart_pdgId[mcInd] << " status="<<GenPart_status[mcInd] << " pt="<<GenPart_pt[mcInd] << " eta=" << GenPart_eta[mcInd] << " parentage=" << (maxPDGID < 37) << " maxPDGID=" << maxPDGID << " minDR="<<minDR_Result.at(0) << " closestInd="<<minDR_Result.at(1) << " closestPDGID="<<GenPart_pdgId[(int)minDR_Result.at(1)]<<" OVERLAPS="<<Overlaps<<endl;
+            }
+        }
+    }
+    return haveOverlap;
+}
+
+std::vector<double> MyAnalysis::minGenDr(int myInd, std::vector<int> ignorePID){
+    double myEta = GenPart_eta[myInd];
+    double myPhi = GenPart_phi[myInd];
+    int myPID = GenPart_pdgId[myInd];
+
+    double mindr = 999.0;
+    double dr;
+    int bestInd = -1;
+    for( int oind = 0; oind < nGenPart; oind++){
+        if(oind == myInd) continue;
+        if(GenPart_status[oind] != 1) continue; // check if it's final state
+        if(GenPart_pt[oind] < 5)  continue;
+        if(abs(GenPart_pt[oind] - GenPart_pt[myInd]) < 0.01 && (GenPart_pdgId[oind] == GenPart_pdgId[myInd]) && abs(GenPart_eta[oind] - GenPart_eta[myInd]) < 0.01)  continue; // skip if same particle
+        int opid = abs(GenPart_pdgId[oind]);
+        if(opid == 12 || opid == 14 || opid == 16) continue; // skip neutrinos
+        if(std::find(ignorePID.begin(),ignorePID.end(),opid) != ignorePID.end()) continue; //skip any pid in ignorePID vector
+        dr = dR(myEta, myPhi, GenPart_eta[oind], GenPart_phi[oind]);
+        if( mindr > dr ) {
+            //check if the second particle is a decay product of the first
+            int genParentIdx = GenPart_genPartIdxMother[oind];
+            bool isDecay = false;
+            while (genParentIdx>=myInd){
+                if (genParentIdx==myInd) isDecay = true;
+                genParentIdx = GenPart_genPartIdxMother[genParentIdx];
+            }
+            if (isDecay) continue;
+
+            mindr = dr;
+            bestInd = oind;
+        }
+    }
+    vector<double> v;
+    v.push_back(mindr);
+    v.push_back((double)bestInd);
+    return v;
 }

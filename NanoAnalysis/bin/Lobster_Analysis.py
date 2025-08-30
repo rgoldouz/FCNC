@@ -27,12 +27,12 @@ plotdir_path = "~/www/lobster/FullProduction/%s" % (production_tag)
 storage = StorageConfiguration(
     input=[
         "file:///cms/cephfs/data/store/user/",
-        "root://hactar01.crc.nd.edu//store/user/",
+        "root://skynet013.crc.nd.edu//store/user/",
     ],
     output=[
         # Until a separate bug is fixed file://cms/cephfs needs to be the first output so the initial lobster validation passes.
         "file:///cms/cephfs/data"+output_path,
-        "root://hactar01.crc.nd.edu/"+output_path,
+        "root://skynet013.crc.nd.edu/"+output_path,
     ],
     disable_input_streaming=True,
 )
@@ -47,20 +47,19 @@ storage = StorageConfiguration(
 gs_resources = Category(
     name='gs',
     cores=1,
-    memory=1990,
+    memory=2990,
     disk=14990,
-#    mode='fixed',
-    runtime=10000
+    mode='max'
 )
 
 
-#tt_resources = Category(
-#    name='tt',
-#    cores=2,
-#    memory=15900,
-#    disk=15900,
-#    mode='fixed'
-#)
+tt_resources = Category(
+    name='tt',
+    cores=2,
+    memory=5990,
+    disk=14990,
+    mode='max'
+)
 #################################################################
 wf = []
 for key, value in SAMPLES.items():
@@ -68,8 +67,8 @@ for key, value in SAMPLES.items():
 #       continue
     FPT=1
     cat = gs_resources
-#    if 'TTTo2L2Nu' in key or 'FCNC' in key:
-#        cat=tt_resources
+    if 'TT' in key or 'FCNC' in key or 'Z' in key:
+        cat=tt_resources
     if path.exists('/cms/cephfs/data/store/user/rgoldouz/FullProduction/AnalysisTOPFCNC/Analysis_' + key) and len(os.listdir('/cms/cephfs/data/store/user/rgoldouz/FullProduction/AnalysisTOPFCNC/Analysis_' + key))>0:
         continue
     if path.exists('/cms/cephfs/data/store/user/rgoldouz/FullProduction/AnalysisTOPFCNC/Analysis_' + key):
@@ -116,11 +115,13 @@ config = Config(
     storage=storage,
     workflows=wf,
     advanced=AdvancedOptions(
-        bad_exit_codes=[127, 160],
-        log_level=1,
+        bad_exit_codes=[127, 160,137],
         osg_version='3.6',
-        abort_threshold=0,
+        abort_threshold=100,
         abort_multiplier=100,
+        full_monitoring=True, 
+        log_level=1,
+        dump_core=True
     )
 )
 

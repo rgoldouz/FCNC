@@ -158,49 +158,47 @@ void MyAnalysis::initiateHists(TString data,string year, bool ifSys){
     }
   }
 
-  if(ifSys){
-    //HistsFAUp/Down is used to save systematic uncertainties related to the fake rate estimation	  
-    HistsFAUp.resize(channelsFA.size());
-    for (int i=0;i<channelsFA.size();++i){
-      HistsFAUp[i].resize(regions.size());
-      for (int k=0;k<regions.size();++k){
-        HistsFAUp[i][k].resize(varsFullSys.size());
-        for (int n=0;n<varsFullSys.size();++n){
-          HistsFAUp[i][k][n].resize(sysFA.size());
+  //HistsFAUp/Down is used to save systematic uncertainties related to the fake rate estimation	  
+  HistsFAUp.resize(channelsFA.size());
+  for (int i=0;i<channelsFA.size();++i){
+    HistsFAUp[i].resize(regions.size());
+    for (int k=0;k<regions.size();++k){
+      HistsFAUp[i][k].resize(varsFullSys.size());
+      for (int n=0;n<varsFullSys.size();++n){
+        HistsFAUp[i][k][n].resize(sysFA.size());
+      }
+    }
+  }
+  HistsFADown.resize(channelsFA.size());
+  for (int i=0;i<channelsFA.size();++i){
+    HistsFADown[i].resize(regions.size());
+    for (int k=0;k<regions.size();++k){
+      HistsFADown[i][k].resize(varsFullSys.size());
+      for (int n=0;n<varsFullSys.size();++n){
+        HistsFADown[i][k][n].resize(sysFA.size());
+      }
+    }
+  }
+  for (int i=0;i<channelsFA.size();++i){
+    for (int k=0;k<regions.size();++k){
+      for( auto it = varsFullSys.cbegin() ; it != varsFullSys.cend() ; ++it ){
+        for (int n=0;n<sysFA.size();++n){
+          name<<channelsFA[i]<<"_"<<regions[k]<<"_"<<it->first<<"_"<<sysFA[n]<<"_Up";
+          h_test = new TH1EFT((name.str()).c_str(),(name.str()).c_str(),std::get<1>(it->second), std::get<2>(it->second));
+          h_test->SetDirectory(0);
+          h_test->StatOverflows(kTRUE);
+          HistsFAUp[i][k][std::get<0>(it->second)][n] = h_test;
+          name.str("");
+          name<<channelsFA[i]<<"_"<<regions[k]<<"_"<<it->first<<"_"<<sysFA[n]<<"_Down";
+          h_test = new TH1EFT((name.str()).c_str(),(name.str()).c_str(),std::get<1>(it->second), std::get<2>(it->second));
+          h_test->SetDirectory(0);
+          h_test->StatOverflows(kTRUE);
+          HistsFADown[i][k][std::get<0>(it->second)][n] = h_test;
+          name.str("");
         }
       }
     }
-    HistsFADown.resize(channelsFA.size());
-    for (int i=0;i<channelsFA.size();++i){
-      HistsFADown[i].resize(regions.size());
-      for (int k=0;k<regions.size();++k){
-        HistsFADown[i][k].resize(varsFullSys.size());
-        for (int n=0;n<varsFullSys.size();++n){
-          HistsFADown[i][k][n].resize(sysFA.size());
-        }
-      }
-    }
-    for (int i=0;i<channelsFA.size();++i){
-      for (int k=0;k<regions.size();++k){
-        for( auto it = varsFullSys.cbegin() ; it != varsFullSys.cend() ; ++it ){
-          for (int n=0;n<sysFA.size();++n){
-            name<<channelsFA[i]<<"_"<<regions[k]<<"_"<<it->first<<"_"<<sysFA[n]<<"_Up";
-            h_test = new TH1EFT((name.str()).c_str(),(name.str()).c_str(),std::get<1>(it->second), std::get<2>(it->second));
-            h_test->SetDirectory(0);
-            h_test->StatOverflows(kTRUE);
-            HistsFAUp[i][k][std::get<0>(it->second)][n] = h_test;
-            name.str("");
-            name<<channelsFA[i]<<"_"<<regions[k]<<"_"<<it->first<<"_"<<sysFA[n]<<"_Down";
-            h_test = new TH1EFT((name.str()).c_str(),(name.str()).c_str(),std::get<1>(it->second), std::get<2>(it->second));
-            h_test->SetDirectory(0);
-            h_test->StatOverflows(kTRUE);
-            HistsFADown[i][k][std::get<0>(it->second)][n] = h_test;
-            name.str("");
-          }
-        }
-      }
-    }
-  }  
+  }
 
   if(data == "mc" && ifSys){
     //HistsSysCompactUp/Down is used to save TH1EFT histograms including systematics that change event weights. Each constant is used to save the weight of events in a new scenario. So instead of keeping n histogram for n systematic variation, we save one histogram with different weights. 
@@ -495,7 +493,7 @@ void MyAnalysis::inputs(TString data,string year){
   if(year == "2016preVFP"){
     JERFile1="/users/rgoldouz/FCNC/NanoAnalysis/input/JER/Summer20UL16APV_JRV3_MC/Summer20UL16APV_JRV3_MC_SF_AK4PFchs.txt";
     JERFile2="/users/rgoldouz/FCNC/NanoAnalysis/input/JER/Summer20UL16APV_JRV3_MC/Summer20UL16APV_JRV3_MC_PtResolution_AK4PFchs.txt";
-    JECFile = "/users/rgoldouz/FCNC/NanoAnalysis/input/Summer19UL16APV_V7_MC/Regrouped_Summer19UL16APV_V7_MC_UncertaintySources_AK4PFchs.txt";
+    JECFile = "/users/rgoldouz/FCNC/NanoAnalysis/input/Summer19UL16APV_V7_MC/RegroupedV2_Summer19UL16APV_V7_MC_UncertaintySources_AK4PFchs.txt";
     rochesterFile = "/users/rgoldouz/FCNC/NanoAnalysis/input/RoccoR2016aUL.txt";
     eleSF="/users/rgoldouz/FCNC/NanoAnalysis/data/POG/EGM/2016preVFP_UL/electron.json.gz";
     muSF= "/users/rgoldouz/FCNC/NanoAnalysis/data/POG/MUO/2016preVFP_UL/muon_Z.json.gz";
@@ -512,9 +510,46 @@ void MyAnalysis::inputs(TString data,string year){
     htemp = (TH2F*)lepFR->Get("FR_mva085_mu_data_comb_recorrected");
     fr_mu_H = (TH2F*)htemp->Clone("fr_mu_H_clone");
     fr_mu_H->SetDirectory(0);
+    htemp = (TH2F*)lepFR->Get("FR_mva085_mu_data_comb_recorrected_up");
+    fr_mu_H_up = (TH2F*)htemp->Clone("FR_mva085_mu_data_comb_recorrected_up_clone");
+    fr_mu_H_up->SetDirectory(0);
+    htemp = (TH2F*)lepFR->Get("FR_mva085_mu_data_comb_recorrected_down");
+    fr_mu_H_down = (TH2F*)htemp->Clone("FR_mva085_mu_data_comb_recorrected_down_clone");
+    fr_mu_H_down->SetDirectory(0);
+    htemp = (TH2F*)lepFR->Get("FR_mva085_mu_data_comb_recorrected_pt1");
+    fr_mu_H_ptUp = (TH2F*)htemp->Clone("FR_mva085_mu_data_comb_recorrected_pt1_clone");
+    fr_mu_H_ptUp->SetDirectory(0);
+    htemp = (TH2F*)lepFR->Get("FR_mva085_mu_data_comb_recorrected_pt2");
+    fr_mu_H_ptDown = (TH2F*)htemp->Clone("FR_mva085_mu_data_comb_recorrected_pt2_clone");
+    fr_mu_H_ptDown->SetDirectory(0);
+    htemp = (TH2F*)lepFR->Get("FR_mva085_mu_data_comb_recorrected_be1");
+    fr_mu_H_etaUp = (TH2F*)htemp->Clone("FR_mva085_mu_data_comb_recorrected_be1_clone");
+    fr_mu_H_etaUp->SetDirectory(0);
+    htemp = (TH2F*)lepFR->Get("FR_mva085_mu_data_comb_recorrected_be2");
+    fr_mu_H_etaDown = (TH2F*)htemp->Clone("FR_mva085_mu_data_comb_recorrected_be2_clone");
+    fr_mu_H_etaDown->SetDirectory(0);
+
     htemp = (TH2F*)lepFR->Get("FR_mva090_el_data_comb_NC_recorrected");
     fr_ele_H = (TH2F*)htemp->Clone("fr_ele_H_clone");
     fr_ele_H->SetDirectory(0);
+    htemp = (TH2F*)lepFR->Get("FR_mva090_el_data_comb_NC_recorrected_up");
+    fr_ele_H_up = (TH2F*)htemp->Clone("FR_mva090_el_data_comb_NC_recorrected_up_clone");
+    fr_ele_H_up->SetDirectory(0);
+    htemp = (TH2F*)lepFR->Get("FR_mva090_el_data_comb_NC_recorrected_down");
+    fr_ele_H_down = (TH2F*)htemp->Clone("FR_mva090_el_data_comb_NC_recorrected_down_clone");
+    fr_ele_H_down->SetDirectory(0);
+    htemp = (TH2F*)lepFR->Get("FR_mva090_el_data_comb_NC_recorrected_pt1");
+    fr_ele_H_ptUp = (TH2F*)htemp->Clone("FR_mva090_el_data_comb_NC_recorrected_pt1_clone");
+    fr_ele_H_ptUp->SetDirectory(0);
+    htemp = (TH2F*)lepFR->Get("FR_mva090_el_data_comb_NC_recorrected_pt2");
+    fr_ele_H_ptDown = (TH2F*)htemp->Clone("FR_mva090_el_data_comb_NC_recorrected_pt2_clone");
+    fr_ele_H_ptDown->SetDirectory(0);
+    htemp = (TH2F*)lepFR->Get("FR_mva090_el_data_comb_NC_recorrected_be1");
+    fr_ele_H_etaUp = (TH2F*)htemp->Clone("FR_mva090_el_data_comb_NC_recorrected_be1_clone");
+    fr_ele_H_etaUp->SetDirectory(0);
+    htemp = (TH2F*)lepFR->Get("FR_mva090_el_data_comb_NC_recorrected_be2");
+    fr_ele_H_etaDown = (TH2F*)htemp->Clone("FR_mva090_el_data_comb_NC_recorrected_be2_clone");
+    fr_ele_H_etaDown->SetDirectory(0);
     lepFR->Close();
     delete lepFR;
 
@@ -534,7 +569,7 @@ void MyAnalysis::inputs(TString data,string year){
   if(year == "2016postVFP"){
     JERFile1="/users/rgoldouz/FCNC/NanoAnalysis/input/JER/Summer20UL16_JRV3_MC/Summer20UL16_JRV3_MC_SF_AK4PFchs.txt";
     JERFile2="/users/rgoldouz/FCNC/NanoAnalysis/input/JER/Summer20UL16_JRV3_MC/Summer20UL16_JRV3_MC_PtResolution_AK4PFchs.txt";
-    JECFile = "/users/rgoldouz/FCNC/NanoAnalysis/input/Summer19UL16_V7_MC/Regrouped_Summer19UL16_V7_MC_UncertaintySources_AK4PFchs.txt";
+    JECFile = "/users/rgoldouz/FCNC/NanoAnalysis/input/Summer19UL16_V7_MC/RegroupedV2_Summer19UL16_V7_MC_UncertaintySources_AK4PFchs.txt";
     rochesterFile = "/users/rgoldouz/FCNC/NanoAnalysis/input/RoccoR2016bUL.txt";
     eleSF="/users/rgoldouz/FCNC/NanoAnalysis/data/POG/EGM/2016postVFP_UL/electron.json.gz";
     muSF= "/users/rgoldouz/FCNC/NanoAnalysis/data/POG/MUO/2016postVFP_UL/muon_Z.json.gz";
@@ -551,9 +586,46 @@ void MyAnalysis::inputs(TString data,string year){
     htemp = (TH2F*)lepFR->Get("FR_mva085_mu_data_comb_recorrected");
     fr_mu_H = (TH2F*)htemp->Clone("fr_mu_H_clone");
     fr_mu_H->SetDirectory(0);
+    htemp = (TH2F*)lepFR->Get("FR_mva085_mu_data_comb_recorrected_up");
+    fr_mu_H_up = (TH2F*)htemp->Clone("FR_mva085_mu_data_comb_recorrected_up_clone");
+    fr_mu_H_up->SetDirectory(0);
+    htemp = (TH2F*)lepFR->Get("FR_mva085_mu_data_comb_recorrected_down");
+    fr_mu_H_down = (TH2F*)htemp->Clone("FR_mva085_mu_data_comb_recorrected_down_clone");
+    fr_mu_H_down->SetDirectory(0);
+    htemp = (TH2F*)lepFR->Get("FR_mva085_mu_data_comb_recorrected_pt1");
+    fr_mu_H_ptUp = (TH2F*)htemp->Clone("FR_mva085_mu_data_comb_recorrected_pt1_clone");
+    fr_mu_H_ptUp->SetDirectory(0);
+    htemp = (TH2F*)lepFR->Get("FR_mva085_mu_data_comb_recorrected_pt2");
+    fr_mu_H_ptDown = (TH2F*)htemp->Clone("FR_mva085_mu_data_comb_recorrected_pt2_clone");
+    fr_mu_H_ptDown->SetDirectory(0);
+    htemp = (TH2F*)lepFR->Get("FR_mva085_mu_data_comb_recorrected_be1");
+    fr_mu_H_etaUp = (TH2F*)htemp->Clone("FR_mva085_mu_data_comb_recorrected_be1_clone");
+    fr_mu_H_etaUp->SetDirectory(0);
+    htemp = (TH2F*)lepFR->Get("FR_mva085_mu_data_comb_recorrected_be2");
+    fr_mu_H_etaDown = (TH2F*)htemp->Clone("FR_mva085_mu_data_comb_recorrected_be2_clone");
+    fr_mu_H_etaDown->SetDirectory(0);
+
     htemp = (TH2F*)lepFR->Get("FR_mva090_el_data_comb_NC_recorrected");
     fr_ele_H = (TH2F*)htemp->Clone("fr_ele_H_clone");
     fr_ele_H->SetDirectory(0);
+    htemp = (TH2F*)lepFR->Get("FR_mva090_el_data_comb_NC_recorrected_up");
+    fr_ele_H_up = (TH2F*)htemp->Clone("FR_mva090_el_data_comb_NC_recorrected_up_clone");
+    fr_ele_H_up->SetDirectory(0);
+    htemp = (TH2F*)lepFR->Get("FR_mva090_el_data_comb_NC_recorrected_down");
+    fr_ele_H_down = (TH2F*)htemp->Clone("FR_mva090_el_data_comb_NC_recorrected_down_clone");
+    fr_ele_H_down->SetDirectory(0);
+    htemp = (TH2F*)lepFR->Get("FR_mva090_el_data_comb_NC_recorrected_pt1");
+    fr_ele_H_ptUp = (TH2F*)htemp->Clone("FR_mva090_el_data_comb_NC_recorrected_pt1_clone");
+    fr_ele_H_ptUp->SetDirectory(0);
+    htemp = (TH2F*)lepFR->Get("FR_mva090_el_data_comb_NC_recorrected_pt2");
+    fr_ele_H_ptDown = (TH2F*)htemp->Clone("FR_mva090_el_data_comb_NC_recorrected_pt2_clone");
+    fr_ele_H_ptDown->SetDirectory(0);
+    htemp = (TH2F*)lepFR->Get("FR_mva090_el_data_comb_NC_recorrected_be1");
+    fr_ele_H_etaUp = (TH2F*)htemp->Clone("FR_mva090_el_data_comb_NC_recorrected_be1_clone");
+    fr_ele_H_etaUp->SetDirectory(0);
+    htemp = (TH2F*)lepFR->Get("FR_mva090_el_data_comb_NC_recorrected_be2");
+    fr_ele_H_etaDown = (TH2F*)htemp->Clone("FR_mva090_el_data_comb_NC_recorrected_be2_clone");
+    fr_ele_H_etaDown->SetDirectory(0);
     lepFR->Close();
     delete lepFR;
 
@@ -574,7 +646,7 @@ void MyAnalysis::inputs(TString data,string year){
     JERFile1="/users/rgoldouz/FCNC/NanoAnalysis/input/JER/Summer19UL17_JRV3_MC/Summer19UL17_JRV3_MC_SF_AK4PFchs.txt";
     JERFile2="/users/rgoldouz/FCNC/NanoAnalysis/input/JER/Summer19UL17_JRV3_MC/Summer19UL17_JRV3_MC_PtResolution_AK4PFchs.txt";
     srcnames[4] ="RelativeSample_2017"; 
-    JECFile = "/users/rgoldouz/FCNC/NanoAnalysis/input/Summer19UL17_V5_MC/Regrouped_Summer19UL17_V5_MC_UncertaintySources_AK4PFchs.txt";
+    JECFile = "/users/rgoldouz/FCNC/NanoAnalysis/input/Summer19UL17_V5_MC/RegroupedV2_Summer19UL17_V5_MC_UncertaintySources_AK4PFchs.txt";
     rochesterFile = "/users/rgoldouz/FCNC/NanoAnalysis/input/RoccoR2017UL.txt";
     eleSF="/users/rgoldouz/FCNC/NanoAnalysis/data/POG/EGM/2017_UL/electron.json.gz";
     muSF= "/users/rgoldouz/FCNC/NanoAnalysis/data/POG/MUO/2017_UL/muon_Z.json.gz";
@@ -651,7 +723,7 @@ void MyAnalysis::inputs(TString data,string year){
     JERFile1="/users/rgoldouz/FCNC/NanoAnalysis/input/JER/Summer19UL18_JRV2_MC/Summer19UL18_JRV2_MC_SF_AK4PFchs.txt";
     JERFile2="/users/rgoldouz/FCNC/NanoAnalysis/input/JER/Summer19UL18_JRV2_MC/Summer19UL18_JRV2_MC_PtResolution_AK4PFchs.txt";
     srcnames[4] ="RelativeSample_2018";
-    JECFile = "/users/rgoldouz/FCNC/NanoAnalysis/input/Summer19UL18_V5_MC/Regrouped_Summer19UL18_V5_MC_UncertaintySources_AK4PFchs.txt";
+    JECFile = "/users/rgoldouz/FCNC/NanoAnalysis/input/Summer19UL18_V5_MC/RegroupedV2_Summer19UL18_V5_MC_UncertaintySources_AK4PFchs.txt";
     rochesterFile = "/users/rgoldouz/FCNC/NanoAnalysis/input/RoccoR2018UL.txt";
     eleSF="/users/rgoldouz/FCNC/NanoAnalysis/data/POG/EGM/2018_UL/electron.json.gz";
     muSF= "/users/rgoldouz/FCNC/NanoAnalysis/data/POG/MUO/2018_UL/muon_Z.json.gz";
@@ -668,9 +740,46 @@ void MyAnalysis::inputs(TString data,string year){
     htemp = (TH2F*)lepFR->Get("FR_mva085_mu_data_comb_recorrected");
     fr_mu_H = (TH2F*)htemp->Clone("fr_mu_H_clone");
     fr_mu_H->SetDirectory(0);
+    htemp = (TH2F*)lepFR->Get("FR_mva085_mu_data_comb_recorrected_up");
+    fr_mu_H_up = (TH2F*)htemp->Clone("FR_mva085_mu_data_comb_recorrected_up_clone");
+    fr_mu_H_up->SetDirectory(0);
+    htemp = (TH2F*)lepFR->Get("FR_mva085_mu_data_comb_recorrected_down");
+    fr_mu_H_down = (TH2F*)htemp->Clone("FR_mva085_mu_data_comb_recorrected_down_clone");
+    fr_mu_H_down->SetDirectory(0);
+    htemp = (TH2F*)lepFR->Get("FR_mva085_mu_data_comb_recorrected_pt1");
+    fr_mu_H_ptUp = (TH2F*)htemp->Clone("FR_mva085_mu_data_comb_recorrected_pt1_clone");
+    fr_mu_H_ptUp->SetDirectory(0);
+    htemp = (TH2F*)lepFR->Get("FR_mva085_mu_data_comb_recorrected_pt2");
+    fr_mu_H_ptDown = (TH2F*)htemp->Clone("FR_mva085_mu_data_comb_recorrected_pt2_clone");
+    fr_mu_H_ptDown->SetDirectory(0);
+    htemp = (TH2F*)lepFR->Get("FR_mva085_mu_data_comb_recorrected_be1");
+    fr_mu_H_etaUp = (TH2F*)htemp->Clone("FR_mva085_mu_data_comb_recorrected_be1_clone");
+    fr_mu_H_etaUp->SetDirectory(0);
+    htemp = (TH2F*)lepFR->Get("FR_mva085_mu_data_comb_recorrected_be2");
+    fr_mu_H_etaDown = (TH2F*)htemp->Clone("FR_mva085_mu_data_comb_recorrected_be2_clone");
+    fr_mu_H_etaDown->SetDirectory(0);
+
     htemp = (TH2F*)lepFR->Get("FR_mva090_el_data_comb_NC_recorrected");
     fr_ele_H = (TH2F*)htemp->Clone("fr_ele_H_clone");
     fr_ele_H->SetDirectory(0);
+    htemp = (TH2F*)lepFR->Get("FR_mva090_el_data_comb_NC_recorrected_up");
+    fr_ele_H_up = (TH2F*)htemp->Clone("FR_mva090_el_data_comb_NC_recorrected_up_clone");
+    fr_ele_H_up->SetDirectory(0);
+    htemp = (TH2F*)lepFR->Get("FR_mva090_el_data_comb_NC_recorrected_down");
+    fr_ele_H_down = (TH2F*)htemp->Clone("FR_mva090_el_data_comb_NC_recorrected_down_clone");
+    fr_ele_H_down->SetDirectory(0);
+    htemp = (TH2F*)lepFR->Get("FR_mva090_el_data_comb_NC_recorrected_pt1");
+    fr_ele_H_ptUp = (TH2F*)htemp->Clone("FR_mva090_el_data_comb_NC_recorrected_pt1_clone");
+    fr_ele_H_ptUp->SetDirectory(0);
+    htemp = (TH2F*)lepFR->Get("FR_mva090_el_data_comb_NC_recorrected_pt2");
+    fr_ele_H_ptDown = (TH2F*)htemp->Clone("FR_mva090_el_data_comb_NC_recorrected_pt2_clone");
+    fr_ele_H_ptDown->SetDirectory(0);
+    htemp = (TH2F*)lepFR->Get("FR_mva090_el_data_comb_NC_recorrected_be1");
+    fr_ele_H_etaUp = (TH2F*)htemp->Clone("FR_mva090_el_data_comb_NC_recorrected_be1_clone");
+    fr_ele_H_etaUp->SetDirectory(0);
+    htemp = (TH2F*)lepFR->Get("FR_mva090_el_data_comb_NC_recorrected_be2");
+    fr_ele_H_etaDown = (TH2F*)htemp->Clone("FR_mva090_el_data_comb_NC_recorrected_be2_clone");
+    fr_ele_H_etaDown->SetDirectory(0);
     lepFR->Close();
     delete lepFR;
 
@@ -678,9 +787,8 @@ void MyAnalysis::inputs(TString data,string year){
     htemp = (TH2F*)lepCF->Get("chargeMisId");
     cf_ele_H =  (TH2F*)htemp->Clone("cf_ele_H_clone");
     cf_ele_H->SetDirectory(0);
-    delete lepCF;
-
     lepCF->Close();
+    delete lepCF;
     gLumiMask="/users/rgoldouz/FCNC/NanoAnalysis/input/Cert_314472-325175_13TeV_Legacy2018_Collisions18_JSON.txt";
     chargeFlipNorm=1.12;
     fRun=314472;
@@ -861,20 +969,18 @@ void MyAnalysis::endHists(TString data,string year, bool ifSys){
     }
   }
 
-  if (ifSys){
-    for (int i=0;i<channelsFA.size();++i){
-      for (int k=0;k<regions.size();++k){
-        for (int l=0;l<varsFullSys.size();++l){
-          for (int n=0;n<sysFA.size();++n){
-            HistsFAUp[i][k][l][n]->Write("",TObject::kOverwrite);
-            HistsFADown[i][k][l][n]->Write("",TObject::kOverwrite);
-            delete HistsFAUp[i][k][l][n];
-            delete HistsFADown[i][k][l][n];
-          }
-        }	  
-      }
+  for (int i=0;i<channelsFA.size();++i){
+    for (int k=0;k<regions.size();++k){
+      for (int l=0;l<varsFullSys.size();++l){
+        for (int n=0;n<sysFA.size();++n){
+          HistsFAUp[i][k][l][n]->Write("",TObject::kOverwrite);
+          HistsFADown[i][k][l][n]->Write("",TObject::kOverwrite);
+          delete HistsFAUp[i][k][l][n];
+          delete HistsFADown[i][k][l][n];
+        }
+      }	  
     }
-  }    
+  }
   if (data == "mc" && ifSys){
     for (int i=0;i<channelsSys.size();++i){
       for (int k=0;k<regions.size();++k){

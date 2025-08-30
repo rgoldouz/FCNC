@@ -68,8 +68,8 @@ int TMVAClassification_TC_3lonZ()
     TMVA::DataLoader* dataloader = new TMVA::DataLoader("dataset");
 
     // Load the input ROOT file and retrieve the tree
-    TFile* inputB1 = TFile::Open( "/afs/crc.nd.edu/user/r/rgoldouz/FCNC/NanoAnalysis/MVA/2017_totalBG.root" );
-    TFile* inputS1 = TFile::Open( "/afs/crc.nd.edu/user/r/rgoldouz/FCNC/NanoAnalysis/MVA/2017_FCNCTC.root" );
+    TFile* inputB1 = TFile::Open( "/users/rgoldouz/FCNC/NanoAnalysis/MVA/2017_totalBG.root" );
+    TFile* inputS1 = TFile::Open( "/users/rgoldouz/FCNC/NanoAnalysis/MVA/2017_FCNCTC.root" );
 
     TTree *background1     = (TTree*)inputB1->Get("FCNC");
     TTree *signalTree1     = (TTree*)inputS1->Get("FCNC");
@@ -93,33 +93,44 @@ int TMVAClassification_TC_3lonZ()
     // Add more variables as needed
 
     // Clone the tree for each signal class and assign corresponding weights
-    const int numClasses = 3;
-    TString classNames[numClasses] = {"ctZ","cpt","cpQM"};
-    TString weightBranches[numClasses] = {"weightctZ","weightcpt","weightcpQM"};
-    TCut cuts[numClasses] = {"(ch==5) && weightctZ>0.001", "(ch==5) && weightcpt>0.001","(ch==5) && weightcpQM>0.001"};
 
-    TFile* tmpFile = TFile::Open("tmp.root", "RECREATE");
+    // Create the file to store filtered trees
+    TFile* tmpFile = new TFile("tmp.root", "RECREATE");
+
+    const int numClasses = 2;
+    TString classNames[numClasses] = {"ctZ","cptcpQM"};
+    TCut cuts[numClasses] = {
+        "(ch==5)  && weightctZ>0.0001",
+        "(ch==5) && (weightcpt>0.0001 || weightcpQM>0.0001)",
+    };
 
     for (int i = 0; i < numClasses; ++i) {
-        TTree* sigTree = signalTree1->CloneTree(-1, "fast");
-//    If you need to apply a cut, you can apply event preselection via that 4th TCut parameter like:    dataloader->AddTree(sigTree, classNames[i],"pt > 30");
-        dataloader->AddTree(sigTree, classNames[i], 1.0,cuts[i]);
-        dataloader->SetWeightExpression(weightBranches[i], classNames[i]);
+        // Apply the cut and clone the tree into the tmpFile
+        tmpFile->cd(); // Ensure we're writing to the tmpFile
+        TTree* filteredSigTree = signalTree1->CopyTree(cuts[i]);
+        filteredSigTree->SetName(classNames[i]); // Optionally rename for clarity
+        filteredSigTree->Write(); // Write the tree to tmpFile
+
+        dataloader->AddTree(filteredSigTree, classNames[i], 1.0, "ch==5");
     }
 
-    // Add background tree (assuming it's separate)
-    dataloader->AddTree(background1, "Background", 1.0,"(ch==5) && weightSM>0");
-//    dataloader->SetWeightExpression("weight_bg", "Background");
+    // Add background tree
+    TTree* filteredBkgTree = background1->CopyTree("(ch==5) && weightSM>0");
+    tmpFile->cd();
+    filteredBkgTree->SetName("Background");
+    filteredBkgTree->Write();
 
-    // Prepare training and testing trees
-    dataloader->PrepareTrainingAndTestTree("","",
-    "SplitMode=Random:NormMode=NumEvents:!V");
+    dataloader->AddTree(filteredBkgTree, "Background", 1.0, "ch==5");
+    // Set weights after adding trees
+    dataloader->SetWeightExpression("weightSM", "Background");
+    dataloader->SetWeightExpression("weightctZ", "ctZ");
+    dataloader->SetWeightExpression("weightcpt + weightcpQM", "cptcpQM");
+    // Prepare training and testing
+    dataloader->PrepareTrainingAndTestTree("","SplitMode=Random:NormMode=NumEvents:V");
 
     // Book a multiclass BDT method
-factory->BookMethod(dataloader, TMVA::Types::kBDT, "BDT",
-    "!H:!V:BoostType=Grad:Shrinkage=0.1:NTrees=200:MaxDepth=3:nCuts=20:UseBaggedBoost:BaggedSampleFraction=0.6:SeparationType=GiniIndex");
-   // factory->BookMethod(dataloader, TMVA::Types::kBDT, "BDT",
-  //   "!H:!V:NTrees=300:BoostType=Grad:SeparationType=GiniIndex:nCuts=20:MaxDepth=3");
+    factory->BookMethod(dataloader, TMVA::Types::kBDT, "BDT",
+    "!H:!V:BoostType=Grad:Shrinkage=0.05:NTrees=500:MaxDepth=3:nCuts=10:UseBaggedBoost:BaggedSampleFraction=0.8:SeparationType=GiniIndex");
 
     // Train, test, and evaluate the MVA methods
     factory->TrainAllMethods();

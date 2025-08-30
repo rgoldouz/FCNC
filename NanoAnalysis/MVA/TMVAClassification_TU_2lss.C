@@ -68,8 +68,8 @@ int TMVAClassification_TU_2lss()
     TMVA::DataLoader* dataloader = new TMVA::DataLoader("dataset");
 
     // Load the input ROOT file and retrieve the tree
-    TFile* inputB1 = TFile::Open( "/afs/crc.nd.edu/user/r/rgoldouz/FCNC/NanoAnalysis/MVA/2017_totalBG.root" );
-    TFile* inputS1 = TFile::Open( "/afs/crc.nd.edu/user/r/rgoldouz/FCNC/NanoAnalysis/MVA/2017_FCNCTU.root" );
+    TFile* inputB1 = TFile::Open( "/users/rgoldouz/FCNC/NanoAnalysis/MVA/2017_totalBG.root" );
+    TFile* inputS1 = TFile::Open( "/users/rgoldouz/FCNC/NanoAnalysis/MVA/2017_FCNCTU.root" );
 
     TTree *background1     = (TTree*)inputB1->Get("FCNC");
     TTree *signalTree1     = (TTree*)inputS1->Get("FCNC");
@@ -101,12 +101,27 @@ int TMVAClassification_TU_2lss()
 
     TFile* tmpFile = TFile::Open("tmp.root", "RECREATE");
 
-    dataloader->AddTree(signalTree1, "Signal", 1.0,"(ch==0) && weightctp>0.001");
+    TTree* filteredBkgTree = background1->CopyTree("(ch==0) && weightSM>0");
+    tmpFile->cd();
+    filteredBkgTree->SetName("Background");
+    filteredBkgTree->Write();
+
+    TTree* filteredBkgTreeFake = background1->CopyTree("(chFA==0) && weightSMfake>0");
+    tmpFile->cd();
+    filteredBkgTreeFake->SetName("BackgroundFake");
+    filteredBkgTreeFake->Write();
+
+    TTree* filteredSigTree = signalTree1->CopyTree("(ch==0) && weightctp>0.001");
+    tmpFile->cd();
+    filteredSigTree->SetName("Signal");
+    filteredSigTree->Write();
+
+    dataloader->AddTree(filteredSigTree, "Signal", 1.0,"ch==0");
     dataloader->SetWeightExpression("weightctp", "Signal");
     // Add background tree (assuming it's separate)
-    dataloader->AddTree(background1, "Background", 1.0,"(ch==0) && weightSM>0");
+    dataloader->AddTree(filteredBkgTree, "Background", 1.0,"ch==0");
     dataloader->SetWeightExpression("weightSM", "Background");
-    dataloader->AddTree(background1, "Background", 1.0,"(chFA==0) && weightSMfake>0");
+    dataloader->AddTree(filteredBkgTreeFake, "Background", 1.0,"chFA==0");
     dataloader->SetWeightExpression("weightSMfake", "Background");
 
     // Prepare training and testing trees
@@ -115,9 +130,7 @@ int TMVAClassification_TU_2lss()
 
     // Book a multiclass BDT method
     factory->BookMethod(dataloader, TMVA::Types::kBDT, "BDT",
-    "!H:!V:BoostType=Grad:Shrinkage=0.1:NTrees=200:MaxDepth=3:nCuts=20:UseBaggedBoost:BaggedSampleFraction=0.6:SeparationType=GiniIndex");
-   // factory->BookMethod(dataloader, TMVA::Types::kBDT, "BDT",
-  //   "!H:!V:NTrees=300:BoostType=Grad:SeparationType=GiniIndex:nCuts=20:MaxDepth=3");
+    "!H:!V:BoostType=Grad:Shrinkage=0.05:NTrees=500:MaxDepth=3:nCuts=10:UseBaggedBoost:BaggedSampleFraction=0.8:SeparationType=GiniIndex");
 
     // Train, test, and evaluate the MVA methods
     factory->TrainAllMethods();

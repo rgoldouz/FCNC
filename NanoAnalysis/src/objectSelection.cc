@@ -107,13 +107,14 @@ void MyAnalysis::objectSelection(TString data,string year){
         eID1Down=eID1Down*scale_factor(sf_eleLoose_H, abs(Electron_eta[l]),Electron_pt[l],"down",false, true);
         eID2Down=eID2Down*scale_factor(sf_eleIsoIp_H, abs(Electron_eta[l]),Electron_pt[l],"down",false, true);
         eID3Down=eID3Down* scale_factor(sf_eleLooseMVATight_H, abs(Electron_eta[l]),Electron_pt[l],"down",false, true);
+
       }
     }
     if(looseElectron(l) && fakeElectron(l) && !tightElectron(l) && conept_TTH(l,11)>10) selectedFLeptons->push_back(new lepton_candidate(Electron_pt[l],Electron_eta[l],Electron_phi[l],Electron_charge[l],l,1, Electron_pdgId[l]));
   }
 
-  sysUpWeights[getVecPos(sys,"eleRecoIdIso")] = nominalWeights[getVecPos(sys,"eleRecoIdIso")] + sqrt(pow(eReco-eRecoUp,2)+pow(eID1-eID1Up,2)+pow(eID2-eID2Up,2)+pow(eID3-eID3Up,2));
-  sysDownWeights[getVecPos(sys,"eleRecoIdIso")] = nominalWeights[getVecPos(sys,"eleRecoIdIso")] - sqrt(pow(eReco-eRecoDown,2)+pow(eID1-eID1Down,2)+pow(eID2-eID2Down,2)+pow(eID3-eID3Down,2));
+  sysUpWeights[getVecPos(sys,"eleRecoIdIso")] = nominalWeights[getVecPos(sys,"eleRecoIdIso")] * (1 + sqrt(pow(eReco-eRecoUp,2)+pow(eID1-eID1Up,2)+pow(eID2-eID2Up,2)+pow(eID3-eID3Up,2)));
+  sysDownWeights[getVecPos(sys,"eleRecoIdIso")] = nominalWeights[getVecPos(sys,"eleRecoIdIso")] * (1 - sqrt(pow(eReco-eRecoDown,2)+pow(eID1-eID1Down,2)+pow(eID2-eID2Down,2)+pow(eID3-eID3Down,2)));
 // Muon selection
   for (int l=0;l<nMuon;l++){
     if(Muon_pt[l] > 7 && looseMuon(l)) selectedLooseLeptons->push_back(new lepton_candidate(Muon_pt[l],Muon_eta[l],Muon_phi[l],Muon_charge[l],l,10, Muon_pdgId[l]));
@@ -151,8 +152,8 @@ void MyAnalysis::objectSelection(TString data,string year){
     if(looseMuon(l) && fakeMuon(l) && !tightMuon(l) && conept_TTH(l,13)>10) selectedFLeptons->push_back(new lepton_candidate(Muon_pt[l],Muon_eta[l],Muon_phi[l],Muon_charge[l],l,10,Muon_pdgId[l]));
   }
 
-  sysUpWeights[getVecPos(sys,"muRecoIdIso")] = nominalWeights[getVecPos(sys,"muRecoIdIso")] + sqrt(pow(muReco-muRecoUp,2)+pow(muID1-muID1Up,2)+pow(muID2-muID2Up,2)+pow(muID3-muID3Up,2));
-  sysDownWeights[getVecPos(sys,"muRecoIdIso")] = nominalWeights[getVecPos(sys,"muRecoIdIso")] - sqrt(pow(muReco-muRecoDown,2)+pow(muID1-muID1Down,2)+pow(muID2-muID2Down,2)+pow(muID3-muID3Down,2));
+  sysUpWeights[getVecPos(sys,"muRecoIdIso")] = nominalWeights[getVecPos(sys,"muRecoIdIso")] * (1 + sqrt(pow(muReco-muRecoUp,2)+pow(muID1-muID1Up,2)+pow(muID2-muID2Up,2)+pow(muID3-muID3Up,2)));
+  sysDownWeights[getVecPos(sys,"muRecoIdIso")] = nominalWeights[getVecPos(sys,"muRecoIdIso")] * (1- sqrt(pow(muReco-muRecoDown,2)+pow(muID1-muID1Down,2)+pow(muID2-muID2Down,2)+pow(muID3-muID3Down,2)));
 
     sort(selectedPLeptons->begin(), selectedPLeptons->end(), ComparePtLep);
     sort(selectedFLeptons->begin(), selectedFLeptons->end(), ComparePtLep);
@@ -184,6 +185,14 @@ void MyAnalysis::objectSelection(TString data,string year){
     selectedJets = new std::vector<jet_candidate*>();
     JECsysUp = new std::vector<std::vector<jet_candidate*>>(nsrc + 1);
     JECsysDown = new std::vector<std::vector<jet_candidate*>>(nsrc + 1);
+    MetJECsysUp = new std::vector<float>(nsrc + 1, 0.0f);
+    MetJECsysDown = new std::vector<float>(nsrc + 1, 0.0f);
+    MetPhiJECsysUp = new std::vector<float>(nsrc + 1, 0.0f);
+    MetPhiJECsysDown = new std::vector<float>(nsrc + 1, 0.0f);
+    std::vector<float> dpxUp(nsrc + 1, 0.0f);
+    std::vector<float> dpyUp(nsrc + 1, 0.0f);
+    std::vector<float> dpxDown(nsrc + 1, 0.0f);
+    std::vector<float> dpyDown(nsrc + 1, 0.0f);
     float cJER;
     float cJERUp;
     float cJERDown;
@@ -193,11 +202,12 @@ void MyAnalysis::objectSelection(TString data,string year){
     float jer_sfDown;
     float sigma;
     float jet_resolution;
+    float rn;
     std::random_device rd{}; 
     std::mt19937 gen{rd()}; 
     for (int l=0;l<nJet;l++){
       if(Jet_jetId[l]==0 || abs(Jet_eta[l]) >= 2.4) continue;
-      if (jetVetoMaps_H->GetBinContent(jetVetoMaps_H->GetXaxis()->FindBin(Jet_eta[l]),jetVetoMaps_H->GetYaxis()->FindBin(Jet_phi[l]))>0) continue;
+//      if (jetVetoMaps_H->GetBinContent(jetVetoMaps_H->GetXaxis()->FindBin(Jet_eta[l]),jetVetoMaps_H->GetYaxis()->FindBin(Jet_phi[l]))>0) continue;
       cJER=1;cJERUp=1;cJERDown=1; 
       jetlepfail = false;
       for (int i=0;i<selectedLooseLeptons->size();i++){
@@ -215,32 +225,44 @@ void MyAnalysis::objectSelection(TString data,string year){
           cJERDown=1+(jer_sfDown-1)*((Jet_pt[l]-GenJet_pt[Jet_genJetIdx[l]])/Jet_pt[l]);
         }
         else{
-          sigma = jet_resolution * std::sqrt(jer_sf * jer_sf - 1);
-          std::normal_distribution<> d(0, sigma);
-          cJER = 1. + d(gen);
-          sigma = jet_resolution * std::sqrt(jer_sfUp * jer_sfUp - 1);
-          std::normal_distribution<> e(0, sigma);
-          cJERUp = 1. + e(gen);
-          sigma = jet_resolution * std::sqrt(jer_sfDown * jer_sfDown - 1);
-          std::normal_distribution<> f(0, sigma);
-          cJERDown = 1. + f(gen);
+          std::normal_distribution<> d(0, jet_resolution);
+	  rn = d(gen);
+          cJER = 1. + rn * std::sqrt(max(jer_sf * jer_sf - 1.,0.));
+          cJERUp = 1. + rn * std::sqrt(max(jer_sfUp * jer_sfUp - 1.,0.));
+          cJERDown = 1. +  rn * std::sqrt(max(jer_sfDown * jer_sfDown - 1.,0.));
         }
-        if(Jet_puId[l]<1 && cJER*Jet_pt[l]<50) continue;
-        if(cJER*Jet_pt[l]>30)  selectedJets->push_back(new jet_candidate(cJER*Jet_pt[l],Jet_eta[l],Jet_phi[l],Jet_mass[l],Jet_btagDeepFlavB[l], year,Jet_partonFlavour[l]));
-        if (cJERUp*Jet_pt[l]>30) (*JECsysUp)[nsrc].push_back(new jet_candidate(cJERUp*Jet_pt[l],Jet_eta[l],Jet_phi[l],Jet_mass[l],Jet_btagDeepFlavB[l], year,Jet_partonFlavour[l]));
-        if (cJERDown*Jet_pt[l]>30) (*JECsysDown)[nsrc].push_back(new jet_candidate(cJERDown*Jet_pt[l],Jet_eta[l],Jet_phi[l],Jet_mass[l],Jet_btagDeepFlavB[l], year,Jet_partonFlavour[l]));
+        if(cJER*Jet_pt[l]>30 && !(Jet_puId[l]<1 && cJER*Jet_pt[l]<50))  selectedJets->push_back(new jet_candidate(cJER*Jet_pt[l],Jet_eta[l],Jet_phi[l],Jet_mass[l],Jet_btagDeepFlavB[l], year,Jet_partonFlavour[l]));
+        if (cJERUp*Jet_pt[l]>30  && !(Jet_puId[l]<1 && cJERUp*Jet_pt[l]<50)) {
+          (*JECsysUp)[nsrc].push_back(new jet_candidate(cJERUp*Jet_pt[l],Jet_eta[l],Jet_phi[l],Jet_mass[l],Jet_btagDeepFlavB[l], year,Jet_partonFlavour[l]));
+          dpxUp[nsrc] += cJERUp*Jet_pt[l]*std::cos(Jet_phi[l]) - cJER*Jet_pt[l]*std::cos(Jet_phi[l]);
+          dpyUp[nsrc] += cJERUp*Jet_pt[l]*std::sin(Jet_phi[l]) - cJER*Jet_pt[l]*std::sin(Jet_phi[l]); 
+        }
+        if (cJERDown*Jet_pt[l]>30  && !(Jet_puId[l]<1 && cJERDown*Jet_pt[l]<50)) {
+          (*JECsysDown)[nsrc].push_back(new jet_candidate(cJERDown*Jet_pt[l],Jet_eta[l],Jet_phi[l],Jet_mass[l],Jet_btagDeepFlavB[l], year,Jet_partonFlavour[l]));
+          dpxDown[nsrc] += cJERDown*Jet_pt[l]*std::cos(Jet_phi[l]) - cJER*Jet_pt[l]*std::cos(Jet_phi[l]);
+          dpyDown[nsrc] += cJERDown*Jet_pt[l]*std::sin(Jet_phi[l]) - cJER*Jet_pt[l]*std::sin(Jet_phi[l]);
+        }
 
-        if(cJER*Jet_pt[l]>30 && cJER*Jet_pt[l] <50){
+        if(cJER*Jet_pt[l]>30 && Jet_puId[l]>=1 && cJER*Jet_pt[l] <50){
           nominalWeights[getVecPos(sys,"JetPuID")] = nominalWeights[getVecPos(sys,"JetPuID")] * csetJetPuID->evaluate({Jet_eta[l],cJER*Jet_pt[l],"nom","L"});
-          sysUpWeights[getVecPos(sys,"JetPuID")] = sysUpWeights[getVecPos(sys,"JetPuID")] * csetJetPuID->evaluate({Jet_eta[l],cJER*Jet_pt[l],"up","L"});
-          sysDownWeights[getVecPos(sys,"JetPuID")] = sysDownWeights[getVecPos(sys,"JetPuID")] * csetJetPuID->evaluate({Jet_eta[l],cJER*Jet_pt[l],"down","L"});
+//it is strange that up and down values are the same
+          sysUpWeights[getVecPos(sys,"JetPuID")] = sysUpWeights[getVecPos(sys,"JetPuID")] * (csetJetPuID->evaluate({Jet_eta[l],cJER*Jet_pt[l],"nom","L"}) +abs(1-csetJetPuID->evaluate({Jet_eta[l],cJER*Jet_pt[l],"up","L"})));
+          sysDownWeights[getVecPos(sys,"JetPuID")] = sysDownWeights[getVecPos(sys,"JetPuID")] * (csetJetPuID->evaluate({Jet_eta[l],cJER*Jet_pt[l],"nom","L"}) -abs(1-csetJetPuID->evaluate({Jet_eta[l],cJER*Jet_pt[l],"down","L"})));
         }
         for (int n=0;n<nsrc;++n){
           vsrc[n]->setJetPt(Jet_pt[l]);
           vsrc[n]->setJetEta(Jet_eta[l]);
           jesVar = vsrc[n]->getUncertainty(true);
-          if ((1+jesVar)*cJER*Jet_pt[l]>30)  (*JECsysUp)[n].push_back(new jet_candidate((1+jesVar)*cJER*Jet_pt[l],Jet_eta[l],Jet_phi[l],Jet_mass[l],Jet_btagDeepFlavB[l], year,Jet_partonFlavour[l]));
-          if ((1-jesVar)*cJER*Jet_pt[l]>30)  (*JECsysDown)[n].push_back(new jet_candidate((1-jesVar)*cJER*Jet_pt[l],Jet_eta[l],Jet_phi[l],Jet_mass[l],Jet_btagDeepFlavB[l], year,Jet_partonFlavour[l]));
+          if ((1+jesVar)*cJER*Jet_pt[l]>30 && !(Jet_puId[l]<1 && (1+jesVar)*cJER*Jet_pt[l]<50)){
+            (*JECsysUp)[n].push_back(new jet_candidate((1+jesVar)*cJER*Jet_pt[l],Jet_eta[l],Jet_phi[l],Jet_mass[l],Jet_btagDeepFlavB[l], year,Jet_partonFlavour[l]));
+            dpxUp[n] += (1+jesVar)*cJER*Jet_pt[l]*std::cos(Jet_phi[l]) - cJER*Jet_pt[l]*std::cos(Jet_phi[l]);
+            dpyUp[n] += (1+jesVar)*cJER*Jet_pt[l]*std::sin(Jet_phi[l]) - cJER*Jet_pt[l]*std::sin(Jet_phi[l]);
+          }
+          if ((1-jesVar)*cJER*Jet_pt[l]>30 && !(Jet_puId[l]<1 && (1-jesVar)*cJER*Jet_pt[l]<50)){
+            (*JECsysDown)[n].push_back(new jet_candidate((1-jesVar)*cJER*Jet_pt[l],Jet_eta[l],Jet_phi[l],Jet_mass[l],Jet_btagDeepFlavB[l], year,Jet_partonFlavour[l]));
+            dpxDown[n] += (1-jesVar)*cJER*Jet_pt[l]*std::cos(Jet_phi[l]) - cJER*Jet_pt[l]*std::cos(Jet_phi[l]);
+            dpyDown[n] +=  (1-jesVar)*cJER*Jet_pt[l]*std::sin(Jet_phi[l]) - cJER*Jet_pt[l]*std::sin(Jet_phi[l]);
+          }
         }
       }
       if(data == "data" && Jet_pt[l] >30){
@@ -249,8 +271,19 @@ void MyAnalysis::objectSelection(TString data,string year){
       }
     }
     
+    for (int n=0;n<nsrc+1;++n){
+     (*MetJECsysUp)[n] = sqrt( pow(MET_pt * cos(MET_phi) - dpxUp[n], 2) + pow(MET_pt * sin(MET_phi) - dpyUp[n], 2) );
+     (*MetJECsysDown)[n] = sqrt( pow(MET_pt * cos(MET_phi) - dpxDown[n], 2) + pow(MET_pt * sin(MET_phi) - dpyDown[n], 2) );
+
+     (*MetPhiJECsysUp)[n] = std::atan2(MET_pt * sin(MET_phi) - dpyUp[n], MET_pt * cos(MET_phi) - dpxUp[n]);
+     (*MetPhiJECsysDown)[n] = std::atan2(MET_pt * sin(MET_phi) - dpyDown[n], MET_pt * cos(MET_phi) - dpxDown[n]);
+    }
 
     sort(selectedJets->begin(), selectedJets->end(), ComparePtJet);
+    for (int n=0;n<nsrc+1;++n){
+      sort((*JECsysUp)[n].begin(), (*JECsysUp)[n].end(), ComparePtJet);
+      sort((*JECsysDown)[n].begin(), (*JECsysDown)[n].end(), ComparePtJet);
+    }
 
 // Btag SF
     for (int l=0;l<selectedJets->size();l++){
@@ -436,9 +469,11 @@ void MyAnalysis::objectSelection(TString data,string year){
       sysDownWeights[getVecPos(sys,"pu")] = wPU.PU_2018(int(Pileup_nTrueInt),"down");
     }
 
-    nominalWeights[getVecPos(sys,"prefiring")] = L1PreFiringWeight_Nom;
-    sysUpWeights[getVecPos(sys,"prefiring")] = L1PreFiringWeight_Up;
-    sysDownWeights[getVecPos(sys,"prefiring")] = L1PreFiringWeight_Dn;
+    if (data == "mc" && year != "2018") {
+      nominalWeights[getVecPos(sys,"prefiring")] = L1PreFiringWeight_Nom;
+      sysUpWeights[getVecPos(sys,"prefiring")] = L1PreFiringWeight_Up;
+      sysDownWeights[getVecPos(sys,"prefiring")] = L1PreFiringWeight_Dn;
+    }  
 
 }
 
@@ -575,14 +610,14 @@ bool MyAnalysis::isMatched(int l, int pdgid, TString MC, bool ifChargedMatched){
   if (MC=="data") return true;
   if(abs(pdgid) == 11){
     if(!ifChargedMatched){
-      if(Electron_genPartFlav[l]==1 || Electron_genPartFlav[l]==15) return true;
+      if(Electron_genPartFlav[l]==1 || Electron_genPartFlav[l]==15 || Electron_genPartFlav[l]==22) return true;
     }
     if(ifChargedMatched){
-      if((Electron_genPartFlav[l]==1 || Electron_genPartFlav[l]==15) && (GenPart_pdgId[Electron_genPartIdx[l]]*Electron_pdgId[l]>0)) return true; 
+      if((Electron_genPartFlav[l]==1 || Electron_genPartFlav[l]==15 || Electron_genPartFlav[l]==22) && (GenPart_pdgId[Electron_genPartIdx[l]]*Electron_pdgId[l]>0)) return true; 
     }
   }
   if(abs(pdgid) == 13){
-    if(Muon_genPartFlav[l]==1 || Muon_genPartFlav[l]==15) return true;
+    if(Muon_genPartFlav[l]==1 || Muon_genPartFlav[l]==15 || Muon_genPartFlav[l]==22) return true;
   }
   return false;
 }

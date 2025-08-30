@@ -21,11 +21,13 @@ if __name__ == '__main__':
     
     addedFilesData = {"2016preVFP": [],"2016postVFP": [], "2017": [], "2018": []} 
     addedFilesMcDY = {"2016preVFP": [],"2016postVFP": [], "2017": [], "2018": []}
-    addedFilesMcWJets = {"2016preVFP": [],"2016postVFP": [], "2017": [], "2018": []}
+    addedFilesMcElse = {"2016preVFP": [],"2016postVFP": [], "2017": [], "2018": []}
     addedFilesMcttbar = {"2016preVFP": [],"2016postVFP": [], "2017": [], "2018": []}
     addedFilesMcDiboson = {"2016preVFP": [],"2016postVFP": [], "2017": [], "2018": []}
     addedFilesMcTriboson = {"2016preVFP": [],"2016postVFP": [], "2017": [], "2018": []}
-    addedFilesMcTTX = {"2016preVFP": [],"2016postVFP": [], "2017": [], "2018": []}
+    addedFilesMcTTZ = {"2016preVFP": [],"2016postVFP": [], "2017": [], "2018": []}
+    addedFilesMcTTW = {"2016preVFP": [],"2016postVFP": [], "2017": [], "2018": []}
+    addedFilesMcTTH = {"2016preVFP": [],"2016postVFP": [], "2017": [], "2018": []}
     addedFilesMcST = {"2016preVFP": [],"2016postVFP": [], "2017": [], "2018": []}
     addedFilesMcConv = {"2016preVFP": [],"2016postVFP": [], "2017": [], "2018": []}
     addedFilesMcFCNCTUprod = {"2016preVFP": [],"2016postVFP": [], "2017": [], "2018": []}
@@ -58,10 +60,8 @@ if __name__ == '__main__':
 #            continue
         elif 'DY' in key:
             addedFilesMcDY[year].append( key + '.root')
-        elif 'TTG' in key or 'ZG' in key:
+        elif 'TTG' in key or 'ZG' in key or 'TGJets' in key or  'WGToLNuG' in key:
             addedFilesMcConv[year].append( key + '.root')
-        elif '_WJetsToLNu' in key:
-            addedFilesMcWJets[year].append(key + '.root')
         elif 'TTTo' in key and 'sys' not in key:
             addedFilesMcttbar[year].append( key + '.root')
 #        elif 'WWTo' in key or 'WZTo' in key or 'ZZTo' in key or 'ZGTo' in key:
@@ -69,10 +69,8 @@ if __name__ == '__main__':
             addedFilesMcDiboson[year].append( key + '.root')
         elif 'WWW' in key or 'WWZ' in key or 'WZZ' in key or 'ZZZ' in key:
             addedFilesMcTriboson[year].append( key + '.root')
-        elif 'ST' in key or 'tW' in key or 'tbarW' in key:
+        elif 'ST' in key or 'tW' in key or 'tbarW' in key or 'tZq' in key:
             addedFilesMcST[year].append( key + '.root')
-        elif 'TTG' in key:
-            addedFilesMcConv[year].append( key + '.root')
         elif 'Production' in key and 'TC' in key:
             addedFilesMcFCNCTCprod[year].append( key + '.root')
         elif 'Decay' in key and 'TC' in key:
@@ -81,32 +79,42 @@ if __name__ == '__main__':
             addedFilesMcFCNCTUprod[year].append( key + '.root')
         elif 'Decay' in key and 'TU' in key:
             addedFilesMcFCNCTUdecay[year].append( key + '.root')
+        elif 'TTZToLL' in key:
+            addedFilesMcTTZ[year].append(key + '.root')
+        elif 'ttHnobb' in key:
+            addedFilesMcTTH[year].append(key + '.root')
+        elif 'TTWJetsToLNu' in key or 'ttWJetsToLNu_EWK' in key:
+            addedFilesMcTTW[year].append(key + '.root')
         else:
-            addedFilesMcTTX[year].append(key + '.root')
+            addedFilesMcElse[year].append(key + '.root')
     for key, value in addedFilesData.items():
 #        if key != '2016preVFP':
 #            continue
         Fmerged=[]
-        hadddata = 'hadd ' +key+'_data.root ' + ' '.join(addedFilesData[key])
-        haddmcDY ='hadd ' +key+'_DY.root ' + ' '.join(addedFilesMcDY[key])
-        haddmcWJets ='hadd ' +key+'_WJets.root ' + ' '.join(addedFilesMcWJets[key])
-        haddmcttbar ='hadd ' +key+'_ttbar.root ' + ' '.join(addedFilesMcttbar[key])
-        haddmcDiboson ='hadd ' +key+'_Diboson.root ' + ' '.join(addedFilesMcDiboson[key])
-        haddmcTriboson ='hadd ' +key+'_Triboson.root ' + ' '.join(addedFilesMcTriboson[key])
-        haddmcST ='hadd ' +key+'_ST.root ' + ' '.join(addedFilesMcST[key])
-        haddmcTTX ='hadd ' +key+'_TTX.root ' + ' '.join(addedFilesMcTTX[key])
-        haddmcConv ='hadd ' +key+'_Conv.root ' + ' '.join(addedFilesMcConv[key])
-        haddmcFCNCTCdecay ='hadd ' +key+'_FCNCTCDecay.root ' + ' '.join(addedFilesMcFCNCTCdecay[key])
-        haddmcFCNCTCprod ='hadd ' +key+'_FCNCTCProduction.root ' + ' '.join(addedFilesMcFCNCTCprod[key])
-        haddmcFCNCTUdecay ='hadd ' +key+'_FCNCTUDecay.root ' + ' '.join(addedFilesMcFCNCTUdecay[key])
-        haddmcFCNCTUprod ='hadd ' +key+'_FCNCTUProduction.root ' + ' '.join(addedFilesMcFCNCTUprod[key])
+        hadddata = 'hadd -f ' +key+'_data.root ' + ' '.join(addedFilesData[key])
+        haddmcDY ='hadd -f ' +key+'_DY.root ' + ' '.join(addedFilesMcDY[key])
+        haddmcElse ='hadd -f ' +key+'_Else.root ' + ' '.join(addedFilesMcElse[key])
+        haddmcttbar ='hadd -f ' +key+'_ttbar.root ' + ' '.join(addedFilesMcttbar[key])
+        haddmcDiboson ='hadd -f ' +key+'_Diboson.root ' + ' '.join(addedFilesMcDiboson[key])
+        haddmcTriboson ='hadd -f ' +key+'_Triboson.root ' + ' '.join(addedFilesMcTriboson[key])
+        haddmcST ='hadd -f ' +key+'_ST.root ' + ' '.join(addedFilesMcST[key])
+        haddmcTTH ='hadd -f ' +key+'_TTH.root ' + ' '.join(addedFilesMcTTH[key])
+        haddmcTTW ='hadd -f ' +key+'_TTW.root ' + ' '.join(addedFilesMcTTW[key])
+        haddmcTTZ ='hadd -f ' +key+'_TTZ.root ' + ' '.join(addedFilesMcTTZ[key])
+        haddmcConv ='hadd -f ' +key+'_Conv.root ' + ' '.join(addedFilesMcConv[key])
+        haddmcFCNCTCdecay ='hadd -f ' +key+'_FCNCTCDecay.root ' + ' '.join(addedFilesMcFCNCTCdecay[key])
+        haddmcFCNCTCprod ='hadd -f ' +key+'_FCNCTCProduction.root ' + ' '.join(addedFilesMcFCNCTCprod[key])
+        haddmcFCNCTUdecay ='hadd -f ' +key+'_FCNCTUDecay.root ' + ' '.join(addedFilesMcFCNCTUdecay[key])
+        haddmcFCNCTUprod ='hadd -f ' +key+'_FCNCTUProduction.root ' + ' '.join(addedFilesMcFCNCTUprod[key])
         Fmerged.append(hadddata)
         Fmerged.append(haddmcDY)
-        Fmerged.append(haddmcWJets)
+        Fmerged.append(haddmcElse)
         Fmerged.append(haddmcttbar)
         Fmerged.append(haddmcDiboson)
         Fmerged.append(haddmcTriboson)
-        Fmerged.append(haddmcTTX)
+        Fmerged.append(haddmcTTW)
+        Fmerged.append(haddmcTTZ)
+        Fmerged.append(haddmcTTH)
         Fmerged.append(haddmcST)
         Fmerged.append(haddmcConv)
         Fmerged.append(haddmcFCNCTCdecay)
@@ -114,55 +122,6 @@ if __name__ == '__main__':
         Fmerged.append(haddmcFCNCTUdecay)
         Fmerged.append(haddmcFCNCTUprod)
         Parallel(n_jobs=10)(delayed(f)(i) for i in Fmerged)
-        os.system('hadd ' +key+'_totalBG.root '+key+'_DY.root ' +key+'_WJets.root ' +key+'_ttbar.root ' +key+'_Diboson.root ' +key+'_Triboson.root '+key+'_ST.root ' +key+'_TTX.root ' +key+'_Conv.root ')        
-        print hadddata + '\n' + haddmcDY + '\n' + haddmcWJets  + '\n' + haddmcttbar + '\n' + haddmcDiboson + '\n' + haddmcTriboson + '\n' + haddmcTTX + '\n' + haddmcST + '\n' + haddmcConv + '\n' + haddmcFCNCTCdecay + '\n' + haddmcFCNCTCprod + '\n' + haddmcFCNCTUdecay + '\n' + haddmcFCNCTUprod
-#    BtagFiles=[]
-#    for key, value in addedFilesData.items():
-#        text = 'hadd ' + 'mc_' + key + '.root ' + key+'_DY.root ' +key+'_ttbar.root ' +key+'_tW.root '    
-#        BtagFiles.append(text)
-#    Parallel(n_jobs=4)(delayed(f)(i) for i in BtagFiles)
-#
-#    AllFiles=[]
-#    proc = ['data', 'DY','WJets','ttbar','tW','other',
-#'STBNV_TBCE',
-#'STBNV_TBUE',
-#'STBNV_TDCE',
-#'STBNV_TDUE',
-#'STBNV_TSCE',
-#'STBNV_TSUE',
-#'TTBNV_TBCE',
-#'TTBNV_TBUE',
-#'TTBNV_TDCE',
-#'TTBNV_TDUE',
-#'TTBNV_TSCE',
-#'TTBNV_TSUE',
-#'STBNV_TBCMu',
-#'STBNV_TBUMu',
-#'STBNV_TDCMu',
-#'STBNV_TDUMu',
-#'STBNV_TSCMu',
-#'STBNV_TSUMu',
-#'TTBNV_TBCMu',
-#'TTBNV_TBUMu',
-#'TTBNV_TDCMu',
-#'TTBNV_TDUMu',
-#'TTBNV_TSCMu',
-#'TTBNV_TSUMu']
-#    for p in proc:
-#        text = 'hadd ' + 'All_' + p + '.root '
-#        for key, value in addedFilesData.items():
-#            text = text + key+'_'+p+'.root '   
-#        AllFiles.append(text)
-#
-#    Parallel(n_jobs=len(proc))(delayed(f)(i) for i in AllFiles)   
-#    addedFilesMcttbarSys = {"hdampUP": [],"hdampDOWN": [], "CR1": [], "CR2": [], "TuneCP5up": [], "TuneCP5down": [], "erdON": [], 'STBNV_TDUE':[], 'STBNV_TDUMu':[]}
-#    for keyUL, value in SAMPLES.items():
-#        key = keyUL.replace("UL", "20")
-#        for keysys, valuesys in addedFilesMcttbarSys.items():
-#            if keysys in key:
-#                addedFilesMcttbarSys[keysys].append( key + '.root')
-#    for keysys, valuesys in addedFilesMcttbarSys.items():
-#        os.system( 'hadd All_' + valuesys[0].split('_',1)[1] + ' '+ ' '.join(addedFilesMcttbarSys[keysys]) )
-
-
+        os.system('hadd ' +key+'_totalBG.root '+key+'_DY.root ' +key+'_Else.root ' +key+'_ttbar.root ' +key+'_Diboson.root ' +key+'_Triboson.root '+key+'_ST.root ' +key+'_TTZ.root ' +key+'_TTW.root '+key+'_TTH.root '+key+'_Conv.root ')        
+        print '\n \n \n hadddata:' + hadddata + '\n haddmcDY:' + haddmcDY + '\n haddmcElse:' + haddmcElse  + '\n haddmcttbar:' + haddmcttbar + '\n haddmcDiboson:' + haddmcDiboson + '\n haddmcTriboson:' + haddmcTriboson + '\n haddmcTTH:' + haddmcTTH+ '\n haddmcTTW:' + haddmcTTW+ '\n haddmcTTZ:' + haddmcTTZ + '\n haddmcST:' + haddmcST + '\n haddmcConv:' + haddmcConv + '\n haddmcFCNCTCdecay:' + haddmcFCNCTCdecay + '\n haddmcFCNCTCprod:' + haddmcFCNCTCprod + '\n haddmcFCNCTUdecay:' + haddmcFCNCTUdecay + '\n haddmcFCNCTUprod' + haddmcFCNCTUprod
 

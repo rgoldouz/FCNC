@@ -3448,6 +3448,8 @@ public :
    virtual void     Init(TTree *tree);
    virtual void     Loop(TString fname, TString data, TString dataset ,string year, TString run, float xs, float lumi, float Nevent, int iseft, int nRuns, int onlyGen, MyAnalysis *Evt, Long64_t start, Long64_t end);
    virtual void     Analyze(TString fname, TString data, TString dataset ,string year, TString run, float xs, float lumi, float Nevent, int iseft, int nRuns, int onlyGen, MyAnalysis *Evt);
+   bool overlapRemoval(double Et_cut, double Eta_cut, double dR_cut, bool verbose, bool reversePtCut);
+   std::vector<double> minGenDr(int myInd, std::vector<int> ignorePID = std::vector<int>());
    typedef vector<TH1EFT*> Dim1;
    typedef vector<Dim1> Dim2;
    typedef vector<Dim2> Dim3;
@@ -3476,7 +3478,7 @@ public :
    void objectSelection(TString data,string year);
    void objectSelectionEnd();
    int findRegion(std::vector<jet_candidate*> *j,int ch, int chFA);
-   void evaluateMVA(std::vector<jet_candidate*> *J, std::vector<lepton_candidate*> *L, std::vector<Z_candidate*> *Z, TString C, float &MVAS_TU, float &MVAB_TU, float &MVAS_TC, float &MVAB_TC);
+   void evaluateMVA(std::vector<jet_candidate*> *J, std::vector<lepton_candidate*> *L, std::vector<Z_candidate*> *Z, TString C, float metPt, float metPhi, float &MVAS_TU, float &MVAB_TU, float &MVAS_TC, float &MVAB_TC);
    float bTagCutWpL;
    float bTagCutWpM;
    float jetBTagDeepFlav(int l);
@@ -3565,9 +3567,9 @@ public :
    void normalFillD4Hists(normalD4HistsContainer H4, std::vector<int> v1, std::vector<int> v2, int v3, float value, std::vector<std::vector<float>> weight, int n);
    virtual Bool_t   Notify();
    virtual void     Show(Long64_t entry = -1);
-   std::vector<TString> channels{"2lss", "2los_Weighted", "2los_EpEm_CR", "2los_MUpMUm_CR", "2los_EpmMUmp_CR", "3lonZ", "3loffZhigh", "3loffZlow","4l_CR"};
-   std::vector<TString> channelsFA{"2lss_LF", "2lss_FF", "3lonZ_LLF", "3lonZ_LFF","3lonZ_FFF","3loffZhigh_LLF", "3loffZhigh_LFF","3loffZhigh_FFF", "3loffZlow_LLF", "3loffZlow_LFF","3loffZlow_FFF"};
-   std::vector<TString> channelsSys{"2lss", "3lonZ", "3loffZhigh"};
+   std::vector<TString> channels{"2lssEE", "2lssEM","2lssMM", "2losEE_Weighted", "2losEM_Weighted","2los_EpEm_CR", "2los_MUpMUm_CR", "2los_EpmMUmp_CR", "3lonZ", "3loffZhigh", "3loffZlow","4l_CR"};
+   std::vector<TString> channelsFA{"2lssEE_LF", "2lssEE_FF", "2lssEM_LF", "2lssEM_FF","2lssMM_LF", "2lssMM_FF","3lonZ_LLF", "3lonZ_LFF","3lonZ_FFF","3loffZhigh_LLF", "3loffZhigh_LFF","3loffZhigh_FFF", "3loffZlow_LLF", "3loffZlow_LFF","3loffZlow_FFF"};
+   std::vector<TString> channelsSys{"2lssEE", "2lssEM","2lssMM", "3lonZ", "3loffZhigh"};
    std::vector<TString> regions{"0b","1bLj", "1bHj","G1b"};
    std::vector<TString> sys{"eleRecoIdIso","muRecoIdIso","triggerSF","pu","prefiring","bcTagSfCorr","LTagSfCorr","bcTagSfUnCorr","LTagSfUnCorr","JetPuID", "JesFlavorQCD", "JesBBEC1", "JesAbsolute", "JesRelativeBal", "JesRelativeSample","Jes","Jer"};
    std::vector<TString> sysJec{"JesFlavorQCD", "JesBBEC1", "JesAbsolute", "JesRelativeBal", "JesRelativeSample","Jes","Jer"};
@@ -3700,6 +3702,10 @@ public :
   std::vector<jet_candidate*> *selectedJets;
   std::vector<std::vector<jet_candidate*>> *JECsysUp;
   std::vector<std::vector<jet_candidate*>> *JECsysDown;
+  std::vector<float> *MetJECsysUp;
+  std::vector<float> *MetJECsysDown;
+  std::vector<float> *MetPhiJECsysUp;
+  std::vector<float> *MetPhiJECsysDown;
 };
 
 #endif

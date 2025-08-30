@@ -5,11 +5,11 @@ import multiprocessing
 
 # List of TMVA macro files to run
 macro_files = [
-    "TMVAClassification_TU_3lonZ.C",
+#    "TMVAClassification_TU_3lonZ.C",
     "TMVAClassification_TC_2lss.C",
-    "TMVAClassification_TC_3loffZ.C",
-    "TMVAClassification_TU_3loffZ.C",
-    "TMVAClassification_TC_3lonZ.C",
+#    "TMVAClassification_TC_3loffZ.C",
+#    "TMVAClassification_TU_3loffZ.C",
+#    "TMVAClassification_TC_3lonZ.C",
     "TMVAClassification_TU_2lss.C"
 ]
 

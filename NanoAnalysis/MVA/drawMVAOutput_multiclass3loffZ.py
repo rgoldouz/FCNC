@@ -10,6 +10,38 @@ import sys
 import numpy as np
 import copy
 import os
+def drawGraph(hist,Fname, ch = "channel", reg = "region", var="sample", varname="v"):
+    Fol = 'MVAhists'
+    if not os.path.exists(Fol):
+       os.makedirs(Fol)
+    if not os.path.exists(Fol + '/' + ch):
+       os.makedirs(Fol + '/' + ch)
+    if not os.path.exists(Fol + '/' + ch +'/'+reg):
+       os.makedirs(Fol + '/' + ch +'/'+reg)
+    canvas = ROOT.TCanvas(ch+reg+var,ch+reg+var,50,50,865,780)
+    canvas.SetGrid();
+    canvas.SetBottomMargin(0.17)
+    canvas.cd()
+    for h in range(len(hist)):
+        hist[h].SetLineColor(h+1)
+        hist[h].SetFillColor(0)
+        hist[h].SetLineWidth(2)
+    hist[0].Draw("");
+    hist[0].SetTitle("")
+    hist[0].GetXaxis().SetTitle('Signal efficiency')
+    hist[0].GetYaxis().SetTitle('Background rejection')
+    for h in range(len(hist)):
+        hist[h].Draw("same");
+    legend = ROOT.TLegend(0.2,0.2,0.4,0.4)
+    legend.SetBorderSize(0)
+    legend.SetTextFont(42)
+    legend.SetTextSize(0.03)
+    for num in range(0,len(hist)):
+        legend.AddEntry(hist[num],Fname[num],'lep')
+    legend.Draw("same")
+    canvas.Print(Fol + '/' + ch +'/'+reg+'/'+var + ".png")
+    del canvas
+    gc.collect()
 
 def draw2dHist(hist,Fname, ch = "channel", reg = "region", var="sample", varname="v"):
     Fol = 'MVAhists'
@@ -58,7 +90,7 @@ def compareHists(hists,Fnames, ch = "channel", reg = "region", var="sample", var
 #        hists[H].SetLineColor(colors[H])
         if 'Dec' in Fnames[H]:
             hists[H].SetLineStyle(2)
-    y_min=1
+    y_min=0.01
     if hists[0].Integral()<2:
         y_min=0.001
     y_max=1.8* maxH
@@ -118,13 +150,17 @@ def compareHists(hists,Fnames, ch = "channel", reg = "region", var="sample", var
 # Initialize TMVA tools
 TMVA.Tools.Instance()
 MVAs=["TU","TC"]
+#MVAs=["TC"]
 variables=["lep1Pt","lep2Pt","llDr","llDphi", "lep3Pt", "jet1Pt", "bJetPt", "tZ_topMass", "tZ_ZMass", "tZ_WtopMass", "tZ_ZPt", "tZ_ZEta", "tZ_topPt", "tZ_topEta", "nJets"]
 FCNC2l2q=["ctlS","cte","ctl","ctlT","cQe","cQlM"]
+FCNC2l2q=["ctlS","ctlT","ctlV"]
 for MVA in MVAs:
     file = TFile.Open('tmp_TMVAClassification_'+MVA+'_3loffZ/TMVAOutput_'+MVA+'_3loffZ.root')
     if not file or file.IsZombie():
         print("Error: Cannot open TMVA output file")
         exit()
+    ROC=[]
+    ROCname=[]
     for n,c in enumerate(FCNC2l2q):
         HH=[]
         HHname=[]
@@ -150,9 +186,15 @@ for MVA in MVAs:
         HH.append(hist1)
         HHname.append('Test_BG')
         compareHists(HH,HHname, '3loffZ',MVA,c,'probability')
-   
+
+        hist1 = file.Get('dataset/Method_BDT/BDT/MVA_BDT_Train_1v1rejBvsS_Background_vs_'+c)
+        hist1.SetLineColor(ROOT.kBlue+2)
+        hist1.SetFillColorAlpha(ROOT.kBlue, 0.3)
+        ROC.append(hist1)
+        ROCname.append(c)
         hist1 = file.Get('dataset/CorrelationMatrix'+c)
         draw2dHist(hist1,'', '3loffZ',MVA,'CorrelationMatrix'+c,'')
+    drawGraph(ROC,ROCname, '3loffZ',MVA,'ROC','ROC')
     hist1 = file.Get('dataset/CorrelationMatrixBackground')
     draw2dHist(hist1,'', '3loffZ',MVA,'CorrelationMatrixBackground','') 
     colors =  [ROOT.kBlack,ROOT.TColor.GetColor("#3f90da"),ROOT.TColor.GetColor("#ffa90e"), ROOT.TColor.GetColor("#bd1f01"),ROOT.TColor.GetColor("#94a4a2"), ROOT.TColor.GetColor("#832db6"),ROOT.TColor.GetColor("#a96b59"),ROOT.TColor.GetColor("#e76300"),ROOT.TColor.GetColor("#b9ac70"),ROOT.TColor.GetColor("#717581"),ROOT.TColor.GetColor("#92dadd")]

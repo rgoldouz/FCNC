@@ -45,6 +45,9 @@ def check_file(keyUL, filename, base_dist):
 
     return (keyUL if is_broken else None, rm_command if is_broken else None)
 
+def count_files(directory):
+    return len([f for f in os.listdir(directory) if os.path.isfile(os.path.join(directory, f))])
+
 if __name__ == '__main__':
     SAMPLES = {}
     SAMPLES.update(Files_ULall_nano.UL17)
@@ -61,12 +64,28 @@ if __name__ == '__main__':
             print "Warning: Directory does not exist -", full_path
 
     # Run in parallel with 40 jobs
-    results = Parallel(n_jobs=40, backend="multiprocessing")(delayed(check_file)(keyUL, filename, base_dist) for keyUL, filename, base_dist in tasks)
+##    results = Parallel(n_jobs=40, backend="multiprocessing")(delayed(check_file)(keyUL, filename, base_dist) for keyUL, filename, base_dist in tasks)
 
     # Collect results safely
-    buggySamples = [keyUL for keyUL, rm_command in results if keyUL]
-    missedSamples = 'These samples have broken files. Please check and rerun the code:\n' + \
-                    ''.join(rm_command for keyUL, rm_command in results if rm_command)
+##    buggySamples = [keyUL for keyUL, rm_command in results if keyUL]
+##    missedSamples = 'These samples have broken files. Please check and rerun the code:\n' + \
+##                    ''.join(rm_command for keyUL, rm_command in results if rm_command)
 
-    print missedSamples  # Python 2 print statement
-    print buggySamples
+##    print missedSamples  # Python 2 print statement
+##    print buggySamples
+    text="rm -rf "
+    for key, value in SAMPLES.items():
+        dir1 = base_dist + 'Analysis_' + key
+        dir2 = '/cms/cephfs/data/store/user/'+ value[0][0]
+        if os.path.isdir(dir1):
+            count1 = count_files(dir1)
+            count2 = count_files(dir2)
+            if count1 == count2:
+                print("{}: sample is completed.".format(key))
+            else:
+                print("{}: Different number of files: {} analyzed, {} available".format(key,count1, count2))
+                text+='Analysis_' + key +' '
+        else:
+            text+='Analysis_' + key +' '
+    print text
+
